@@ -25,13 +25,14 @@ class Sidebar extends StatelessWidget {
         // Se usa para evitar problemas de espacio
         child: Column(
           children: [
-            _buildMenuItem(Icons.home, 'Inicio'),
+            _buildMenuItem(Icons.home, 'Inicio','Home'),
             _buildLibraryMenu(context),
-            _buildMenuItem(Icons.menu_book, 'Libros'),
-            _buildMenuItem(Icons.category, 'Categorías'),
-            _buildMenuItem(Icons.list, 'Listas de lectura'),
-            _buildMenuItem(Icons.collections_bookmark, 'Series'),
-            _buildMenuItem(Icons.book, 'Estanterías'),
+            _buildMenuItem(Icons.menu_book, 'Libros','books'),
+            _buildMenuItem(Icons.category, 'Categorías','categories'),
+            _buildMenuItem(Icons.list, 'Listas de lectura','lists'),
+            _buildMenuItem(Icons.collections_bookmark, 'Series','series'),
+            _buildMenuItem(Icons.book, 'Estanterías','shelves'),
+            _buildMenuItem(Icons.question_answer, 'Tests','Tests'),
           ],
         ),
       ),
@@ -142,7 +143,7 @@ class Sidebar extends StatelessWidget {
 }
 
   // Método para construir cada opción del menú
-  Widget _buildMenuItem(IconData icon, String title) {
+  Widget _buildMenuItem(IconData icon, String title, String value) {
     return ListTile(
       leading: Icon(
         icon,
@@ -154,7 +155,7 @@ class Sidebar extends StatelessWidget {
       ), // Reducimos el padding
       minLeadingWidth: 30, // Evita que el icono consuma todo el espacio
       onTap: () {
-        onItemSelected(title);
+        onItemSelected(value);
       },
     );
   }

@@ -19,13 +19,13 @@ class AppPreferences {
   });
 
   AppPreferences.defaults()
-      : darkMode = false,
-        languageCode = 'es',
-        textScaleFactor = 1.0,
-        notificationsEnabled = true,
-        comicAppDirectory = null,
-        bookAppDirectory = null,
-        audiobookAppDirectory = null;
+    : darkMode = false,
+      languageCode = 'es',
+      textScaleFactor = 1.0,
+      notificationsEnabled = true,
+      comicAppDirectory = null,
+      bookAppDirectory = null,
+      audiobookAppDirectory = null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -51,24 +51,23 @@ class AppPreferences {
     );
   }
   AppPreferences copyWith({
-  bool? darkMode,
-  String? languageCode,
-  double? textScaleFactor,
-  bool? notificationsEnabled,
-  String? comicAppDirectory,
-  String? bookAppDirectory,
-  String? audiobookAppDirectory,
-}) {
-  return AppPreferences(
-    darkMode: darkMode ?? this.darkMode,
-    languageCode: languageCode ?? this.languageCode,
-    textScaleFactor: textScaleFactor ?? this.textScaleFactor,
-    notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-    comicAppDirectory: comicAppDirectory ?? this.comicAppDirectory,
-    bookAppDirectory: bookAppDirectory ?? this.bookAppDirectory,
-    audiobookAppDirectory: audiobookAppDirectory ?? this.audiobookAppDirectory,
-  );
-}
-
-  Object? preferences() {}
+    bool? darkMode,
+    String? languageCode,
+    double? textScaleFactor,
+    bool? notificationsEnabled,
+    String? comicAppDirectory,
+    String? bookAppDirectory,
+    String? audiobookAppDirectory,
+  }) {
+    return AppPreferences(
+      darkMode: darkMode ?? this.darkMode,
+      languageCode: languageCode ?? this.languageCode,
+      textScaleFactor: textScaleFactor ?? this.textScaleFactor,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      comicAppDirectory: comicAppDirectory ?? this.comicAppDirectory,
+      bookAppDirectory: bookAppDirectory ?? this.bookAppDirectory,
+      audiobookAppDirectory:
+          audiobookAppDirectory ?? this.audiobookAppDirectory,
+    );
+  }
 }

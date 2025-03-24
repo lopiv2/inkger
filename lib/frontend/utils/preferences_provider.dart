@@ -4,7 +4,8 @@ import 'package:inkger/frontend/models/app_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PreferencesProvider with ChangeNotifier {
-  late AppPreferences _prefs;
+  late AppPreferences _prefs =
+      AppPreferences.defaults(); // Inicialización directa;
   bool _isLoading = true;
 
   AppPreferences get preferences => _prefs;
@@ -18,7 +19,7 @@ class PreferencesProvider with ChangeNotifier {
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Llamar a PreferenceService para obtener las rutas del backend si es necesario
       //await PreferenceService.initializeDirectories(); // Esto actualiza las rutas en SharedPreferences
 
@@ -51,7 +52,7 @@ class PreferencesProvider with ChangeNotifier {
         bookAppDirectory: prefs.getString('bookAppDirectory'),
         audiobookAppDirectory: prefs.getString('audiobookAppDirectory'),
       );
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error refreshing paths: $e');
@@ -61,7 +62,7 @@ class PreferencesProvider with ChangeNotifier {
   // Método para guardar preferencias
   Future<void> _savePreference<T>(String key, T value) async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     switch (T) {
       case bool:
         await prefs.setBool(key, value as bool);
@@ -106,6 +107,31 @@ class PreferencesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateLibraryPath(String libraryType, String newPath) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Actualizar el estado según el tipo
+      _prefs = _prefs.copyWith(
+        comicAppDirectory: libraryType == 'comics' ? newPath : _prefs.comicAppDirectory,
+        bookAppDirectory: libraryType == 'books' ? newPath : _prefs.bookAppDirectory,
+        audiobookAppDirectory: libraryType == 'audiobooks' ? newPath : _prefs.audiobookAppDirectory,
+      );
+
+      // Persistir en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('${libraryType}AppDirectory', newPath);
+
+    } catch (e) {
+      debugPrint('Error actualizando ruta: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  
   Future<void> setComicDirectory(String? path) async {
     _prefs = _prefs.copyWith(comicAppDirectory: path);
     await _savePreference('comicAppDirectory', path);

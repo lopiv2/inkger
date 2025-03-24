@@ -1,76 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/backend/services/preferences_service.dart';
 import 'package:inkger/frontend/buttons/import_button.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
-import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/widgets/side_bar.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
+  final Widget content; // Recibirá el contenido dinámico desde el router
+
+  const HomeScreen({super.key, required this.content});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _isSidebarVisible =
-      true; // Estado para controlar la visibilidad de la barra lateral
+  bool _isSidebarVisible = true;
+  bool _isLoading = true;
 
   void _toggleSidebar() {
     setState(() {
-      _isSidebarVisible = !_isSidebarVisible; // Cambia el estado de visibilidad
+      _isSidebarVisible = !_isSidebarVisible;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    // Inicializar rutas antes de correr la app
-    loadPreferences();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadPreferences();
+    });
   }
 
-  // Método para cargar las preferencias y actualizarlas en el provider
   Future<void> loadPreferences() async {
-    await PreferenceService.initializeDirectories(); // Obtener las rutas desde el backend
+    setState(() => _isLoading = true);
 
-    // Una vez obtenidas las rutas, actualizamos el provider
-    final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
-    preferencesProvider.refreshPathsFromDatabase(); // Actualizamos las rutas en el provider
+    await PreferenceService.initializeDirectories();
+
+    if (mounted) {
+      final preferencesProvider = Provider.of<PreferencesProvider>(
+        context,
+        listen: false,
+      );
+      await preferencesProvider.refreshPathsFromDatabase();
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    
     return Scaffold(
       body: Row(
         children: [
-          // Primera columna: Logotipo y Sidebar (con animación)
+          // Sidebar con animación
           AnimatedContainer(
-            duration: Duration(milliseconds: 300), // Duración de la animación
-            width:
-                _isSidebarVisible ? 250 : 0, // Ancho fijo cuando está visible
+            duration: const Duration(milliseconds: 300),
+            width: _isSidebarVisible ? 250 : 0,
             child: Visibility(
-              // Envuelve todo en Visibility
               visible: _isSidebarVisible,
               child: Column(
                 children: [
                   // Logotipo
                   Container(
-                    height: 100, // Altura del logotipo
+                    height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey, // Color de fondo
-                      border: Border(
-                        top: BorderSide(
-                          color: Colors.black, // Color del borde superior
-                          width: 2, // Grosor del borde superior
-                        ),
-                        left: BorderSide(
-                          color: Colors.black, // Color del borde inferior
-                          width: 2, // Grosor del borde inferior
-                        ),
+                      color: Colors.blueGrey,
+                      border: const Border(
+                        top: BorderSide(color: Colors.black, width: 2),
+                        left: BorderSide(color: Colors.black, width: 2),
                       ),
                     ),
                     child: Center(
                       child: Image.asset(
-                        'images/logo_inkger_2.png', // Ruta de la imagen del logotipo
+                        'images/logo_inkger_2.png',
                         width: 250,
                         height: 150,
                       ),
@@ -80,7 +87,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Sidebar(
                       onItemSelected: (selectedItem) {
-                        print('Opción seleccionada: $selectedItem');
+                        if (selectedItem == 'Tests') {
+                          context.go('/tests');
+                        } else if (selectedItem == 'Home') {
+                          context.go('/home');
+                        }
                       },
                     ),
                   ),
@@ -88,96 +99,65 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Segunda columna: Barra de búsqueda, Avatar y Contenido principal
+          // Contenido principal
           Expanded(
             child: Column(
               children: [
-                // Fila superior: Barra de búsqueda y Avatar
+                // Barra superior
                 Container(
-                  height: 100, // Altura de la fila superior
+                  height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.blueGrey, // Color de fondo
-                    border: Border.all(
-                      color: Colors.black, // Color del borde
-                      width: 2, // Grosor del borde
-                    ),
+                    color: Colors.blueGrey,
+                    border: Border.all(color: Colors.black, width: 2),
                   ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20,
-                  ), // Espaciado horizontal
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      // Ícono para mostrar/ocultar la barra lateral
                       IconButton(
-                        icon: Icon(
-                          Icons.menu,
-                          color: Colors.white,
-                        ), // Ícono de tres rayas
-                        onPressed:
-                            _toggleSidebar, // Cambia la visibilidad de la barra lateral
+                        icon: const Icon(Icons.menu, color: Colors.white),
+                        onPressed: _toggleSidebar,
                       ),
-                      SizedBox(
-                        width: 10,
-                      ), // Espacio entre el ícono y la barra de búsqueda
+                      const SizedBox(width: 10),
                       // Barra de búsqueda
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey, // Color de fondo del contenedor
-                            borderRadius: BorderRadius.circular(
-                              10,
-                            ), // Bordes redondeados
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(10),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(
-                                  0.3,
-                                ), // Color de la sombra
-                                spreadRadius: 2, // Extensión de la sombra
-                                blurRadius: 5, // Difuminado de la sombra
-                                offset: Offset(
-                                  0,
-                                  3,
-                                ), // Desplazamiento de la sombra (x, y)
+                                color: Colors.black.withOpacity(0.3),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
-                          child: TextField(
+                          child: const TextField(
                             decoration: InputDecoration(
                               hintText: 'Buscar...',
-                              border:
-                                  InputBorder
-                                      .none, // Quita el borde interno del TextField
+                              border: InputBorder.none,
                               filled: true,
-                              fillColor: Colors.white.withOpacity(
-                                0.3,
-                              ), // Color de fondo del TextField
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.white,
-                              ),
+                              fillColor: Colors.white,
+                              prefixIcon: Icon(Icons.search, color: Colors.white),
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 20,
-                      ), // Espacio entre la barra de búsqueda y el avatar
-                      ImportIconButton(
+                      const SizedBox(width: 20),
+                      const ImportIconButton(
                         iconSize: 32,
                         iconColor: Colors.green,
                         tooltipText: 'Subir documentos',
                         showBadge: true,
                       ),
-                      // Avatar y menú desplegable del usuario
-                      PopupMenuButton<String>( 
-                        icon: CircleAvatar(
-                          backgroundImage: AssetImage(
-                            'images/avatars/avatar_01.png',
-                          ), // Ruta de la imagen del avatar
+                      // Avatar
+                      PopupMenuButton<String>(
+                        icon: const CircleAvatar(
+                          backgroundImage: AssetImage('images/avatars/avatar_01.png'),
                           radius: 30,
                         ),
                         onSelected: (String value) {
-                          // Acciones al seleccionar una opción del menú
                           switch (value) {
                             case 'profile':
                               print('Perfil seleccionado');
@@ -192,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         itemBuilder: (BuildContext context) {
                           return [
-                            PopupMenuItem(
+                            const PopupMenuItem(
                               value: 'profile',
                               child: Row(
                                 children: [
@@ -202,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                             ),
-                            PopupMenuItem(
+                            const PopupMenuItem(
                               value: 'settings',
                               child: Row(
                                 children: [
@@ -212,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                             ),
-                            PopupMenuItem(
+                            const PopupMenuItem(
                               value: 'logout',
                               child: Row(
                                 children: [
@@ -228,11 +208,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                // Contenido principal
+                // Área de contenido dinámico
                 Expanded(
                   child: Container(
                     color: Colors.lightGreen,
-                    child: CentralContent(),
+                    child: widget.content, // Contenido inyectado por el router
                   ),
                 ),
               ],
