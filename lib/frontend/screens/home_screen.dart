@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:inkger/backend/services/preferences_service.dart';
+import 'package:inkger/frontend/buttons/import_button.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
+import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/widgets/side_bar.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,6 +19,22 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isSidebarVisible = !_isSidebarVisible; // Cambia el estado de visibilidad
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar rutas antes de correr la app
+    loadPreferences();
+  }
+
+  // Método para cargar las preferencias y actualizarlas en el provider
+  Future<void> loadPreferences() async {
+    await PreferenceService.initializeDirectories(); // Obtener las rutas desde el backend
+
+    // Una vez obtenidas las rutas, actualizamos el provider
+    final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
+    preferencesProvider.refreshPathsFromDatabase(); // Actualizamos las rutas en el provider
   }
 
   @override
@@ -141,8 +162,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(
                         width: 20,
                       ), // Espacio entre la barra de búsqueda y el avatar
+                      ImportIconButton(
+                        iconSize: 32,
+                        iconColor: Colors.green,
+                        tooltipText: 'Subir documentos',
+                        showBadge: true,
+                      ),
                       // Avatar y menú desplegable del usuario
-                      PopupMenuButton<String>(
+                      PopupMenuButton<String>( 
                         icon: CircleAvatar(
                           backgroundImage: AssetImage(
                             'images/avatars/avatar_01.png',
@@ -205,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Container(
                     color: Colors.lightGreen,
-                    child: Center(child: Text('Contenido principal')),
+                    child: CentralContent(),
                   ),
                 ),
               ],

@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-import 'package:inkger/backend/services/api_service.dart'; // Para manejar JSON
+import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart'; // Para manejar JSON
 
 class EditLibraryDialog extends StatefulWidget {
   final String libraryTitle;
@@ -20,7 +20,8 @@ class EditLibraryDialog extends StatefulWidget {
 
 class _EditLibraryDialogState extends State<EditLibraryDialog> {
   String _selectedOption = 'General'; // Opción seleccionada por defecto
-  late TextEditingController _pathController; // Controlador para el campo de ruta
+  late TextEditingController
+  _pathController; // Controlador para el campo de ruta
   bool _isLoading = true; // Estado de carga
 
   @override
@@ -33,12 +34,15 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
   // Método para cargar la ruta de la biblioteca desde la API
   Future<void> _loadLibraryPath() async {
     try {
-      final response = await ApiService.dio.get('/library/${widget.libraryId}/path');
+      final response = await ApiService.dio.get(
+        '/api/libraries/${widget.libraryId}/path',
+      );
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
         setState(() {
-          _pathController.text = data['path'] ?? ''; // Asignar la ruta al controlador
+          _pathController.text =
+              data['path'] ?? ''; // Asignar la ruta al controlador
           _isLoading = false; // Finalizar la carga
         });
       } else {
@@ -52,22 +56,29 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
     }
   }
 
-  // Método para actualizar la ruta en la API
+  // Método para actualizar la ruta en la API y mostrar un SnackBar
   Future<void> _updateLibraryPath() async {
     try {
       final response = await ApiService.dio.put(
-        '/library/${widget.libraryId}/path',
+        '/api/libraries/${widget.libraryId}',
         data: jsonEncode({'path': _pathController.text}),
-        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
       if (response.statusCode == 200) {
-        print('Ruta actualizada correctamente');
+        CustomSnackBar.show(
+          context,
+          'Ruta actualizada correctamente',
+          Colors.green,
+        );
       } else {
         throw Exception('Error al actualizar la ruta');
       }
     } catch (e) {
-      print('Error al actualizar la ruta: $e');
+      CustomSnackBar.show(
+        context,
+        'Error al actualizar la ruta: $e',
+        Colors.red,
+      );
     }
   }
 
@@ -75,42 +86,46 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Editar Biblioteca: ${widget.libraryTitle}'),
-      content: _isLoading
-          ? Center(child: CircularProgressIndicator()) // Mostrar spinner si está cargando
-          : SizedBox(
-              width: MediaQuery.of(context).size.width * 0.3, // Ajusta el ancho del diálogo
-              height: MediaQuery.of(context).size.height * 0.3, // Ajusta el ancho del diálogo
-              child: Row(
-                children: [
-                  // Columna izquierda: Opciones (General, Opciones, Metadatos)
-                  Expanded(
-                    flex: 1,
-                    child: ListView(
-                      children: [
-                        _buildOptionButton('General'),
-                        _buildOptionButton('Opciones'),
-                        _buildOptionButton('Metadatos'),
-                      ],
+      content:
+          _isLoading
+              ? Center(
+                child: CircularProgressIndicator(),
+              ) // Mostrar spinner si está cargando
+              : SizedBox(
+                width:
+                    MediaQuery.of(context).size.width *
+                    0.3, // Ajusta el ancho del diálogo
+                height:
+                    MediaQuery.of(context).size.height *
+                    0.3, // Ajusta el ancho del diálogo
+                child: Row(
+                  children: [
+                    // Columna izquierda: Opciones (General, Opciones, Metadatos)
+                    Expanded(
+                      flex: 1,
+                      child: ListView(
+                        children: [
+                          _buildOptionButton('General'),
+                          _buildOptionButton('Opciones'),
+                          _buildOptionButton('Metadatos'),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // Barra de separación
-                  VerticalDivider(
-                    color: Colors.grey,
-                    thickness: 1,
-                  ),
+                    // Barra de separación
+                    VerticalDivider(color: Colors.grey, thickness: 1),
 
-                  // Columna derecha: Contenido según la opción seleccionada
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: _buildContent(),
+                    // Columna derecha: Contenido según la opción seleccionada
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: _buildContent(),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
       actions: [
         TextButton(
           onPressed: () {
@@ -162,7 +177,10 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Configuración General', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          'Configuración General',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         SizedBox(height: 16),
         TextField(
           controller: _pathController, // Controlador para la ruta
@@ -180,7 +198,10 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Opciones Avanzadas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          'Opciones Avanzadas',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         SizedBox(height: 16),
         SwitchListTile(
           title: Text('Habilitar sincronización automática'),
@@ -205,7 +226,10 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Gestión de Metadatos', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          'Gestión de Metadatos',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         SizedBox(height: 16),
         Text('Aquí puedes gestionar los metadatos de la biblioteca.'),
         SizedBox(height: 16),

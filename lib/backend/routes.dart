@@ -1,3 +1,4 @@
+import 'package:inkger/backend/services/database_helper_service.dart';
 import 'package:inkger/frontend/utils/constants.dart';
 import 'package:shelf/shelf.dart';
 import 'package:mysql_client/mysql_client.dart';
@@ -54,47 +55,44 @@ Future<Response> handleLogin(Request request, MySQLConnection conn) async {
 }
 
 // Función para obtener las bibliotecas
-Future<Response> getLibraries(MySQLConnection conn) async {
-  try {
-    final result = await conn.execute('SELECT * FROM libraries');
-
-    final libraries = result.rows.map((row) {
-      return {
-        'id': row.assoc()['id'],
-        'type': row.assoc()['type'],
-        'path': row.assoc()['path'],
-      };
-    }).toList();
-
-    return Response.ok(
-      jsonEncode(libraries),
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    );
-  } catch (e) {
-    print('Error al obtener bibliotecas: $e');
-    return Response.internalServerError(
-      body: jsonEncode({'error': 'Error interno'}),
-      headers: {'Content-Type': 'application/json'},
-    );
+Future<Response> getLibraryPaths(Request request) async {
+  final conn = DatabaseHelper.connection;
+  if (conn == null) {
+    return Response.internalServerError(body: 'Error de conexión con la base de datos');
   }
+
+  final result = await conn.execute('''
+    SELECT 
+      (SELECT path FROM libraries WHERE type = 'comics' LIMIT 1) AS comicPath,
+      (SELECT path FROM libraries WHERE type = 'books' LIMIT 1) AS bookPath,
+      (SELECT path FROM libraries WHERE type = 'audiobooks' LIMIT 1) AS audioPath;
+  ''');
+
+  if (result.numOfRows == 0) {
+    return Response.notFound('No se encontraron rutas');
+  }
+
+  final row = result.rows.first;
+  final data = {
+    'comicPath': row.colByName('comicPath') ?? '',
+    'bookPath': row.colByName('bookPath') ?? '',
+    'audioPath': row.colByName('audioPath') ?? '',
+  };
+
+  return Response.ok(jsonEncode(data), headers: {'Content-Type': 'application/json'});
 }
 
 // Función para actualizar una biblioteca
-Future<Response> updateLibrary(Request request, MySQLConnection conn) async {
+// Función actualizada para recibir el tipo
+Future<Response> updateLibrary(Request request, MySQLConnection conn, String type) async {
   try {
     final body = await request.readAsString();
-    Constants.logger.info('Body of the application: $body');
-
     final data = jsonDecode(body) as Map<String, dynamic>;
-    final id = data['id'];
     final path = data['path'];
 
     await conn.execute(
-      'UPDATE libraries SET path = :path WHERE id = :id',
-      {'path': path, 'id': id},
+      'UPDATE libraries SET path = :path WHERE type = :type',
+      {'path': path, 'type': type},
     );
 
     return Response.ok(
@@ -105,7 +103,37 @@ Future<Response> updateLibrary(Request request, MySQLConnection conn) async {
       },
     );
   } catch (e) {
-    Constants.logger.info('Error updating library: $e');
+    Constants.logger.warning('Error al actualizar la biblioteca: $e');
+    return Response.internalServerError(
+      body: jsonEncode({'error': 'Error interno'}),
+      headers: {'Content-Type': 'application/json'},
+    );
+  }
+}
+
+// Función para obtener la ruta de una biblioteca específica
+Future<Response> getLibraryPath(Request request, MySQLConnection conn, String id) async {
+  try {
+    final result = await conn.execute(
+      'SELECT path FROM libraries WHERE type = :id',
+      {'id': id},
+    );
+
+    if (result.rows.isEmpty) {
+      return Response.notFound('Biblioteca no encontrada');
+    }
+
+    final path = result.rows.first.assoc()['path'];
+
+    return Response.ok(
+      jsonEncode({'path': path}),
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    );
+  } catch (e) {
+    print('Error al obtener la ruta: $e');
     return Response.internalServerError(
       body: jsonEncode({'error': 'Error interno'}),
       headers: {'Content-Type': 'application/json'},
@@ -117,14 +145,21 @@ Future<Response> updateLibrary(Request request, MySQLConnection conn) async {
 Handler setupRoutes(MySQLConnection conn) {
   final router = Router();
 
+  // Agrega esta nueva ruta GET con parámetro de ID
+  router.get('/api/libraries/<id>/path', (Request request, String id) async {
+    return getLibraryPath(request, conn, id);
+  });
+
   // Ruta de login
   router.post('/api/login', (Request request) => handleLogin(request, conn));
 
   // Ruta para obtener las bibliotecas
-  router.get('/api/libraries', (Request request) => getLibraries(conn));
+  router.get('/api/libraries', (Request request) => getLibraryPaths(request));
 
   // Ruta para actualizar una biblioteca
-  router.post('/api/libraries', (Request request) => updateLibrary(request, conn));
+  router.put('/api/libraries/<id>', (Request request, String id) async {
+  return updateLibrary(request, conn, id);
+});
 
   // Ruta por defecto (no encontrada)
   router.all('/<ignored|.*>', (Request request) {
