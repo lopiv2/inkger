@@ -18,11 +18,12 @@ void main() async {
 
   // Inicializar base de datos
   await DatabaseHelper.initializeDatabase();
-  final conn = DatabaseHelper.connection;
-  
-  if (conn == null) {
-    Constants.logger.severe("Error: No se pudo conectar a la base de datos.");
-    return;
+  var conn = DatabaseHelper.connection;
+  if (conn == null || !conn.connected) {
+    Constants.logger.severe("Error: No hay conexión a la base de datos.");
+    await DatabaseHelper.initializeDatabase(); // Reintentar
+    conn = DatabaseHelper.connection;
+    if (conn == null) exit(1); // Salir si persiste el error
   }
 
   // Crear una instancia del servicio
@@ -34,7 +35,15 @@ void main() async {
   // Configurar las rutas
   final handler = const Pipeline()
       .addMiddleware(logRequests())
-      .addMiddleware(corsHeaders())
+      .addMiddleware(
+        corsHeaders(
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          },
+        ),
+      )
       .addHandler(setupRoutes(conn));
 
   // Iniciar el servidor

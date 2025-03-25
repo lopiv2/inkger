@@ -130,6 +130,10 @@ Future<Response> getLibraryPath(
   MySQLConnection conn,
   String id,
 ) async {
+  const allowedTypes = {'comics', 'books', 'audiobooks'};
+  if (!allowedTypes.contains(id)) {
+    return Response.badRequest(body: 'Tipo no válido');
+  }
   try {
     final result = await conn.execute(
       'SELECT path FROM libraries WHERE type = :id',
@@ -230,7 +234,7 @@ Future<Response> uploadHandler(Request request, MySQLConnection conn) async {
       jsonEncode({'status': 'success', 'path': destPath, 'type': fileType}),
       headers: {'Content-Type': 'application/json'},
     );
-  } catch (e,stackTrace) {
+  } catch (e, stackTrace) {
     print("💥 CRITICAL ERROR:");
     print(e);
     print(stackTrace);
