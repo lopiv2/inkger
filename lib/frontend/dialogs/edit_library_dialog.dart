@@ -99,7 +99,7 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
         CustomSnackBar.show(
           context,
           'Ruta actualizada correctamente',
-          Colors.green,
+          Colors.green, duration: Duration(seconds: 2),
         );
         //if (mounted) Navigator.pop(context);
       }
@@ -107,7 +107,7 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
       CustomSnackBar.show(
         context,
         'Error al actualizar: ${e.toString()}',
-        Colors.red,
+        Colors.red, duration: Duration(seconds: 2),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

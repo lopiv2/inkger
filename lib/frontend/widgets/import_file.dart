@@ -23,9 +23,8 @@ class _ImportFileState extends State<ImportFile> {
         context: context,
         builder:
             (context) => FileImportDialog(
-              fileName: fileName,
               initType: fileType,
-              selectedFile: file,
+              file: file,
             ),
       );
     }

@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:inkger/backend/services/database_helper_service.dart';
 import 'package:inkger/frontend/utils/constants.dart';
+import 'package:mime/mime.dart';
 import 'package:shelf/shelf.dart';
 import 'package:mysql_client/mysql_client.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'dart:convert';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:shelf_router/shelf_router.dart';
+import 'package:path/path.dart' as p;
 
 // Función para manejar el login
 Future<Response> handleLogin(Request request, MySQLConnection conn) async {
@@ -58,7 +62,9 @@ Future<Response> handleLogin(Request request, MySQLConnection conn) async {
 Future<Response> getLibraryPaths(Request request) async {
   final conn = DatabaseHelper.connection;
   if (conn == null) {
-    return Response.internalServerError(body: 'Error de conexión con la base de datos');
+    return Response.internalServerError(
+      body: 'Error de conexión con la base de datos',
+    );
   }
 
   final result = await conn.execute('''
@@ -79,21 +85,28 @@ Future<Response> getLibraryPaths(Request request) async {
     'audioPath': row.colByName('audioPath') ?? '',
   };
 
-  return Response.ok(jsonEncode(data), headers: {'Content-Type': 'application/json'});
+  return Response.ok(
+    jsonEncode(data),
+    headers: {'Content-Type': 'application/json'},
+  );
 }
 
 // Función para actualizar una biblioteca
 // Función actualizada para recibir el tipo
-Future<Response> updateLibrary(Request request, MySQLConnection conn, String type) async {
+Future<Response> updateLibrary(
+  Request request,
+  MySQLConnection conn,
+  String type,
+) async {
   try {
     final body = await request.readAsString();
     final data = jsonDecode(body) as Map<String, dynamic>;
     final path = data['path'];
 
-    await conn.execute(
-      'UPDATE libraries SET path = :path WHERE type = :type',
-      {'path': path, 'type': type},
-    );
+    await conn.execute('UPDATE libraries SET path = :path WHERE type = :type', {
+      'path': path,
+      'type': type,
+    });
 
     return Response.ok(
       jsonEncode({'message': 'Ruta actualizada correctamente'}),
@@ -112,7 +125,11 @@ Future<Response> updateLibrary(Request request, MySQLConnection conn, String typ
 }
 
 // Función para obtener la ruta de una biblioteca específica
-Future<Response> getLibraryPath(Request request, MySQLConnection conn, String id) async {
+Future<Response> getLibraryPath(
+  Request request,
+  MySQLConnection conn,
+  String id,
+) async {
   try {
     final result = await conn.execute(
       'SELECT path FROM libraries WHERE type = :id',
@@ -141,6 +158,95 @@ Future<Response> getLibraryPath(Request request, MySQLConnection conn, String id
   }
 }
 
+Future<Response> uploadHandler(Request request, MySQLConnection conn) async {
+  //print('Received upload request at: ${DateTime.now()}');
+  //print('Request headers: ${request.headers}');
+  // More permissive content-type check
+  if (request.headers['content-type'] == null ||
+      !request.headers['content-type']!.contains('multipart')) {
+    return Response(400, body: 'Invalid content type');
+  }
+
+  try {
+    final boundary = request.headers['content-type']!.split('boundary=').last;
+    final body = await request.read().expand((x) => x).toList();
+    //print("Received ${body.length} bytes");
+    final parts =
+        await MimeMultipartTransformer(
+          boundary,
+        ).bind(Stream.fromIterable([body])).toList();
+    //print("Extracted ${parts.length} parts from multipart data");
+
+    String? fileType;
+    List<int>? fileBytes;
+    String? fileName;
+
+    for (final part in parts) {
+      final header = part.headers['content-disposition'] ?? '';
+      final content = await part.fold(
+        <int>[],
+        (bytes, chunk) => bytes..addAll(chunk),
+      );
+
+      if (header.contains('name="tipo"') || header.contains('name="type"')) {
+        fileType = utf8.decode(content).trim();
+      } else if (header.contains('name="selectedFile"') ||
+          header.contains('name="file"')) {
+        fileName = _extractFilename(header);
+        fileBytes = content;
+      }
+    }
+
+    // 4. Validaciones
+    if (fileType == null || fileBytes == null || fileName == null) {
+      return Response(400, body: 'Missing required fields');
+    }
+
+    // 5. Obtener conexión MySQL
+    await conn.connect();
+
+    // 6. Obtener ruta de destino
+    final pathResult = await conn.execute(
+      'SELECT path FROM libraries WHERE type = :type LIMIT 1',
+      {'type': fileType.toLowerCase()},
+    );
+
+    if (pathResult.rows.isEmpty) {
+      await conn.close();
+      return Response(404, body: 'Library type not configured');
+    }
+
+    // 7. Guardar archivo
+    final destPath = p.join(
+      pathResult.rows.first.colByName('path')!,
+      '${DateTime.now().millisecondsSinceEpoch}_${p.basename(fileName)}',
+    );
+
+    await File(destPath).writeAsBytes(fileBytes);
+    await conn.close();
+
+    // 8. Responder
+    return Response.ok(
+      jsonEncode({'status': 'success', 'path': destPath, 'type': fileType}),
+      headers: {'Content-Type': 'application/json'},
+    );
+  } catch (e,stackTrace) {
+    print("💥 CRITICAL ERROR:");
+    print(e);
+    print(stackTrace);
+    return Response.internalServerError(
+      body: jsonEncode({'error': e.toString()}),
+    );
+  }
+}
+
+String _extractFilename(String contentDisposition) {
+  final filenameMatch = RegExp(
+    'filename="(.*)"',
+  ).firstMatch(contentDisposition);
+  return filenameMatch?.group(1) ?? 'unnamed_file';
+}
+
 // Función para definir todas las rutas
 Handler setupRoutes(MySQLConnection conn) {
   final router = Router();
@@ -158,8 +264,11 @@ Handler setupRoutes(MySQLConnection conn) {
 
   // Ruta para actualizar una biblioteca
   router.put('/api/libraries/<id>', (Request request, String id) async {
-  return updateLibrary(request, conn, id);
-});
+    return updateLibrary(request, conn, id);
+  });
+
+  // Añade esta línea para el upload
+  router.post('/api/upload', (Request request) => uploadHandler(request, conn));
 
   // Ruta por defecto (no encontrada)
   router.all('/<ignored|.*>', (Request request) {

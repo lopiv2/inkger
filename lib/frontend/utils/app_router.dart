@@ -18,34 +18,32 @@ class AppRouter {
       // Ruta de login (pantalla completa)
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => MaterialPage(
-          key: state.pageKey,
-          child: LoginScreen(),
-        ),
+        pageBuilder:
+            (context, state) =>
+                MaterialPage(key: state.pageKey, child: LoginScreen()),
       ),
-      
+
       // Layout principal con sidebar (shell route)
       ShellRoute(
         builder: (context, state, child) {
           return HomeScreen(content: child);
         },
         routes: [
-          // Ruta home (contenido principal)
           GoRoute(
-            path: '/home',
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const Placeholder(), // Reemplaza con tu widget de inicio
-            ),
+            path: '/home', // Use root path for the default home
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: Placeholder(),
+                ),
           ),
-          
-          // Ruta de tests
           GoRoute(
             path: '/tests',
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: CentralContent(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: CentralContent(),
+                ),
           ),
         ],
       ),
@@ -56,7 +54,7 @@ class AppRouter {
 
       if (!isAuthenticated) return '/login';
       if (isLoggingIn) return '/home';
-      
+
       return null;
     },
   );

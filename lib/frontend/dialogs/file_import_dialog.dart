@@ -1,18 +1,19 @@
-
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/utils/constants.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 
 class FileImportDialog extends StatefulWidget {
-  final String fileName;
+  final PlatformFile file;
   final String initType;
-  final dynamic selectedFile;
 
   const FileImportDialog({
-    required this.fileName,
+    required this.file,
     required this.initType,
-    required this.selectedFile,
-  });
+    Key? key, // Añade Key como parámetro opcional
+  }) : super(key: key);
 
   @override
   _FileImportDialogState createState() => _FileImportDialogState();
@@ -21,84 +22,114 @@ class FileImportDialog extends StatefulWidget {
 class _FileImportDialogState extends State<FileImportDialog> {
   late String selectedType;
   bool uploading = false;
+  late final Dio _dio; // Usa una instancia local en lugar de la global
 
   @override
   void initState() {
     super.initState();
     selectedType = widget.initType;
+    _dio = Dio(ApiService.dio.options); // Clona la configuración
   }
 
-  Future<void> _subirselectedFile() async {
+  Future<void> _uploadFile() async {
     setState(() => uploading = true);
+    if (widget.file.bytes == null) {
+      _showError('El archivo está vacío');
+      return;
+    }
 
     try {
-      final bytes = await widget.selectedFile.readAsBytes();
-      final fileName = widget.fileName;
-
       final formData = FormData.fromMap({
-        'selectedFile': MultipartFile.fromBytes(bytes, filename: fileName),
-        'tipo': selectedType,
+        'selectedFile': MultipartFile.fromBytes(
+          widget.file.bytes!,
+          filename: widget.file.name,
+        ),
+        'tipo': selectedType.toLowerCase(),
       });
 
-      final response = await Dio().post(
-        'http://tu-backend.com/api/upload',
+      final response = await ApiService.uploadFile(
+        path: '/api/upload',
         data: formData,
+        context: context, // Optional context for auth
+        onSendProgress: (sent, total) {
+          debugPrint('Progreso: ${(sent / total * 100).toStringAsFixed(1)}%');
+        },
       );
 
       if (response.statusCode == 200) {
-        CustomSnackBar.show(
-          context,
-          'Archivo importado correctamente',
-          Colors.green,
-        );
-        Navigator.pop(context);
+        _showSuccess(response.data['path']);
       }
     } catch (e) {
-      CustomSnackBar.show(
-          context,
-          'Error al importar',
-          Colors.red,
-        );
+      debugPrint('Upload error: $e');
+      _showError('Error uploading file: ${e.toString()}');
     } finally {
-      setState(() => uploading = false);
+      if (mounted) setState(() => uploading = false);
     }
+  }
+
+  void _showSuccess(String path) {
+    CustomSnackBar.show(
+      context,
+      'Archivo guardado en: $path',
+      Colors.green,
+      duration: Duration(seconds: 4),
+    );
+    Navigator.pop(context, true);
+  }
+
+  void _showError(String message) {
+    CustomSnackBar.show(
+      context,
+      message,
+      Colors.red,
+      duration: Duration(seconds: 4),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Importando archivo seleccionado...'),
+      title: const Text('Importar Archivo'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Archivo seleccionado: ${widget.fileName}'),
-          SizedBox(height: 20),
+          Text('Archivo: ${widget.file.name}'),
+          const SizedBox(height: 16),
           DropdownButton<String>(
             value: selectedType,
-            items: ['Libro', 'Cómic', 'Audiolibro', 'Otro']
-                .map((tipo) => DropdownMenuItem(
-                      value: tipo,
-                      child: Text(tipo),
-                    ))
-                .toList(),
-            onChanged: uploading
-                ? null
-                : (value) => setState(() => selectedType = value!),
+            items:
+                ['Libro', 'Cómic', 'Audiolibro', 'Otro']
+                    .map(
+                      (type) =>
+                          DropdownMenuItem(value: type, child: Text(type)),
+                    )
+                    .toList(),
+            onChanged:
+                uploading
+                    ? null
+                    : (value) => setState(() => selectedType = value!),
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: uploading ? null : () => Navigator.pop(context),
-          child: Text('Cancelar'),
+          child: const Text('Cancelar'),
         ),
-        TextButton(
-          onPressed: uploading ? null : _subirselectedFile,
-          child: uploading
-              ? CircularProgressIndicator()
-              : Text('Importar'),
+        ElevatedButton(
+          onPressed: uploading ? null : _uploadFile,
+          child:
+              uploading
+                  ? const CircularProgressIndicator()
+                  : const Text('Importar'),
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _dio.close(); // Solo cierra la instancia local
+    super.dispose();
   }
 }
