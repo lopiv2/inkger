@@ -2,18 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
-import 'package:inkger/frontend/utils/constants.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FileImportDialog extends StatefulWidget {
   final PlatformFile file;
   final String initType;
 
-  const FileImportDialog({
-    required this.file,
-    required this.initType,
-    Key? key, // Añade Key como parámetro opcional
-  }) : super(key: key);
+  const FileImportDialog({required this.file, required this.initType, Key? key})
+    : super(key: key);
 
   @override
   _FileImportDialogState createState() => _FileImportDialogState();
@@ -22,48 +19,73 @@ class FileImportDialog extends StatefulWidget {
 class _FileImportDialogState extends State<FileImportDialog> {
   late String selectedType;
   bool uploading = false;
-  late final Dio _dio; // Usa una instancia local en lugar de la global
 
   @override
   void initState() {
     super.initState();
     selectedType = widget.initType;
-    _dio = Dio(ApiService.dio.options); // Clona la configuración
   }
 
   Future<void> _uploadFile() async {
     setState(() => uploading = true);
-    if (widget.file.bytes == null) {
-      _showError('El archivo está vacío');
-      return;
-    }
 
     try {
-      final formData = FormData.fromMap({
-        'selectedFile': MultipartFile.fromBytes(
-          widget.file.bytes!,
-          filename: widget.file.name,
-        ),
-        'tipo': selectedType.toLowerCase(),
-      });
+      if (widget.file.bytes == null) {
+        throw Exception('No se pudo leer el archivo');
+      }
+
+      // Obtener el path correspondiente al tipo seleccionado
+      final libraryPath = await _getLibraryPath(selectedType.toLowerCase());
+      if (libraryPath == null) {
+        throw Exception('No se encontró ruta configurada para $selectedType');
+      }
 
       final response = await ApiService.uploadFile(
-        path: '/api/upload',
-        //data: formData,
-        context: context, // Optional context for auth
+        fileBytes: widget.file.bytes!,
+        fileName: widget.file.name,
+        fileType: selectedType.toLowerCase(),
+        uploadPath: libraryPath, // Pasamos el path específico
+        metadata: {
+          'originalName': widget.file.name,
+          'size': widget.file.size,
+          'uploadDate': DateTime.now().toIso8601String(),
+        },
+        context: context,
         onSendProgress: (sent, total) {
           debugPrint('Progreso: ${(sent / total * 100).toStringAsFixed(1)}%');
-        }, filePath: '', type: '',
+        },
       );
 
-      if (response.statusCode == 200) {
-        _showSuccess(response.data['path']);
-      }
+      _handleResponse(response);
     } catch (e) {
-      debugPrint('Upload error: $e');
-      _showError('Error uploading file: ${e.toString()}');
+      _showError('Error subiendo archivo: ${e.toString()}');
     } finally {
       if (mounted) setState(() => uploading = false);
+    }
+  }
+
+  Future<String?> _getLibraryPath(String type) async {
+    final prefs = await SharedPreferences.getInstance();
+    switch (type) {
+      case 'comic':
+        return prefs.getString('comicAppDirectory');
+      case 'libro':
+      case 'book':
+        return prefs.getString('bookAppDirectory');
+      case 'audiobook':
+        return prefs.getString('audiobookAppDirectory');
+      default:
+        return null;
+    }
+  }
+
+  void _handleResponse(Response response) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final path = response.data['path'];
+      final filename = response.data['filename'];
+      _showSuccess('Archivo $filename guardado en: $path');
+    } else {
+      _showError('Error en el servidor: ${response.statusCode}');
     }
   }
 
@@ -125,11 +147,5 @@ class _FileImportDialogState extends State<FileImportDialog> {
         ),
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    _dio.close(); // Solo cierra la instancia local
-    super.dispose();
   }
 }

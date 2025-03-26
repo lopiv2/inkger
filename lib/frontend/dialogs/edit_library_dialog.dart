@@ -1,12 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-
-import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/services/library_services.dart';
-import 'package:inkger/frontend/utils/preferences_provider.dart';
-import 'package:inkger/frontend/widgets/custom_snackbar.dart';
-import 'package:provider/provider.dart'; // Para manejar JSON
 
 class EditLibraryDialog extends StatefulWidget {
   final String libraryTitle;
@@ -49,88 +42,6 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-    }
-  }
-
-  // Método para cargar la ruta de la biblioteca desde la API
-  /*Future<void> _loadLibraryPath() async {
-  try {
-    //print('Making request to: ${ApiService.dio.options.baseUrl}/api/libraries/${widget.libraryId}/path');
-    final response = await ApiService.dio.get(
-      '/api/libraries/${widget.libraryId}/path',
-      options: Options(
-        validateStatus: (status) => status! < 500,
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      if (response.data is String && response.data.contains('<!DOCTYPE html>')) {
-        throw Exception('El backend no está respondiendo correctamente');
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      setState(() {
-        _pathController.text = data['path'] ?? '';
-        _isLoading = false;
-      });
-    } else {
-      throw Exception('Error ${response.statusCode}: ${response.statusMessage}');
-    }
-  } catch (e) {
-    print('Error loading library path: ${e.toString()}');
-    if (mounted) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error cargando ruta: ${e.toString()}')),
-      );
-    }
-  }
-}*/
-
-  // Método para actualizar la ruta en la API y mostrar un SnackBar
-  Future<void> _updateLibraryPath() async {
-    try {
-      setState(() => _isLoading = true);
-
-      final newPath = _pathController.text;
-      final prefsProvider = context.read<PreferencesProvider>();
-
-      // 2. Actualizar en el backend
-      final response = await ApiService.dio.put(
-        '/api/libraries/${widget.libraryId}',
-        data: jsonEncode({'path': newPath}),
-      );
-
-      if (response.statusCode == 200) {
-        switch (widget.libraryId) {
-          case 'comics':
-            await prefsProvider.setComicDirectory(newPath);
-            break;
-          case 'books':
-            await prefsProvider.setBookDirectory(newPath);
-            break;
-          case 'audiobooks':
-            await prefsProvider.setAudiobookDirectory(newPath);
-            break;
-        }
-
-        CustomSnackBar.show(
-          context,
-          'Ruta actualizada correctamente',
-          Colors.green,
-          duration: Duration(seconds: 2),
-        );
-        //if (mounted) Navigator.pop(context);
-      }
-    } catch (e) {
-      CustomSnackBar.show(
-        context,
-        'Error al actualizar: ${e.toString()}',
-        Colors.red,
-        duration: Duration(seconds: 2),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -187,7 +98,11 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
         ),
         TextButton(
           onPressed: () async {
-            await _updateLibraryPath(); // Actualizar la ruta en la API
+            await LibraryServices.updateLibraryPath(
+              context,
+              widget.libraryId,
+              _pathController.text,
+            ); // Actualizar la ruta en la API
             Navigator.pop(context); // Cerrar el diálogo
           },
           child: Text('Guardar'),

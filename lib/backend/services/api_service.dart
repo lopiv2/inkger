@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
@@ -89,6 +92,7 @@ class ApiService {
     Map<String, dynamic>? queryParams,
     BuildContext? context,
     Options? options,
+    ProgressCallback? onSendProgress,
   }) async {
     try {
       final requestOptions =
@@ -112,30 +116,43 @@ class ApiService {
   }
 
   static Future<Response> uploadFile({
-    required String path,
-    required String filePath,
-    required String type,
-    BuildContext? context,
-    ProgressCallback? onSendProgress,
-    Map<String, dynamic>? additionalData,
-  }) async {
+  required Uint8List fileBytes,
+  required String fileName,
+  required String fileType,
+  required String uploadPath,
+  Map<String, dynamic>? metadata,
+  BuildContext? context,
+  ProgressCallback? onSendProgress,
+  CancelToken? cancelToken,
+}) async {
+  try {
+    // Crear el objeto de datos que será convertido a JSON
+    final uploadData = {
+      'type': fileType.toLowerCase(),
+      'uploadPath': uploadPath,
+      if (metadata != null) 'metadata': metadata,
+    };
+
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(
-        filePath,
-        filename: filePath.split('/').last,
-      ),
-      'type': type,
-      ...?additionalData,
+      'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+      'uploadData': jsonEncode(uploadData), // Enviamos todo como JSON string
     });
 
-    return request(
-      method: 'POST',
-      path: path,
+    return await dio.post(
+      '/api/upload', // Asegúrate que esta ruta coincide con tu endpoint
       data: formData,
-      context: context,
-      options: Options(contentType: 'multipart/form-data'),
+      options: Options(
+        contentType: 'multipart/form-data',
+        extra: {'context': context},
+      ),
+      onSendProgress: onSendProgress,
+      cancelToken: cancelToken,
     );
+  } on DioException catch (e) {
+    debugPrint('Error en uploadFile: ${e.message}');
+    rethrow;
   }
+}
 
   // Helpers para métodos HTTP comunes
   static Future<Response> get(
