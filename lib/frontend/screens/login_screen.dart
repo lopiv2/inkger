@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:inkger/frontend/utils/constants.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,14 +15,26 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _login() async {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
+    //setState(() => _isLoading = true);
+    
     try {
-      await auth.login(_usernameController.text, _passwordController.text);
-      Navigator.pushReplacementNamed(context, '/home');
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      await auth.login(
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+      );
+      
+      if (mounted) {
+        context.go('/home');
+      }
+      
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      Constants.logger.warning(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 

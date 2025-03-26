@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 
 import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/services/library_services.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart'; // Para manejar JSON
@@ -31,11 +32,28 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
   void initState() {
     super.initState();
     _pathController = TextEditingController();
-    _loadLibraryPath(); // Cargar la ruta de la biblioteca al iniciar
+    _loadLibraryPath(); // Cargar la ruta cuando se inicializa el diálogo
+  }
+
+  Future<void> _loadLibraryPath() async {
+    try {
+      final path = await LibraryServices.loadLibraryPath(widget.libraryId);
+      if (mounted) {
+        setState(() {
+          _pathController.text = path; // Asignar la ruta al TextField
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error al cargar la ruta: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   // Método para cargar la ruta de la biblioteca desde la API
-  Future<void> _loadLibraryPath() async {
+  /*Future<void> _loadLibraryPath() async {
   try {
     //print('Making request to: ${ApiService.dio.options.baseUrl}/api/libraries/${widget.libraryId}/path');
     final response = await ApiService.dio.get(
@@ -67,7 +85,7 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
       );
     }
   }
-}
+}*/
 
   // Método para actualizar la ruta en la API y mostrar un SnackBar
   Future<void> _updateLibraryPath() async {
@@ -99,7 +117,8 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
         CustomSnackBar.show(
           context,
           'Ruta actualizada correctamente',
-          Colors.green, duration: Duration(seconds: 2),
+          Colors.green,
+          duration: Duration(seconds: 2),
         );
         //if (mounted) Navigator.pop(context);
       }
@@ -107,7 +126,8 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
       CustomSnackBar.show(
         context,
         'Error al actualizar: ${e.toString()}',
-        Colors.red, duration: Duration(seconds: 2),
+        Colors.red,
+        duration: Duration(seconds: 2),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

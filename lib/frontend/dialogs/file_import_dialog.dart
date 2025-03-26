@@ -49,11 +49,11 @@ class _FileImportDialogState extends State<FileImportDialog> {
 
       final response = await ApiService.uploadFile(
         path: '/api/upload',
-        data: formData,
+        //data: formData,
         context: context, // Optional context for auth
         onSendProgress: (sent, total) {
           debugPrint('Progreso: ${(sent / total * 100).toStringAsFixed(1)}%');
-        },
+        }, filePath: '', type: '',
       );
 
       if (response.statusCode == 200) {

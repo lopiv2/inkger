@@ -12,8 +12,15 @@ class AppRouter {
 
   late final router = GoRouter(
     refreshListenable: authProvider,
-    debugLogDiagnostics: true,
-    initialLocation: '/login',
+    redirect: (context, state) {
+      final isAuth = authProvider.isAuthenticated;
+      final isLoginRoute = state.uri.path == '/login';
+
+      if (!isAuth && !isLoginRoute) return '/login';
+      if (isAuth && isLoginRoute) return '/home';
+      
+      return null;
+    },
     routes: [
       // Ruta de login (pantalla completa)
       GoRoute(
@@ -48,14 +55,5 @@ class AppRouter {
         ],
       ),
     ],
-    redirect: (context, state) {
-      final isAuthenticated = authProvider.isAuthenticated;
-      final isLoggingIn = state.uri.toString() == '/login';
-
-      if (!isAuthenticated) return '/login';
-      if (isLoggingIn) return '/home';
-
-      return null;
-    },
   );
 }

@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 class Constants {
   // Detectar la unidad de instalación del proyecto
   static final String unitDrive = _detectUnitDrive();
+  static final String ApiIP="localhost";
 
   // Rutas predeterminadas para archivos
   static final String comicsPath = '$unitDrive/Inkger/data/comics';

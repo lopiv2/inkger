@@ -18,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isSidebarVisible = true;
   bool _isLoading = true;
+  String? _errorMessage;
 
   void _toggleSidebar() {
     setState(() {
@@ -34,25 +35,34 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadPreferences() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    await PreferenceService.initializeDirectories();
-
-    if (mounted) {
+    try {
+      await PreferenceService.initializeDirectories();
       final preferencesProvider = Provider.of<PreferencesProvider>(
         context,
         listen: false,
       );
       await preferencesProvider.refreshPathsFromDatabase();
-      setState(() => _isLoading = false);
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    /*if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+    }*/
     
     return Scaffold(
       body: Row(
