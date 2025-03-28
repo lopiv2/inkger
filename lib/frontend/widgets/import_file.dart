@@ -34,6 +34,7 @@ class _ImportFileState extends State<ImportFile> {
     final extension = p.extension(fileName).toLowerCase();
     switch (extension) {
       case '.epub':
+      case '.mobi':
         return 'Libro';
       case '.cbz':
       case '.cbr':

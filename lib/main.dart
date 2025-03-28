@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/app_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,7 @@ void main() async {
           value: authProvider,
         ), // Usa la misma instancia
         ChangeNotifierProvider(create: (context) => PreferencesProvider()),
+        ChangeNotifierProvider(create: (context) => BooksProvider()),
       ],
       child: MyApp(isInitiallyLoggedIn: isLoggedIn), // Pasa el estado inicial
     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
+import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 
@@ -41,7 +42,7 @@ class AppRouter {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: Placeholder(),
+                  child: BooksGrid(),
                 ),
           ),
           GoRoute(
@@ -49,7 +50,7 @@ class AppRouter {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: CentralContent(),
+                  child: BooksGrid(),
                 ),
           ),
         ],

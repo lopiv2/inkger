@@ -2,7 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/models/book.dart';
+import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FileImportDialog extends StatefulWidget {
@@ -57,6 +61,46 @@ class _FileImportDialogState extends State<FileImportDialog> {
       );
 
       _handleResponse(response);
+      // Llamar al endpoint para obtener todos los libros
+      final allBooksResponse = await BookServices.getAllBooks();
+      if (allBooksResponse.statusCode == 200) {
+        // Mapear la respuesta de todos los libros a una lista de objetos Book
+        final List<Book> booksList =
+            (allBooksResponse.data as List)
+                .map(
+                  (bookData) => Book(
+                    id: bookData['id'],
+                    title: bookData['title'],
+                    author: bookData['author'],
+                    publicationDate: DateTime.parse(
+                      bookData['publicationDate'],
+                    ),
+                    creationDate: DateTime.parse(bookData['creationDate']),
+                    description: bookData['description'],
+                    publisher: bookData['publisher'],
+                    language: bookData['language'],
+                    coverPath: bookData['coverPath'],
+                    identifiers: bookData['identifiers'],
+                    tags: bookData['tags'],
+                    series: bookData['series'],
+                    seriesNumber: bookData['seriesNumber'],
+                    read:
+                        bookData['read'] ??
+                        false, // Si existe el campo "read", usarlo
+                    fileSize: bookData['fileSize'],
+                    filePath: bookData['filePath'],
+                  ),
+                )
+                .toList();
+
+        // Actualizar la lista de libros en el BooksProvider
+        if (mounted) {
+          context.read<BooksProvider>().setBooks(booksList);
+        }
+      } else {
+        // Maneja el error si no se pudieron obtener los libros
+        print("Error al obtener los libros");
+      }
     } catch (e) {
       _showError('Error subiendo archivo: ${e.toString()}');
     } finally {
