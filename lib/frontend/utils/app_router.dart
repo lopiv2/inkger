@@ -5,6 +5,7 @@ import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:inkger/frontend/widgets/test/transform_controller.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
@@ -50,7 +51,7 @@ class AppRouter {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: BooksGrid(),
+                  child: TransformControllerWidget(),
                 ),
           ),
         ],
