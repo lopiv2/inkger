@@ -1,13 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:inkger/frontend/models/epub_book.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
 class CustomEpubReader extends StatefulWidget {
-  final String epubPath;
+  final Uint8List epubData; // Change from String to Uint8List for binary data
   final String coverPath;
 
-  const CustomEpubReader({required this.epubPath, required this.coverPath});
+  const CustomEpubReader({required this.epubData, required this.coverPath});
 
   @override
   _CustomEpubReaderState createState() => _CustomEpubReaderState();
@@ -23,7 +25,7 @@ class _CustomEpubReaderState extends State<CustomEpubReader> {
   @override
   void initState() {
     super.initState();
-    _bookFuture = parseEpub(widget.epubPath, widget.coverPath);
+    _bookFuture = parseEpub(widget.epubData, widget.coverPath);
   }
 
   @override

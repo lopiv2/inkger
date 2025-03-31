@@ -17,8 +17,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isSidebarVisible = true;
-  bool _isLoading = true;
-  String? _errorMessage;
+  bool isLoading = true;
+  String? errorMessage;
 
   void _toggleSidebar() {
     setState(() {
@@ -36,8 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> loadPreferences() async {
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      isLoading = true;
+      errorMessage = null;
     });
 
     try {
@@ -49,11 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
       await preferencesProvider.refreshPathsFromDatabase();
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        errorMessage = e.toString();
       });
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => isLoading = false);
       }
     }
   }

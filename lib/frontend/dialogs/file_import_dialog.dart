@@ -61,48 +61,30 @@ class _FileImportDialogState extends State<FileImportDialog> {
       );
 
       _handleResponse(response);
-      // Llamar al endpoint para obtener todos los libros
-      final allBooksResponse = await BookServices.getAllBooks();
-      if (allBooksResponse.statusCode == 200) {
-        // Mapear la respuesta de todos los libros a una lista de objetos Book
-        final List<Book> booksList =
-            (allBooksResponse.data as List)
-                .map(
-                  (bookData) => Book(
-                    id: bookData['id'],
-                    title: bookData['title'],
-                    author: bookData['author'],
-                    publicationDate: DateTime.parse(
-                      bookData['publicationDate'],
-                    ),
-                    creationDate: DateTime.parse(bookData['creationDate']),
-                    description: bookData['description'],
-                    publisher: bookData['publisher'],
-                    language: bookData['language'],
-                    coverPath: bookData['coverPath'],
-                    identifiers: bookData['identifiers'],
-                    tags: bookData['tags'],
-                    series: bookData['series'],
-                    seriesNumber: bookData['seriesNumber'],
-                    read:
-                        bookData['read'] ??
-                        false, // Si existe el campo "read", usarlo
-                    fileSize: bookData['fileSize'],
-                    filePath: bookData['filePath'],
-                  ),
-                )
-                .toList();
 
-        // Actualizar la lista de libros en el BooksProvider
-        if (mounted) {
-          context.read<BooksProvider>().setBooks(booksList);
-        }
-      } else {
-        // Maneja el error si no se pudieron obtener los libros
-        print("Error al obtener los libros");
-      }
+      // Actualización optimizada
+      if (!mounted) return;
+
+      final provider = Provider.of<BooksProvider>(context, listen: false);
+      await provider.loadBooks(); // Espera a que se completen
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Libro subido y lista actualizada'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
-      _showError('Error subiendo archivo: ${e.toString()}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => uploading = false);
     }

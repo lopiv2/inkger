@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/dialogs/edit_library_dialog.dart';
 import 'package:inkger/frontend/utils/constants.dart';
 import 'package:inkger/l10n/app_localizations.dart';
@@ -25,14 +26,13 @@ class Sidebar extends StatelessWidget {
         // Se usa para evitar problemas de espacio
         child: Column(
           children: [
-            _buildMenuItem(Icons.home, 'Inicio','Home'),
+            _buildMenuItem(Icons.home, 'Inicio', 'Home'),
             _buildLibraryMenu(context),
-            _buildMenuItem(Icons.menu_book, 'Libros','books'),
-            _buildMenuItem(Icons.category, 'Categorías','categories'),
-            _buildMenuItem(Icons.list, 'Listas de lectura','lists'),
-            _buildMenuItem(Icons.collections_bookmark, 'Series','series'),
-            _buildMenuItem(Icons.book, 'Estanterías','shelves'),
-            _buildMenuItem(Icons.question_answer, 'Tests','Tests'),
+            _buildMenuItem(Icons.category, 'Categorías', 'categories'),
+            _buildMenuItem(Icons.list, 'Listas de lectura', 'lists'),
+            _buildMenuItem(Icons.collections_bookmark, 'Series', 'series'),
+            _buildMenuItem(Icons.book, 'Estanterías', 'shelves'),
+            _buildMenuItem(Icons.help_center, 'Tests', 'Tests'),
           ],
         ),
       ),
@@ -50,8 +50,16 @@ class Sidebar extends StatelessWidget {
       children: [
         // Elementos anidados
         _buildNestedMenuItem(context, 'Comics', 'comics'),
-        _buildNestedMenuItem(context, AppLocalizations.of(context)!.books,'books'),
-        _buildNestedMenuItem(context, AppLocalizations.of(context)!.audiobooks,'audiobooks'),
+        _buildNestedMenuItem(
+          context,
+          AppLocalizations.of(context)!.books,
+          'books',
+        ),
+        _buildNestedMenuItem(
+          context,
+          AppLocalizations.of(context)!.audiobooks,
+          'audiobooks',
+        ),
       ],
     );
   }
@@ -62,9 +70,24 @@ class Sidebar extends StatelessWidget {
     String title,
     String libraryId,
   ) {
+    IconData leadingIcon;
+    switch (libraryId) {
+      case 'comics':
+        leadingIcon = Icons.question_answer; // Icono para comic
+        break;
+      case 'books':
+        leadingIcon = Icons.menu_book; // Icono para libro
+        break;
+      case 'audiobooks':
+        leadingIcon = Icons.headphones; // Icono para audiolibro
+        break;
+      default:
+        leadingIcon = Icons.bubble_chart; // Icono por defecto si no se encuentra un tipo válido
+    }
     return Padding(
-      padding: EdgeInsets.only(left: 50), // Sangría para los elementos anidados
+      padding: EdgeInsets.only(left: 30), // Sangría para los elementos anidados
       child: ListTile(
+        leading: Icon(leadingIcon,color: Colors.white),
         trailing: PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, color: Colors.white), // Ícono de menú
           onSelected: (String value) {
@@ -119,28 +142,26 @@ class Sidebar extends StatelessWidget {
         ),
         title: Text(title, style: TextStyle(color: Colors.white, fontSize: 14)),
         onTap: () {
-          onItemSelected(title);
+          context.go(
+            '/${libraryId.toLowerCase()}',
+          ); // Path dinámico basado en el tipo
         },
       ),
     );
   }
 
   // Método para mostrar el diálogo de edición
-  void _showEditDialog(
-  BuildContext context,
-  String title,
-  String libraryId,
-) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return EditLibraryDialog(
-        libraryTitle: title,
-        libraryId: libraryId, // Pasar el ID de la biblioteca
-      );
-    },
-  );
-}
+  void _showEditDialog(BuildContext context, String title, String libraryId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return EditLibraryDialog(
+          libraryTitle: title,
+          libraryId: libraryId, // Pasar el ID de la biblioteca
+        );
+      },
+    );
+  }
 
   // Método para construir cada opción del menú
   Widget _buildMenuItem(IconData icon, String title, String value) {

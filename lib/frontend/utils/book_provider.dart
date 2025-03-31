@@ -4,8 +4,10 @@ import 'package:inkger/frontend/services/book_services.dart';
 
 class BooksProvider extends ChangeNotifier {
   List<Book> _books = [];
+  bool _isLoading = false;
 
   List<Book> get books => _books;
+  bool get isLoading => _isLoading;
 
   void addBook(Book book) {
     _books.add(book);
@@ -14,43 +16,24 @@ class BooksProvider extends ChangeNotifier {
 
   // Método para cargar libros desde la base de datos o la API
   Future<void> loadBooks() async {
+    _isLoading = true;
+    notifyListeners();
+
     try {
-      final response =
-          await BookServices.getAllBooks(); // Asumiendo que BookServices tiene un método para obtener los libros
+      final response = await BookServices.getAllBooks();
       if (response.statusCode == 200) {
-        List<Book> booksList =
+        _books =
             (response.data as List)
-                .map(
-                  (bookData) => Book(
-                    id: bookData['id'],
-                    title: bookData['title'],
-                    author: bookData['author'],
-                    publicationDate: DateTime.parse(
-                      bookData['publicationDate'],
-                    ),
-                    creationDate: DateTime.parse(bookData['creationDate']),
-                    description: bookData['description'],
-                    publisher: bookData['publisher'],
-                    language: bookData['language'],
-                    coverPath: bookData['coverPath'],
-                    identifiers: bookData['identifiers'],
-                    tags: bookData['tags'],
-                    series: bookData['series'],
-                    seriesNumber: bookData['seriesNumber'],
-                    read:
-                        bookData['read'] ??
-                        false, // Si existe el campo "read", usarlo
-                    fileSize: bookData['fileSize'],
-                    filePath: bookData['filePath'],
-                  ),
-                )
+                .map((bookData) => Book.fromMap(bookData))
                 .toList();
-        setBooks(booksList);
       } else {
         throw Exception('Error al cargar los libros');
       }
     } catch (e) {
       throw Exception('Error al obtener los libros: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

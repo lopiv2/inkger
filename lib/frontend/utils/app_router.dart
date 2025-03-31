@@ -47,11 +47,35 @@ class AppRouter {
                 ),
           ),
           GoRoute(
+            path: '/audiobooks', // Use root path for the default home
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BooksGrid(),
+                ),
+          ),
+          GoRoute(
+            path: '/books', // Use root path for the default home
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BooksGrid(),
+                ),
+          ),
+          GoRoute(
+            path: '/comics', // Use root path for the default home
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BooksGrid(),
+                ),
+          ),
+          GoRoute(
             path: '/tests',
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: TransformControllerWidget(),
+                  child: CentralContent(),
                 ),
           ),
         ],
