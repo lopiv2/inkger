@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:inkger/frontend/screens/epub_reader_screen.dart';
+import 'package:universal_html/html.dart' as html;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/epub_book.dart';
-import 'package:inkger/frontend/screens/epub_reader_screen.dart';
-import 'package:inkger/frontend/screens/epub_reader_screen2.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:xml/xml.dart' as xml;
@@ -106,30 +106,62 @@ Future<Color> getDominantColor(Uint8List? imageBytes) async {
   }
 }
 
-Future<void> loadBookFile(BuildContext context, String bookId) async {
+Future<void> loadBookFile(BuildContext context, String bookId, String title) async {
   try {
-    final response = await BookServices.getBookFile(bookId);
-    if (response.statusCode == 200) {
-      final bookData = json.decode(response.data);
-      String filePath = bookData['filePath'];
-      print(filePath);
-      /*final bookData = response.data as Uint8List;
-      print(bookData);*/
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              /*(context) => CustomEpubReader(
-                epubData: bookData, // Enviar los bytes del archivo EPUB
-                coverPath: 'path_to_cover_image',
-              ),*/
-              (context) => EpubReaderScreen(epubPath: "/ruta/al/libro.epub"),
-        ),
-      );
-    } else {
-      debugPrint('Error al cargar el archivo del libro');
-    }
+    // Mostrar indicador de carga
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Obtener los bytes del EPUB
+    final epubBytes = await BookServices.getBookFile(bookId);
+
+    // Crear Blob moderno (sin dart:html)
+    final blob = html.Blob([epubBytes]);
+    final epubBytesBlob = await blobToUint8List(blob);
+
+    // Cerrar el diálogo de carga usando el rootNavigator
+    Navigator.of(context, rootNavigator: true).pop();
+
+    // Navegar a la pantalla del lector
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => CustomReaderEpub(
+              epubBytes: epubBytesBlob,
+              bookTitle: title,
+            ),
+      ),
+    );
   } catch (e) {
-    debugPrint('Error cargando el libro: $e');
+    // Cerrar diálogo de carga en caso de error usando rootNavigator
+    Navigator.of(context, rootNavigator: true).pop();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al cargar el libro: ${e.toString()}'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+}
+
+Future<Uint8List> blobToUint8List(html.Blob blob) async {
+  final reader = html.FileReader();
+  reader.readAsArrayBuffer(blob);
+  await reader.onLoad.first;
+  return Uint8List.fromList(reader.result as List<int>);
+}
+
+Future<Uint8List> loadImage(String imagePath) async {
+  final file = File(imagePath);
+  if (await file.exists()) {
+    return await file.readAsBytes();
+  } else {
+    throw Exception('Image file not found');
   }
 }

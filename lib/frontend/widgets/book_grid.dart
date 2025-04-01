@@ -185,6 +185,7 @@ class _BooksGridState extends State<BooksGrid> {
     return Column(
       children: [
         HoverCard(
+          title: book.title,
           bookId: book.id,
           onDelete: () => showDeleteConfirmationDialog(context, book),
           child: Card(
@@ -262,6 +263,7 @@ class _BooksGridState extends State<BooksGrid> {
             ],
           ),
           child: HoverCard(
+            title: book.title,
             bookId: book.id,
             child: Card(
               shape: RoundedRectangleBorder(

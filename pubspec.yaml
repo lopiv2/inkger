@@ -33,8 +33,10 @@ dependencies:
   cosmos_epub: ^0.0.1+4
   archive: ^3.6.1
   xml: ^6.5.0
-  flutter_html: ^3.0.0
   epubx: ^4.0.0
+  path_provider: ^2.1.5
+  universal_html: ^2.2.4
+  flutter_widget_from_html: ^0.16.0
 
 dev_dependencies:
   flutter_test:

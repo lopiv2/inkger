@@ -4,6 +4,7 @@ import 'package:inkger/frontend/utils/functions.dart';
 class HoverCard extends StatefulWidget {
   final Widget child;
   final int bookId; // Agregamos el id del libro
+  final String title; // Agregamos el id del libro
   final VoidCallback? onDelete; // Callback para la eliminación
 
   const HoverCard({
@@ -11,6 +12,7 @@ class HoverCard extends StatefulWidget {
     required this.child,
     required this.bookId,
     this.onDelete,
+    required this.title,
   });
 
   @override
@@ -39,7 +41,7 @@ class _HoverCardState extends State<HoverCard> {
                 child: Center(
                   child: IconButton(
                     onPressed: () {
-                      loadBookFile(context, widget.bookId.toString());
+                      loadBookFile(context, widget.bookId.toString(), widget.title);
                     },
                     icon: Icon(
                       Icons.remove_red_eye,

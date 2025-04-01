@@ -10,6 +10,22 @@ class EpubChapter {
   });
 }
 
+class NavPoint {
+  final String id;
+  final String label;
+  final String contentSrc;
+  final int playOrder;
+  List<NavPoint> children;
+
+  NavPoint({
+    required this.id,
+    required this.label,
+    required this.contentSrc,
+    required this.playOrder,
+    this.children = const [],
+  });
+}
+
 class EpubBook {
   final String title;
   final List<EpubChapter> chapters;

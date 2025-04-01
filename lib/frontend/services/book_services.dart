@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:epub_view/epub_view.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/models/book.dart';
@@ -63,18 +64,20 @@ class BookServices {
     }
   }
 
-  static Future<Response> getBookFile(String bookId) async {
-  try {
-    final response = await ApiService.dio.get(
-      '/api/bookfile/$bookId', // Ruta que devuelve el archivo
-      options: Options(
-        responseType: ResponseType.json, // Cambiar a json si el backend devuelve un objeto JSON
-      ),
-    );
-    return response;
-  } catch (e) {
-    throw Exception('Error al obtener el archivo: $e');
-  }
-}
+  static Future<Uint8List> getBookFile(String bookId) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/bookfile/$bookId',
+        options: Options(responseType: ResponseType.bytes),
+      );
 
+      if (response.statusCode == 200) {
+        return Uint8List.fromList(response.data);
+      } else {
+        throw Exception('Error al cargar el libro: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener el libro: $e');
+    }
+  }
 }
