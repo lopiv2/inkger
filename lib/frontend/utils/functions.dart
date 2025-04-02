@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:archive/archive.dart';
@@ -106,7 +107,12 @@ Future<Color> getDominantColor(Uint8List? imageBytes) async {
   }
 }
 
-Future<void> loadBookFile(BuildContext context, String bookId, String title) async {
+Future<void> loadBookFile(
+  BuildContext context,
+  String bookId,
+  String title,
+  int progress,
+) async {
   try {
     // Mostrar indicador de carga
     showDialog(
@@ -126,16 +132,28 @@ Future<void> loadBookFile(BuildContext context, String bookId, String title) asy
     Navigator.of(context, rootNavigator: true).pop();
 
     // Navegar a la pantalla del lector
-    Navigator.push(
+    context.go(
+      '/ebook-reader/${bookId}', // bookId en la URL
+      extra: {
+        // Datos complejos como mapa
+        'epubBytes': epubBytesBlob,
+        'bookTitle': title,
+        'initialProgress': progress,
+        'bookId': bookId,
+      },
+    );
+    /*Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => CustomReaderEpub(
               epubBytes: epubBytesBlob,
               bookTitle: title,
+              initialProgress: progress,
+              bookId: int.parse(bookId),
             ),
       ),
-    );
+    );*/
   } catch (e) {
     // Cerrar diálogo de carga en caso de error usando rootNavigator
     Navigator.of(context, rootNavigator: true).pop();

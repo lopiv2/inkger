@@ -1,10 +1,12 @@
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_fullscreen/flutter_fullscreen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:inkger/frontend/models/epub_book.dart';
+import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/epub_parser.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
@@ -13,11 +15,15 @@ import 'package:provider/provider.dart';
 class CustomReaderEpub extends StatefulWidget {
   final Uint8List epubBytes;
   final String bookTitle;
+  final int initialProgress;
+  final int bookId;
 
   const CustomReaderEpub({
     Key? key,
     required this.epubBytes,
     required this.bookTitle,
+    required this.initialProgress,
+    required this.bookId,
   }) : super(key: key);
 
   @override
@@ -38,6 +44,8 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     super.initState();
     _loadEpubContent();
     FullScreen.addListener(this);
+    currentNavIndex =
+        ((widget.initialProgress / 100) * navPoints.length).round();
   }
 
   @override
@@ -75,6 +83,13 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
       ).toggleFullScreenMode(false);
       FullScreen.setFullScreen(false);
     }
+  }
+
+  Future<void> _saveProgress() async {
+    int progress = ((currentNavIndex / navPoints.length) * 100).round();
+
+    await BookServices.saveReadingProgress(widget.bookId, progress, context);
+    context.go('/home');
   }
 
   Future<void> _loadEpubContent() async {
@@ -159,17 +174,19 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
 
     // Manejo de contenido faltante
     if (htmlContent == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Contenido no encontrado: ${currentNav.contentSrc}'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadEpubContent,
-              child: const Text('Reintentar'),
-            ),
-          ],
+      return Expanded(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Contenido no encontrado: ${currentNav.contentSrc}'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadEpubContent,
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -384,10 +401,14 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: IconButton(
-          onPressed: () => {disableFullScreenFalse(), Navigator.of(context).pop()},
+          onPressed: () {
+            if (isFullScreen) disableFullScreenFalse();
+            _saveProgress();
+            //Navigator.of(context).pop();
+          },
           icon: Icon(Icons.arrow_back),
         ),
-        title: Text(widget.bookTitle),
+        title: Center(child: Text(widget.bookTitle)),
         actions: [
           Tooltip(
             message: "Pantalla completa",

@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:epub_view/epub_view.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
 
 class BookServices {
@@ -78,6 +80,49 @@ class BookServices {
       }
     } catch (e) {
       throw Exception('Error al obtener el libro: $e');
+    }
+  }
+
+  static Future<void> saveReadingProgress(
+    int bookId,
+    int progress,
+    BuildContext context,
+  ) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/bookfile/save-progress',
+        data: jsonEncode({
+          'book_id': bookId,
+          'progress': progress.clamp(1, 100), // Asegura valor entre 1-100
+          'timestamp': DateTime.now().toIso8601String(),
+        }),
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al guardar progreso');
+      }
+      if (context.mounted) {
+        // ✅ Verificar si el widget sigue montado antes de usar el contexto
+        CustomSnackBar.show(
+          context,
+          'Progreso guardado: $progress%',
+          Colors.green,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        // ✅ Verificar antes de mostrar el error
+        CustomSnackBar.show(
+          context,
+          'Error guardando progreso: ${e.toString()}',
+          Colors.red,
+          duration: const Duration(seconds: 4),
+        );
+      }
+      // Opcional: Guardar localmente para sincronizar después
+      //await _saveProgressOffline(bookId, progress);
     }
   }
 }

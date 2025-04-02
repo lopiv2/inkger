@@ -47,6 +47,7 @@ class _HoverCardState extends State<HoverCard> {
                           context,
                           widget.book.id.toString(),
                           widget.book.title,
+                          widget.book.read ?? 0,
                         );
                       },
                       splashColor: Colors.white,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
@@ -20,7 +21,7 @@ class AppRouter {
 
       if (!isAuth && !isLoginRoute) return '/login';
       if (isAuth && isLoginRoute) return '/home';
-      
+
       return null;
     },
     routes: [
@@ -41,34 +42,47 @@ class AppRouter {
           GoRoute(
             path: '/home', // Use root path for the default home
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BooksGrid(),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
+          ),
+          GoRoute(
+            path: '/ebook-reader/:bookId', // Parámetro obligatorio
+            name: 'ebook-reader', // Nombre opcional para navegación con nombre
+            pageBuilder: (context, state) {
+              // Extraer parámetros de la ruta
+              final bookId = state.pathParameters['bookId']!;
+
+              // Extraer datos complejos del objeto 'extra'
+              final args = state.extra as Map<String, dynamic>? ?? {};
+
+              return NoTransitionPage(
+                key: state.pageKey,
+                child: CustomReaderEpub(
+                  epubBytes: args['epubBytes'],
+                  bookTitle: args['bookTitle'],
+                  initialProgress: args['initialProgress'] ?? 0,
+                  bookId: int.parse(bookId), // Convertir a int
                 ),
+              );
+            },
           ),
           GoRoute(
             path: '/audiobooks', // Use root path for the default home
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BooksGrid(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
           ),
           GoRoute(
             path: '/books', // Use root path for the default home
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BooksGrid(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
           ),
           GoRoute(
             path: '/comics', // Use root path for the default home
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BooksGrid(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
           ),
           GoRoute(
             path: '/tests',

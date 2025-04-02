@@ -62,162 +62,168 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final preferences = Provider.of<PreferencesProvider>(context);
     final isFullScreen = preferences.preferences.fullScreenMode;
-    
+
     return Scaffold(
       body: Row(
         children: [
           // Sidebar con animación
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: _isSidebarVisible ? 250 : 0,
-            child: Visibility(
-              visible: _isSidebarVisible && !isFullScreen,
-              child: Column(
-                children: [
-                  // Logotipo
-                  Container(
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.blueGrey,
-                      border: const Border(
-                        top: BorderSide(color: Colors.black, width: 2),
-                        left: BorderSide(color: Colors.black, width: 2),
+          if (!isFullScreen)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: _isSidebarVisible ? 250 : 0,
+              child: Visibility(
+                visible: _isSidebarVisible && !isFullScreen,
+                child: Column(
+                  children: [
+                    // Logotipo
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey,
+                        border: const Border(
+                          top: BorderSide(color: Colors.black, width: 2),
+                          left: BorderSide(color: Colors.black, width: 2),
+                        ),
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          'images/logo_inkger_2.png',
+                          width: 250,
+                          height: 150,
+                        ),
                       ),
                     ),
-                    child: Center(
-                      child: Image.asset(
-                        'images/logo_inkger_2.png',
-                        width: 250,
-                        height: 150,
+                    // Sidebar
+                    Expanded(
+                      child: Sidebar(
+                        onItemSelected: (selectedItem) {
+                          if (selectedItem == 'Tests') {
+                            context.go('/tests');
+                          } else if (selectedItem == 'Home') {
+                            context.go('/home');
+                          }
+                        },
                       ),
                     ),
-                  ),
-                  // Sidebar
-                  Expanded(
-                    child: Sidebar(
-                      onItemSelected: (selectedItem) {
-                        if (selectedItem == 'Tests') {
-                          context.go('/tests');
-                        } else if (selectedItem == 'Home') {
-                          context.go('/home');
-                        }
-                      },
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           // Contenido principal
           Expanded(
             child: Column(
               children: [
                 // Barra superior
                 if (!isFullScreen)
-                Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.blueGrey,
-                    border: Border.all(color: Colors.black, width: 2),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.white),
-                        onPressed: _toggleSidebar,
-                      ),
-                      const SizedBox(width: 10),
-                      // Barra de búsqueda
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
+                  Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey,
+                      border: Border.all(color: Colors.black, width: 2),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.menu, color: Colors.white),
+                          onPressed: _toggleSidebar,
+                        ),
+                        const SizedBox(width: 10),
+                        // Barra de búsqueda
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Buscar...',
+                                border: InputBorder.none,
+                                filled: true,
+                                fillColor: Colors.white,
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ],
-                          ),
-                          child: const TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Buscar...',
-                              border: InputBorder.none,
-                              filled: true,
-                              fillColor: Colors.white,
-                              prefixIcon: Icon(Icons.search, color: Colors.white),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 20),
-                      const ImportIconButton(
-                        iconSize: 32,
-                        iconColor: Colors.green,
-                        tooltipText: 'Subir documentos',
-                        showBadge: true,
-                      ),
-                      // Avatar
-                      PopupMenuButton<String>(
-                        icon: const CircleAvatar(
-                          backgroundImage: AssetImage('images/avatars/avatar_01.png'),
-                          radius: 30,
+                        const SizedBox(width: 20),
+                        const ImportIconButton(
+                          iconSize: 32,
+                          iconColor: Colors.green,
+                          tooltipText: 'Subir documentos',
+                          showBadge: true,
                         ),
-                        onSelected: (String value) {
-                          switch (value) {
-                            case 'profile':
-                              print('Perfil seleccionado');
-                              break;
-                            case 'settings':
-                              print('Configuración seleccionada');
-                              break;
-                            case 'logout':
-                              print('Cerrar sesión seleccionado');
-                              break;
-                          }
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return [
-                            const PopupMenuItem(
-                              value: 'profile',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.person, color: Colors.black),
-                                  SizedBox(width: 8),
-                                  Text('Perfil'),
-                                ],
-                              ),
+                        // Avatar
+                        PopupMenuButton<String>(
+                          icon: const CircleAvatar(
+                            backgroundImage: AssetImage(
+                              'images/avatars/avatar_01.png',
                             ),
-                            const PopupMenuItem(
-                              value: 'settings',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.settings, color: Colors.black),
-                                  SizedBox(width: 8),
-                                  Text('Configuración'),
-                                ],
+                            radius: 30,
+                          ),
+                          onSelected: (String value) {
+                            switch (value) {
+                              case 'profile':
+                                print('Perfil seleccionado');
+                                break;
+                              case 'settings':
+                                print('Configuración seleccionada');
+                                break;
+                              case 'logout':
+                                print('Cerrar sesión seleccionado');
+                                break;
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            return [
+                              const PopupMenuItem(
+                                value: 'profile',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.person, color: Colors.black),
+                                    SizedBox(width: 8),
+                                    Text('Perfil'),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'logout',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.logout, color: Colors.black),
-                                  SizedBox(width: 8),
-                                  Text('Cerrar sesión'),
-                                ],
+                              const PopupMenuItem(
+                                value: 'settings',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.settings, color: Colors.black),
+                                    SizedBox(width: 8),
+                                    Text('Configuración'),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ];
-                        },
-                      ),
-                    ],
+                              const PopupMenuItem(
+                                value: 'logout',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.logout, color: Colors.black),
+                                    SizedBox(width: 8),
+                                    Text('Cerrar sesión'),
+                                  ],
+                                ),
+                              ),
+                            ];
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 // Área de contenido dinámico
                 Expanded(
                   child: Container(
