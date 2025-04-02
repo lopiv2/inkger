@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/app_router.dart';
@@ -10,7 +11,7 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await FullScreen.ensureInitialized();
   // Crea una ÚNICA instancia de AuthProvider
   final authProvider = AuthProvider();
 

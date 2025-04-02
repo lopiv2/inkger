@@ -60,9 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    /*if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }*/
+    final preferences = Provider.of<PreferencesProvider>(context);
+    final isFullScreen = preferences.preferences.fullScreenMode;
     
     return Scaffold(
       body: Row(
@@ -72,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
             duration: const Duration(milliseconds: 300),
             width: _isSidebarVisible ? 250 : 0,
             child: Visibility(
-              visible: _isSidebarVisible,
+              visible: _isSidebarVisible && !isFullScreen,
               child: Column(
                 children: [
                   // Logotipo
@@ -114,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 // Barra superior
+                if (!isFullScreen)
                 Container(
                   height: 100,
                   decoration: BoxDecoration(

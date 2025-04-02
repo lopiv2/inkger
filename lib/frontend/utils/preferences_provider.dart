@@ -32,6 +32,7 @@ class PreferencesProvider with ChangeNotifier {
         'comicAppDirectory': prefs.getString('comicAppDirectory'),
         'bookAppDirectory': prefs.getString('bookAppDirectory'),
         'audiobookAppDirectory': prefs.getString('audiobookAppDirectory'),
+        'fullScreenMode': prefs.getBool('fullScreenMode') ?? false,
       });
     } catch (e) {
       _prefs = AppPreferences.defaults();
@@ -83,6 +84,13 @@ class PreferencesProvider with ChangeNotifier {
     }
   }
 
+  // Nuevo método para cambiar el modo pantalla completa
+  Future<void> toggleFullScreenMode(bool value) async {
+    _prefs = _prefs.copyWith(fullScreenMode: value);
+    await _savePreference('fullScreenMode', value);
+    notifyListeners();
+  }
+
   // Método para actualizar las preferencias
   Future<void> updatePreferences(AppPreferences newPrefs) async {
     _prefs = newPrefs;
@@ -114,15 +122,19 @@ class PreferencesProvider with ChangeNotifier {
 
       // Actualizar el estado según el tipo
       _prefs = _prefs.copyWith(
-        comicAppDirectory: libraryType == 'comics' ? newPath : _prefs.comicAppDirectory,
-        bookAppDirectory: libraryType == 'books' ? newPath : _prefs.bookAppDirectory,
-        audiobookAppDirectory: libraryType == 'audiobooks' ? newPath : _prefs.audiobookAppDirectory,
+        comicAppDirectory:
+            libraryType == 'comics' ? newPath : _prefs.comicAppDirectory,
+        bookAppDirectory:
+            libraryType == 'books' ? newPath : _prefs.bookAppDirectory,
+        audiobookAppDirectory:
+            libraryType == 'audiobooks'
+                ? newPath
+                : _prefs.audiobookAppDirectory,
       );
 
       // Persistir en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('${libraryType}AppDirectory', newPath);
-
     } catch (e) {
       debugPrint('Error actualizando ruta: $e');
       rethrow;
@@ -131,7 +143,7 @@ class PreferencesProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> setComicDirectory(String? path) async {
     _prefs = _prefs.copyWith(comicAppDirectory: path);
     await _savePreference('comicAppDirectory', path);

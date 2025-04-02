@@ -12,7 +12,7 @@ class Book {
   final String? tags;
   final String? series;
   final int? seriesNumber;
-  final bool read;
+  final int? read;
   final int? fileSize;
   final String? filePath;
 
@@ -30,7 +30,7 @@ class Book {
     this.tags,
     this.series,
     this.seriesNumber,
-    this.read = false,
+    this.read = 0,
     this.fileSize,
     this.filePath,
   });
@@ -51,7 +51,7 @@ class Book {
       tags: map['tags'],
       series: map['series'],
       seriesNumber: map['seriesNumber'],
-      read: map['read'] ?? false,
+      read: map['read'] ?? 0,
       fileSize: map['fileSize'],
       filePath: map['filePath'],
     );

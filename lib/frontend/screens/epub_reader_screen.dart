@@ -1,10 +1,14 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:inkger/frontend/models/epub_book.dart';
 import 'package:inkger/frontend/utils/epub_parser.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:provider/provider.dart';
 
 class CustomReaderEpub extends StatefulWidget {
   final Uint8List epubBytes;
@@ -20,17 +24,57 @@ class CustomReaderEpub extends StatefulWidget {
   _CustomReaderEpubState createState() => _CustomReaderEpubState();
 }
 
-class _CustomReaderEpubState extends State<CustomReaderEpub> {
+class _CustomReaderEpubState extends State<CustomReaderEpub>
+    with FullScreenListener {
   late Map<String, dynamic> epubContent;
   late List<NavPoint> navPoints;
   int currentNavIndex = 0;
   bool isLoading = true;
   String? errorMessage;
+  bool isFullScreen = false;
 
   @override
   void initState() {
     super.initState();
     _loadEpubContent();
+    FullScreen.addListener(this);
+  }
+
+  @override
+  void dispose() {
+    FullScreen.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onFullScreenChanged(bool enabled, SystemUiMode? systemUiMode) {
+    setState(() {
+      isFullScreen = enabled;
+    });
+  }
+
+  void disableFullScreenFalse() async {
+    Provider.of<PreferencesProvider>(
+      context,
+      listen: false,
+    ).toggleFullScreenMode(false);
+    FullScreen.setFullScreen(false);
+  }
+
+  void _toggleFullScreen() async {
+    if (isFullScreen == false) {
+      Provider.of<PreferencesProvider>(
+        context,
+        listen: false,
+      ).toggleFullScreenMode(true);
+      FullScreen.setFullScreen(true);
+    } else {
+      Provider.of<PreferencesProvider>(
+        context,
+        listen: false,
+      ).toggleFullScreenMode(false);
+      FullScreen.setFullScreen(false);
+    }
   }
 
   Future<void> _loadEpubContent() async {
@@ -338,8 +382,20 @@ class _CustomReaderEpubState extends State<CustomReaderEpub> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => {disableFullScreenFalse(), Navigator.of(context).pop()},
+          icon: Icon(Icons.arrow_back),
+        ),
         title: Text(widget.bookTitle),
         actions: [
+          Tooltip(
+            message: "Pantalla completa",
+            child: IconButton(
+              onPressed: () => _toggleFullScreen(),
+              icon: Icon(Icons.open_in_full),
+            ),
+          ),
           IconButton(
             icon: Icon(Icons.list),
             onPressed: () {

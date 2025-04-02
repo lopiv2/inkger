@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
+import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCard extends StatefulWidget {
   final Widget child;
-  final int bookId; // Agregamos el id del libro
-  final String title; // Agregamos el id del libro
   final VoidCallback? onDelete; // Callback para la eliminación
+  final Book book;
 
   const HoverCard({
     super.key,
     required this.child,
-    required this.bookId,
     this.onDelete,
-    required this.title,
+    required this.book,
   });
 
   @override
@@ -39,14 +39,22 @@ class _HoverCardState extends State<HoverCard> {
                   borderRadius: BorderRadius.circular(16.0),
                 ),
                 child: Center(
-                  child: IconButton(
-                    onPressed: () {
-                      loadBookFile(context, widget.bookId.toString(), widget.title);
-                    },
-                    icon: Icon(
-                      Icons.remove_red_eye,
-                      color: Colors.white,
-                      size: 40,
+                  child: Tooltip(
+                    message: "Abrir lector",
+                    child: IconButton(
+                      onPressed: () {
+                        loadBookFile(
+                          context,
+                          widget.book.id.toString(),
+                          widget.book.title,
+                        );
+                      },
+                      splashColor: Colors.white,
+                      icon: Icon(
+                        Icons.menu_book,
+                        color: Colors.white,
+                        size: 40,
+                      ),
                     ),
                   ),
                 ),
@@ -55,30 +63,21 @@ class _HoverCardState extends State<HoverCard> {
           // Botón de edición (abajo izquierda)
           if (_isHovered)
             Positioned(
-              bottom: 8,
+              bottom: 20,
               left: 8,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => debugPrint("Editar libro"),
-                  child: Container(
-                    padding: EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(color: Colors.black26, blurRadius: 4),
-                      ],
-                    ),
-                    child: Icon(Icons.edit, size: 18, color: Colors.black),
-                  ),
-                ),
+              child: IconButton(
+                onPressed: () {
+                  showBookDetailsDialog(context, widget.book);
+                },
+                color: Colors.white,
+                splashColor: Colors.white,
+                icon: Icon(Icons.edit, size: 18, color: Colors.white),
               ),
             ),
           // Menú de 3 puntos (abajo derecha)
           if (_isHovered)
             Positioned(
-              bottom: 8,
+              bottom: 20,
               right: 8,
               child: PopupMenuButton<String>(
                 onSelected: (value) => debugPrint("Seleccionado: $value"),

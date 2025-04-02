@@ -185,30 +185,52 @@ class _BooksGridState extends State<BooksGrid> {
     return Column(
       children: [
         HoverCard(
-          title: book.title,
-          bookId: book.id,
+          book: book,
           onDelete: () => showDeleteConfirmationDialog(context, book),
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0),
             ),
             elevation: 4,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.0),
-              child: _buildCoverImage(coverPath),
+            child: Column(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: _buildCoverImage(coverPath),
+                ),
+                LinearProgressIndicator(
+                  value: book.read! / 100,
+                  minHeight: 10,
+                  backgroundColor: Colors.green[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
         SizedBox(height: 8),
-        Text(
-          book.title,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: _calculateTextSize(),
-          ),
+        Column(
+          children: [
+            Text(
+              book.title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: _calculateTextSize(),
+              ),
+            ),
+            Text(
+              book.author,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: _calculateTextSize()),
+            ),
+          ],
         ),
       ],
     );
@@ -263,8 +285,7 @@ class _BooksGridState extends State<BooksGrid> {
             ],
           ),
           child: HoverCard(
-            title: book.title,
-            bookId: book.id,
+            book: book,
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
@@ -442,5 +463,5 @@ class _BooksGridState extends State<BooksGrid> {
   double _calculateAspectRatio() => 0.6 + (0.1 * (10 - _crossAxisCount));
   double _calculateMainAxisExtent() => 150 + (100 * (10 - _crossAxisCount));
   double _calculateItemHeight() => _calculateMainAxisExtent() * 0.7;
-  double _calculateTextSize() => 14 + (2 * (10 - _crossAxisCount));
+  double _calculateTextSize() => 8 + (2 * (10 - _crossAxisCount));
 }
