@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/backend/services/preferences_service.dart';
 import 'package:inkger/frontend/buttons/import_button.dart';
+import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/side_bar.dart';
 import 'package:provider/provider.dart';
@@ -56,6 +57,11 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => isLoading = false);
       }
     }
+  }
+
+  Future<void> _logout() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    await auth.logout();
   }
 
   @override
@@ -182,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 print('Configuración seleccionada');
                                 break;
                               case 'logout':
-                                print('Cerrar sesión seleccionado');
+                                _logout();
                                 break;
                             }
                           },

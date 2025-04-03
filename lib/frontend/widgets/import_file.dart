@@ -35,13 +35,13 @@ class _ImportFileState extends State<ImportFile> {
     switch (extension) {
       case '.epub':
       case '.mobi':
-        return 'Libro';
+        return 'book';
       case '.cbz':
       case '.cbr':
-        return 'Cómic';
+        return 'comic';
       case '.mp3':
       case '.m4a':
-        return 'Audiolibro';
+        return 'audiobook';
       case '.pdf':
         return 'Documento PDF';
       default:

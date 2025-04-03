@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
-import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +44,7 @@ Future<EpubBook> parseEpub(Uint8List epubData, String coverPath) async {
     final titleElement = opfXml
         .findAllElements('title')
         .firstWhere((node) => node.name.local == 'title');
-    final title = titleElement.text ?? 'Sin título';
+    final title = titleElement.text;
 
     // Extraer los capítulos
     final manifestItems =

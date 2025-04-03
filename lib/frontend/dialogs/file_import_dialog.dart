@@ -2,8 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
-import 'package:inkger/frontend/models/book.dart';
-import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
@@ -93,6 +91,7 @@ class _FileImportDialogState extends State<FileImportDialog> {
   Future<String?> _getLibraryPath(String type) async {
     final prefs = await SharedPreferences.getInstance();
     switch (type) {
+      case 'cómic':
       case 'comic':
         return prefs.getString('comicAppDirectory');
       case 'libro':
@@ -145,17 +144,21 @@ class _FileImportDialogState extends State<FileImportDialog> {
           const SizedBox(height: 16),
           DropdownButton<String>(
             value: selectedType,
-            items:
-                ['Libro', 'Cómic', 'Audiolibro', 'Otro']
-                    .map(
-                      (type) =>
-                          DropdownMenuItem(value: type, child: Text(type)),
-                    )
-                    .toList(),
+            items: const [
+              DropdownMenuItem(
+                value: 'book', // Valor real que se almacenará
+                child: Text('Libro'), // Texto que se muestra
+              ),
+              DropdownMenuItem(value: 'comic', child: Text('Cómic')),
+              DropdownMenuItem(value: 'audiobook', child: Text('Audiolibro')),
+              DropdownMenuItem(value: 'other', child: Text('Otro')),
+            ],
             onChanged:
                 uploading
                     ? null
-                    : (value) => setState(() => selectedType = value!),
+                    : (value) {
+                      setState(() => selectedType = value!);
+                    },
           ),
         ],
       ),
