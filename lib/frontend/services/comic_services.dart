@@ -3,45 +3,45 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
-import 'package:inkger/frontend/models/book.dart';
-import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/models/comic.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
 
-class BookServices {
-  static Future<void> deleteBook(BuildContext context, Book book) async {
+class ComicServices {
+  static Future<void> deletecomic(BuildContext context, Comic comic) async {
     try {
-      final booksProvider = Provider.of<BooksProvider>(context, listen: false);
+      final comicsProvider = Provider.of<ComicsProvider>(context, listen: false);
 
-      // 1. Llamar a la API para eliminar el libro
-      final response = await ApiService.dio.delete('/api/books/${book.id}');
+      // 1. Llamar a la API para eliminar el comic
+      final response = await ApiService.dio.delete('/api/comics/${comic.id}');
 
       if (response.statusCode == 200) {
         // 2. Eliminar del Provider
-        booksProvider.removeBook(book.id);
+        comicsProvider.removeComic(comic.id);
 
-        debugPrint("Libro eliminado correctamente: ${book.title}");
+        debugPrint("Comic eliminado correctamente: ${comic.title}");
       } else {
-        debugPrint("Error al eliminar el libro: ${response.statusCode}");
+        debugPrint("Error al eliminar el comic: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("Error eliminando el libro: $e");
+      debugPrint("Error eliminando el comic: $e");
     }
   }
 
-  static Future<Response> getAllBooks() async {
+  static Future<Response> getAllcomics() async {
     try {
       final response = await ApiService.dio.get(
-        '/api/books',
+        '/api/comics',
         options: Options(validateStatus: (status) => status! < 500),
       );
       return response;
     } catch (e) {
-      throw Exception('Error al obtener los libros: $e');
+      throw Exception('Error al obtener los comics: $e');
     }
   }
 
-  static Future<Uint8List?> getBookCover(String coverPath) async {
+  static Future<Uint8List?> getComicCover(String coverPath) async {
     try {
       final encodedPath = Uri.encodeComponent(coverPath);
       final response = await ApiService.dio.get(
@@ -64,33 +64,35 @@ class BookServices {
     }
   }
 
-  static Future<Uint8List> getBookFile(String bookId) async {
+
+  //ARREGLAR ESTO
+  static Future<Uint8List> getcomicFile(String comicId) async {
     try {
       final response = await ApiService.dio.get(
-        '/api/bookfile/$bookId',
+        '/api/comicfile/$comicId',
         options: Options(responseType: ResponseType.bytes),
       );
 
       if (response.statusCode == 200) {
         return Uint8List.fromList(response.data);
       } else {
-        throw Exception('Error al cargar el libro: ${response.statusCode}');
+        throw Exception('Error al cargar el comic: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error al obtener el libro: $e');
+      throw Exception('Error al obtener el comic: $e');
     }
   }
 
   static Future<void> saveReadingProgress(
-    int bookId,
+    int comicId,
     int progress,
     BuildContext context,
   ) async {
     try {
       final response = await ApiService.dio.post(
-        '/api/bookfile/save-progress',
+        '/api/comicfile/save-progress',
         data: jsonEncode({
-          'book_id': bookId,
+          'comic_id': comicId,
           'progress': progress.clamp(1, 100), // Asegura valor entre 1-100
           'timestamp': DateTime.now().toIso8601String(),
         }),
@@ -120,7 +122,7 @@ class BookServices {
         );
       }
       // Opcional: Guardar localmente para sincronizar después
-      //await _saveProgressOffline(bookId, progress);
+      //await _saveProgressOffline(comicId, progress);
     }
   }
 }

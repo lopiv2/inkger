@@ -6,6 +6,7 @@ import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:inkger/frontend/widgets/comic_grid.dart';
 import 'package:inkger/frontend/widgets/test/transform_controller.dart';
 
 class AppRouter {
@@ -79,11 +80,35 @@ class AppRouter {
                     NoTransitionPage(key: state.pageKey, child: BooksGrid()),
           ),
           GoRoute(
+            path: '/comics',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: ComicsGrid(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOut,
+                    ),
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 3000),
+              );
+            },
+          ),
+          /*GoRoute(
             path: '/comics', // Use root path for the default home
             pageBuilder:
                 (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
-          ),
+                    NoTransitionPage(key: state.pageKey, child: ComicsGrid()),
+          ),*/
           GoRoute(
             path: '/tests',
             pageBuilder:

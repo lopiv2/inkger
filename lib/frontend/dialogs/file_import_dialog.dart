@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,8 +65,16 @@ class _FileImportDialogState extends State<FileImportDialog> {
       // Actualización optimizada
       if (!mounted) return;
 
-      final provider = Provider.of<BooksProvider>(context, listen: false);
-      await provider.loadBooks(); // Espera a que se completen
+      if (widget.initType == 'book') {
+        final provider = Provider.of<BooksProvider>(context, listen: false);
+        context.go('/books');
+        await provider.loadBooks(); // Espera a que se completen
+      }
+      if (widget.initType == 'comic') {
+        final provider = Provider.of<ComicsProvider>(context, listen: false);
+        context.go('/comics');
+        await provider.loadcomics(); // Espera a que se completen
+      }
 
       if (!mounted) return;
 

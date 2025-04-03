@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
-import 'package:inkger/frontend/models/book.dart';
+import 'package:inkger/frontend/dialogs/comic_details_dialog.dart';
+import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
-class HoverCardBook extends StatefulWidget {
+class HoverCardComic extends StatefulWidget {
   final Widget child;
   final VoidCallback? onDelete; // Callback para la eliminación
-  final Book book;
+  final Comic comic;
 
-  const HoverCardBook({
+  const HoverCardComic({
     super.key,
     required this.child,
     this.onDelete,
-    required this.book,
+    required this.comic,
   });
 
   @override
   _HoverCardState createState() => _HoverCardState();
 }
 
-class _HoverCardState extends State<HoverCardBook> {
+class _HoverCardState extends State<HoverCardComic> {
   bool _isHovered = false;
 
   @override
@@ -45,9 +46,9 @@ class _HoverCardState extends State<HoverCardBook> {
                       onPressed: () {
                         loadBookFile(
                           context,
-                          widget.book.id.toString(),
-                          widget.book.title,
-                          widget.book.read ?? 0,
+                          widget.comic.id.toString(),
+                          widget.comic.title,
+                          widget.comic.read ?? 0,
                         );
                       },
                       splashColor: Colors.white,
@@ -68,7 +69,7 @@ class _HoverCardState extends State<HoverCardBook> {
               left: 8,
               child: IconButton(
                 onPressed: () {
-                  showBookDetailsDialog(context, widget.book);
+                  showComicDetailsDialog(context, widget.comic);
                 },
                 color: Colors.white,
                 splashColor: Colors.white,

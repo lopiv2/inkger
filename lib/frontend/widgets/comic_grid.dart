@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
-import 'package:inkger/frontend/models/book.dart';
-import 'package:inkger/frontend/services/book_services.dart';
-import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/models/comic.dart';
+import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
-import 'package:inkger/frontend/widgets/hover_card_book.dart';
+import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:provider/provider.dart';
 import 'dart:typed_data';
 
 enum ViewMode { simple, threeD, librarian }
 
-class BooksGrid extends StatefulWidget {
+class ComicsGrid extends StatefulWidget {
   @override
-  State<BooksGrid> createState() => _BooksGridState();
+  State<ComicsGrid> createState() => _ComicsGridState();
 }
 
-class _BooksGridState extends State<BooksGrid> {
+class _ComicsGridState extends State<ComicsGrid> {
   double _crossAxisCount = 5;
   final double _minCrossAxisCount = 5;
   final double _maxCrossAxisCount = 10;
   ViewMode _selectedViewMode = ViewMode.simple;
-  final ValueNotifier<bool> _hoverNotifier = ValueNotifier(false);
   final ValueNotifier<Color> _dominantColorNotifier = ValueNotifier<Color>(
     Colors.grey,
   ); // Color por defecto
-  late Future<Color> _dominantColorFuture;
+  //late Future<Color> _dominantColorFuture;
   bool _colorCalculated = false;
 
   @override
@@ -39,13 +38,13 @@ class _BooksGridState extends State<BooksGrid> {
     super.initState();
     // Usar WidgetsBinding para posponer la carga después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadBooks();
+      _loadComics();
     });
   }
 
-  Future<void> _loadBooks() async {
-    final provider = Provider.of<BooksProvider>(context, listen: false);
-    await provider.loadBooks();
+  Future<void> _loadComics() async {
+    final provider = Provider.of<ComicsProvider>(context, listen: false);
+    await provider.loadcomics();
   }
 
   @override
@@ -121,7 +120,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Libros",
+                "Comics",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
@@ -136,11 +135,11 @@ class _BooksGridState extends State<BooksGrid> {
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
                   itemHeight = maxHeight / (_crossAxisCount / 5);
                 }
-                return Consumer<BooksProvider>(
-                  builder: (context, booksProvider, child) {
-                    final books = booksProvider.books;
-                    if (books.isEmpty)
-                      return Center(child: Text("No hay libros disponibles"));
+                return Consumer<ComicsProvider>(
+                  builder: (context, ComicsProvider, child) {
+                    final comics = ComicsProvider.comics;
+                    if (comics.isEmpty)
+                      return Center(child: Text("No hay comics disponibles"));
 
                     return GridView.builder(
                       padding: EdgeInsets.all(8),
@@ -151,23 +150,23 @@ class _BooksGridState extends State<BooksGrid> {
                         childAspectRatio: _calculateAspectRatio(),
                         mainAxisExtent: itemHeight,
                       ),
-                      itemCount: books.length,
+                      itemCount: comics.length,
                       itemBuilder: (context, index) {
-                        final book = books[index];
-                        final coverPath = book.coverPath;
+                        final comic = comics[index];
+                        final coverPath = comic.coverPath;
 
                         switch (_selectedViewMode) {
                           case ViewMode.simple:
-                            return _buildSimpleMode(context, book, coverPath);
+                            return _buildSimpleMode(context, comic, coverPath);
                           case ViewMode.threeD:
                             return _build3DMode(
                               context,
-                              book,
+                              comic,
                               coverPath,
                               itemHeight,
                             );
                           case ViewMode.librarian:
-                            return _buildLibrarianMode(book, coverPath);
+                            return _buildLibrarianMode(comic, coverPath);
                         }
                       },
                     );
@@ -181,12 +180,12 @@ class _BooksGridState extends State<BooksGrid> {
     );
   }
 
-  Widget _buildSimpleMode(BuildContext context, Book book, String? coverPath) {
+  Widget _buildSimpleMode(BuildContext context, Comic comic, String? coverPath) {
     return Column(
       children: [
-        HoverCardBook(
-          book: book,
-          onDelete: () => showDeleteConfirmationDialog(context, book),
+        HoverCardComic(
+          comic: comic,
+          onDelete: () => showDeleteConfirmationDialog(context, comic),
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0),
@@ -199,7 +198,7 @@ class _BooksGridState extends State<BooksGrid> {
                   child: _buildCoverImage(coverPath),
                 ),
                 LinearProgressIndicator(
-                  value: book.read! / 100,
+                  value: comic.read! / 100,
                   minHeight: 10,
                   backgroundColor: Colors.green[200],
                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -214,7 +213,7 @@ class _BooksGridState extends State<BooksGrid> {
         Column(
           children: [
             Text(
-              book.title,
+              comic.title,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -224,7 +223,7 @@ class _BooksGridState extends State<BooksGrid> {
               ),
             ),
             Text(
-              book.author,
+              comic.writer ?? '',
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -238,7 +237,7 @@ class _BooksGridState extends State<BooksGrid> {
 
   Widget _build3DMode(
     BuildContext context,
-    Book book,
+    Comic comic,
     String? coverPath,
     double itemHeight,
   ) {
@@ -284,8 +283,8 @@ class _BooksGridState extends State<BooksGrid> {
               ),
             ],
           ),
-          child: HoverCardBook(
-            book: book,
+          child: HoverCardComic(
+            comic: comic,
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
@@ -300,7 +299,7 @@ class _BooksGridState extends State<BooksGrid> {
         ),
         SizedBox(height: 8),
         Text(
-          book.title,
+          comic.title,
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -313,7 +312,7 @@ class _BooksGridState extends State<BooksGrid> {
     );
   }
 
-  Widget _buildLibrarianMode(Book book, String? coverPath) {
+  Widget _buildLibrarianMode(Comic comic, String? coverPath) {
     return Container(
       height: _calculateItemHeight(),
       child: Card(
@@ -337,7 +336,7 @@ class _BooksGridState extends State<BooksGrid> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      book.title,
+                      comic.title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: _calculateTextSize() * 0.9,
@@ -347,11 +346,11 @@ class _BooksGridState extends State<BooksGrid> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "Autor: ${book.author}",
+                      "Autor: ${comic.writer}",
                       style: TextStyle(fontSize: _calculateTextSize() * 0.7),
                     ),
                     Text(
-                      "ID: ${book.id}",
+                      "ID: ${comic.id}",
                       style: TextStyle(fontSize: _calculateTextSize() * 0.6),
                     ),
                   ],
@@ -366,7 +365,7 @@ class _BooksGridState extends State<BooksGrid> {
 
   Widget _buildCoverImage(String? coverPath, {bool calculateColor = false}) {
     return FutureBuilder<Uint8List?>(
-      future: coverPath != null ? BookServices.getBookCover(coverPath) : null,
+      future: coverPath != null ? ComicServices.getComicCover(coverPath) : null,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -402,7 +401,7 @@ class _BooksGridState extends State<BooksGrid> {
 
   Future<void> showDeleteConfirmationDialog(
     BuildContext context,
-    Book book,
+    Comic comic,
   ) async {
     return showDialog<void>(
       context: context,
@@ -414,7 +413,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: ListBody(
               children: <Widget>[
                 Text(
-                  '¿Estás seguro de que quieres eliminar el libro "${book.title}"?',
+                  '¿Estás seguro de que quieres eliminar el libro "${comic.title}"?',
                 ),
                 const SizedBox(height: 8),
                 const Text('Esta acción no se puede deshacer.'),
@@ -436,11 +435,11 @@ class _BooksGridState extends State<BooksGrid> {
               onPressed: () async {
                 Navigator.of(context).pop(); // Cierra el diálogo primero
                 try {
-                  await BookServices.deleteBook(context, book);
+                  await ComicServices.deletecomic(context, comic);
                   // Opcional: Mostrar mensaje de éxito
                   CustomSnackBar.show(
                     context,
-                    '"${book.title}" eliminado correctamente',
+                    '"${comic.title}" eliminado correctamente',
                     Colors.green,
                     duration: Duration(seconds: 4),
                   );
