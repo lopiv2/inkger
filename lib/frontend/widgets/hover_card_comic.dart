@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
 import 'package:inkger/frontend/dialogs/comic_details_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/utils/functions.dart';
@@ -44,7 +43,7 @@ class _HoverCardState extends State<HoverCardComic> {
                     message: "Abrir lector",
                     child: IconButton(
                       onPressed: () {
-                        loadBookFile(
+                        loadComicFile(
                           context,
                           widget.comic.id.toString(),
                           widget.comic.title,

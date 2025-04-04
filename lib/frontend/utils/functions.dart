@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
+import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -141,18 +142,55 @@ Future<void> loadBookFile(
         'bookId': bookId,
       },
     );
-    /*Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => CustomReaderEpub(
-              epubBytes: epubBytesBlob,
-              bookTitle: title,
-              initialProgress: progress,
-              bookId: int.parse(bookId),
-            ),
+  } catch (e) {
+    // Cerrar diálogo de carga en caso de error usando rootNavigator
+    Navigator.of(context, rootNavigator: true).pop();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al cargar el libro: ${e.toString()}'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
-    );*/
+    );
+  }
+}
+
+Future<void> loadComicFile(
+  BuildContext context,
+  String comicId,
+  String title,
+  int progress,
+) async {
+  try {
+    // Mostrar indicador de carga
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Obtener los bytes del EPUB
+    final epubBytes = await ComicServices.getcomicFile(comicId);
+
+    // Crear Blob moderno (sin dart:html)
+    final blob = html.Blob([epubBytes]);
+    final epubBytesBlob = await blobToUint8List(blob);
+
+    // Cerrar el diálogo de carga usando el rootNavigator
+    Navigator.of(context, rootNavigator: true).pop();
+
+    // Navegar a la pantalla del lector
+    context.go(
+      '/comic-reader/${comicId}', // bookId en la URL
+      extra: {
+        // Datos complejos como mapa
+        'epubBytes': epubBytesBlob,
+        'bookTitle': title,
+        'initialProgress': progress,
+        'bookId': comicId,
+      },
+    );
   } catch (e) {
     // Cerrar diálogo de carga en caso de error usando rootNavigator
     Navigator.of(context, rootNavigator: true).pop();

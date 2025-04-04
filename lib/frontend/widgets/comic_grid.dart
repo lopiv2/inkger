@@ -56,8 +56,6 @@ class _ComicsGridState extends State<ComicsGrid> {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                IconButton(icon: Icon(Icons.menu), onPressed: () {}),
-                IconButton(icon: Icon(Icons.search), onPressed: () {}),
                 IconButton(icon: Icon(Icons.filter_list), onPressed: () {}),
               ],
             ),

@@ -33,6 +33,7 @@ class PreferencesProvider with ChangeNotifier {
         'bookAppDirectory': prefs.getString('bookAppDirectory'),
         'audiobookAppDirectory': prefs.getString('audiobookAppDirectory'),
         'fullScreenMode': prefs.getBool('fullScreenMode') ?? false,
+        'readerMode': prefs.getBool('readerMode') ?? false,
       });
     } catch (e) {
       _prefs = AppPreferences.defaults();
@@ -88,6 +89,13 @@ class PreferencesProvider with ChangeNotifier {
   Future<void> toggleFullScreenMode(bool value) async {
     _prefs = _prefs.copyWith(fullScreenMode: value);
     await _savePreference('fullScreenMode', value);
+    notifyListeners();
+  }
+
+  // Nuevo método para cambiar el modo de lector a escritor
+  Future<void> toggleFullReaderMode(bool value) async {
+    _prefs = _prefs.copyWith(readerMode: value);
+    await _savePreference('readerMode', value);
     notifyListeners();
   }
 

@@ -8,6 +8,7 @@ class AppPreferences {
   final String? bookAppDirectory;
   final String? audiobookAppDirectory;
   final bool fullScreenMode;
+  final bool readerMode;
 
   AppPreferences({
     required this.darkMode,
@@ -18,6 +19,7 @@ class AppPreferences {
     this.bookAppDirectory,
     this.audiobookAppDirectory,
     required this.fullScreenMode,
+    required this.readerMode,
   });
 
   AppPreferences.defaults()
@@ -28,7 +30,8 @@ class AppPreferences {
       comicAppDirectory = null,
       bookAppDirectory = null,
       audiobookAppDirectory = null,
-      fullScreenMode = false;
+      fullScreenMode = false,
+      readerMode=true;
 
   Map<String, dynamic> toMap() {
     return {
@@ -40,6 +43,7 @@ class AppPreferences {
       'bookAppDirectory': bookAppDirectory,
       'audiobookAppDirectory': audiobookAppDirectory,
       'fullScreenMode': fullScreenMode,
+      'readerMode': readerMode,
     };
   }
 
@@ -53,6 +57,7 @@ class AppPreferences {
       bookAppDirectory: map['bookAppDirectory'] as String?,
       audiobookAppDirectory: map['audiobookAppDirectory'] as String?,
       fullScreenMode: map['fullScreenMode'] as bool,
+      readerMode: map['readerMode'] as bool,
     );
   }
   AppPreferences copyWith({
@@ -64,6 +69,7 @@ class AppPreferences {
     String? bookAppDirectory,
     String? audiobookAppDirectory,
     bool? fullScreenMode,
+    bool? readerMode,
   }) {
     return AppPreferences(
       darkMode: darkMode ?? this.darkMode,
@@ -75,6 +81,7 @@ class AppPreferences {
       audiobookAppDirectory:
           audiobookAppDirectory ?? this.audiobookAppDirectory,
       fullScreenMode: fullScreenMode ?? this.fullScreenMode,
+      readerMode: readerMode ?? this.readerMode,
     );
   }
 }
