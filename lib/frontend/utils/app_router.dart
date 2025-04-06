@@ -4,7 +4,9 @@ import 'package:inkger/frontend/screens/comic_reader_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
+import 'package:inkger/frontend/screens/user_profile_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
+import 'package:inkger/frontend/utils/user_profile_loader.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
@@ -65,6 +67,15 @@ class AppRouter {
                 transitionDuration: const Duration(milliseconds: 1000),
               );
             },
+          ),
+          // Ruta de perfil de usuario (pantalla completa)
+          GoRoute(
+            path: '/user-profile',
+            pageBuilder:
+                (context, state) => MaterialPage(
+                  key: state.pageKey,
+                  child: UserProfileLoader(),
+                ),
           ),
           GoRoute(
             path: '/home-writer', // Use root path for the default home
@@ -165,16 +176,10 @@ class AppRouter {
                     child: child,
                   );
                 },
-                transitionDuration: const Duration(milliseconds: 3000),
+                transitionDuration: const Duration(milliseconds: 2000),
               );
             },
           ),
-          /*GoRoute(
-            path: '/comics', // Use root path for the default home
-            pageBuilder:
-                (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: ComicsGrid()),
-          ),*/
           GoRoute(
             path: '/tests',
             pageBuilder:

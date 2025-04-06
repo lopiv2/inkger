@@ -7,11 +7,15 @@ import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicServices {
   static Future<void> deletecomic(BuildContext context, Comic comic) async {
     try {
-      final comicsProvider = Provider.of<ComicsProvider>(context, listen: false);
+      final comicsProvider = Provider.of<ComicsProvider>(
+        context,
+        listen: false,
+      );
 
       // 1. Llamar a la API para eliminar el comic
       final response = await ApiService.dio.delete('/api/comics/${comic.id}');
@@ -29,10 +33,11 @@ class ComicServices {
     }
   }
 
-  static Future<Response> getAllcomics() async {
+  static Future<Response> getAllcomics(int id) async {
     try {
       final response = await ApiService.dio.get(
         '/api/comics',
+        queryParameters: {'userId': id}, // <- Parámetro en la URL
         options: Options(validateStatus: (status) => status! < 500),
       );
       return response;
@@ -64,7 +69,6 @@ class ComicServices {
     }
   }
 
-
   //ARREGLAR ESTO
   static Future<Uint8List> getcomicFile(String comicId) async {
     try {
@@ -88,10 +92,13 @@ class ComicServices {
     int progress,
     BuildContext context,
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('id');
     try {
       final response = await ApiService.dio.post(
         '/api/comicfile/save-progress',
         data: jsonEncode({
+          'user_id': id,
           'comic_id': comicId,
           'progress': progress.clamp(1, 100), // Asegura valor entre 1-100
           'timestamp': DateTime.now().toIso8601String(),

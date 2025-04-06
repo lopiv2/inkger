@@ -9,6 +9,8 @@ import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:provider/provider.dart';
 import 'dart:typed_data';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 enum ViewMode { simple, threeD, librarian }
 
 class ComicsGrid extends StatefulWidget {
@@ -44,7 +46,11 @@ class _ComicsGridState extends State<ComicsGrid> {
 
   Future<void> _loadComics() async {
     final provider = Provider.of<ComicsProvider>(context, listen: false);
-    await provider.loadcomics();
+    final prefs = await SharedPreferences.getInstance();
+
+    // Campos requeridos
+    final id = prefs.getInt('id');
+    await provider.loadcomics(id ?? 0);
   }
 
   @override
@@ -178,7 +184,11 @@ class _ComicsGridState extends State<ComicsGrid> {
     );
   }
 
-  Widget _buildSimpleMode(BuildContext context, Comic comic, String? coverPath) {
+  Widget _buildSimpleMode(
+    BuildContext context,
+    Comic comic,
+    String? coverPath,
+  ) {
     return Column(
       children: [
         HoverCardComic(
@@ -196,7 +206,7 @@ class _ComicsGridState extends State<ComicsGrid> {
                   child: _buildCoverImage(coverPath),
                 ),
                 LinearProgressIndicator(
-                  value: comic.read! / 100,
+                  value: comic.readingProgress!['readingProgress'] / 100,
                   minHeight: 10,
                   backgroundColor: Colors.green[200],
                   valueColor: AlwaysStoppedAnimation<Color>(

@@ -61,6 +61,8 @@ class _FileImportDialogState extends State<FileImportDialog> {
       );
 
       _handleResponse(response);
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('id');
 
       // Actualización optimizada
       if (!mounted) return;
@@ -68,12 +70,14 @@ class _FileImportDialogState extends State<FileImportDialog> {
       if (widget.initType == 'book') {
         final provider = Provider.of<BooksProvider>(context, listen: false);
         context.go('/books');
-        await provider.loadBooks(); // Espera a que se completen
+        await provider.loadBooks(id ?? 0); // Espera a que se completen
       }
       if (widget.initType == 'comic') {
         final provider = Provider.of<ComicsProvider>(context, listen: false);
         context.go('/comics');
-        await provider.loadcomics(); // Espera a que se completen
+        await provider.loadcomics(
+          prefs.getInt('id') ?? 0,
+        ); // Espera a que se completen
       }
 
       if (!mounted) return;

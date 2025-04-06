@@ -12,7 +12,7 @@ class Book {
   final String? tags;
   final String? series;
   final int? seriesNumber;
-  final int? read;
+  final Map<String, dynamic>? readingProgress; // Añade este campo
   final int? fileSize;
   final String? filePath;
 
@@ -30,7 +30,7 @@ class Book {
     this.tags,
     this.series,
     this.seriesNumber,
-    this.read = 0,
+    this.readingProgress,
     this.fileSize,
     this.filePath,
   });
@@ -51,7 +51,7 @@ class Book {
       tags: map['tags'],
       series: map['series'],
       seriesNumber: map['seriesNumber'],
-      read: map['read'] ?? 0,
+      readingProgress: map['readingProgress'],
       fileSize: map['fileSize'],
       filePath: map['filePath'],
     );
@@ -73,7 +73,7 @@ class Book {
       'tags': tags,
       'series': series,
       'seriesNumber': seriesNumber,
-      'read': read,
+      'readingProgress': readingProgress,
       'fileSize': fileSize,
       'filePath': filePath,
     };

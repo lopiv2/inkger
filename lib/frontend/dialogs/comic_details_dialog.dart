@@ -2,8 +2,68 @@ import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:intl/intl.dart'; // Para formatear fechas
 
+List<String> parseCommaSeparatedList(dynamic data) {
+  if (data == null) return [];
+
+  if (data is List) {
+    return data
+        .expand((item) => item.toString().split(','))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  if (data is String) {
+    return data
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  return [];
+}
+
 void showComicDetailsDialog(BuildContext context, Comic comic) {
   final dateFormat = DateFormat('dd/MM/yyyy'); // Formato de fecha
+
+  // Controladores para campos editables
+  final TextEditingController titleController = TextEditingController(
+    text: comic.title,
+  );
+  final TextEditingController descriptionController = TextEditingController(
+    text: comic.description,
+  );
+  final TextEditingController tagsController = TextEditingController(
+    text: comic.tags,
+  );
+  final TextEditingController seriesController = TextEditingController(
+    text: comic.series,
+  );
+  final TextEditingController languageController = TextEditingController(
+    text: comic.language,
+  );
+  final TextEditingController publisherController = TextEditingController(
+    text: comic.publisher,
+  );
+  final TextEditingController writerController = TextEditingController(
+    text: comic.writer,
+  );
+  final TextEditingController storyArcController = TextEditingController(
+    text: comic.storyArc,
+  );
+  final TextEditingController alternateSeriesController = TextEditingController(
+    text: comic.alternateSeries,
+  );
+
+  // Variables para manejar los chips de listas
+  List<String> tagsList = comic.tags?.split(',') ?? [];
+  List<String> charactersList = parseCommaSeparatedList(comic.characters);
+
+  List<String> teamsList = parseCommaSeparatedList(comic.teams);
+  List<String> locationsList = parseCommaSeparatedList(comic.locations);
+  List<String> storyArcList = comic.storyArc?.split(',') ?? [];
+  List<String> alternateSeriesList = comic.alternateSeries?.split(',') ?? [];
 
   showDialog(
     context: context,
@@ -13,51 +73,51 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
         content: SizedBox(
           width:
               MediaQuery.of(context).size.width *
-              0.3, // Ajusta el ancho del diálogo
+              0.6, // Ajusta el ancho del diálogo
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Información básica
-                _buildDetailRow('Escritor:', comic.writer ?? ''),
-                _buildDetailRow(
-                  'Publicación:',
-                  dateFormat.format(comic.publicationDate ?? DateTime.now()),
+                // Información básica (campos editables)
+                _buildEditableField('Título:', titleController),
+                _buildEditableField(
+                  'Descripción:',
+                  descriptionController,
+                  maxLines: 3,
                 ),
-                _buildDetailRow(
-                  'Añadido:',
-                  dateFormat.format(comic.creationDate),
+                _buildEditableField('Escritor:', writerController),
+                _buildEditableField('Editorial:', publisherController),
+                _buildEditableField('Idioma:', languageController),
+                _buildEditableField('Serie:', seriesController),
+
+                // Campos de listas (tags, personajes, equipos, etc.)
+                _buildChipsField('Etiquetas:', tagsList, tagsController),
+                _buildChipsField('Personajes:', charactersList, null),
+                _buildChipsField('Equipos:', teamsList, null),
+                _buildChipsField('Lugares:', locationsList, null),
+                _buildChipsField('Historia del arco:', storyArcList, null),
+                _buildChipsField(
+                  'Series alternativas:',
+                  alternateSeriesList,
+                  null,
                 ),
 
                 // Información adicional (si existe)
-                if (comic.publisher != null)
-                  _buildDetailRow('Editorial:', comic.publisher!),
-                if (comic.language != null)
-                  _buildDetailRow('Idioma:', comic.language!),
-                if (comic.series != null)
-                  _buildDetailRow(
-                    'Serie:',
-                    '${comic.series}${comic.seriesNumber != null ? ' #${comic.seriesNumber}' : ''}',
-                  ),
-                if (comic.tags != null)
-                  _buildDetailRow('Etiquetas:', comic.tags!),
                 if (comic.fileSize != null)
                   _buildDetailRow(
                     'Tamaño:',
                     '${(comic.fileSize! / 1024 / 1024).toStringAsFixed(2)} MB',
                   ),
-
-                // Descripción (si existe)
-                if (comic.description != null) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Descripción:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                if (comic.publicationDate != null)
+                  _buildDetailRow(
+                    'Publicación:',
+                    dateFormat.format(comic.publicationDate ?? DateTime.now()),
                   ),
-                  const SizedBox(height: 4),
-                  Text(comic.description!, textAlign: TextAlign.justify),
-                ],
+                _buildDetailRow(
+                  'Añadido:',
+                  dateFormat.format(comic.creationDate),
+                ),
               ],
             ),
           ),
@@ -67,22 +127,157 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
             child: const Text('Cerrar'),
             onPressed: () => Navigator.pop(context),
           ),
-          if (comic.filePath != null)
-            TextButton(
-              child: const Text('Abrir'),
-              onPressed: () {
-                Navigator.pop(context);
-                // Aquí la lógica para abrir el libro
-                // Ejemplo: _openBook(comic.filePath!);
-              },
-            ),
+          TextButton(
+            child: const Text('Guardar'),
+            onPressed: () {
+              // Guardar cambios aquí
+              // Crea el comic con los nuevos datos editados
+              Comic updatedComic = Comic(
+                id: comic.id,
+                title: titleController.text,
+                description:
+                    descriptionController.text.isNotEmpty
+                        ? descriptionController.text
+                        : null,
+                tags: tagsList.join(','),
+                series:
+                    seriesController.text.isNotEmpty
+                        ? seriesController.text
+                        : null,
+                language:
+                    languageController.text.isNotEmpty
+                        ? languageController.text
+                        : null,
+                publisher:
+                    publisherController.text.isNotEmpty
+                        ? publisherController.text
+                        : null,
+                writer:
+                    writerController.text.isNotEmpty
+                        ? writerController.text
+                        : null,
+                characters: charactersList.isNotEmpty ? charactersList : null,
+                teams: teamsList.isNotEmpty ? teamsList : null,
+                locations:
+                    locationsList.isNotEmpty ? locationsList.join(',') : null,
+                storyArc:
+                    storyArcList.isNotEmpty ? storyArcList.join(',') : null,
+                alternateSeries:
+                    alternateSeriesList.isNotEmpty
+                        ? alternateSeriesList.join(',')
+                        : null,
+                fileSize: comic.fileSize,
+                filePath: comic.filePath,
+                publicationDate: comic.publicationDate,
+                creationDate: comic.creationDate,
+                // Otros campos adicionales
+              );
+
+              // Aquí llamamos a la API para guardar los cambios
+              // _saveComic(updatedComic);
+              Navigator.pop(context); // Cerrar el diálogo
+            },
+          ),
         ],
       );
     },
   );
 }
 
-// Widget auxiliar para mostrar filas de información
+// Widget auxiliar para campos editables
+Widget _buildEditableField(
+  String label,
+  TextEditingController controller, {
+  int maxLines = 1,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4.0),
+    child: TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+      ),
+    ),
+  );
+}
+
+// Widget auxiliar para chips (listas de valores)
+Widget _buildChipsField(
+  String label,
+  List<String> values,
+  TextEditingController? controller,
+) {
+  TextEditingController tempController = controller ?? TextEditingController();
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Label
+            Container(
+              width: 100,
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            // Chips
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children:
+                    values.map((value) {
+                      return Chip(
+                        label: Text(value),
+                        onDeleted: () {
+                          values.remove(value);
+                          (controller == null)
+                              ? tempController.text = values.join(',')
+                              : controller!.text = values.join(',');
+                        },
+                      );
+                    }).toList(),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: tempController,
+          decoration: const InputDecoration(
+            labelText: 'Añadir nuevo',
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (text) {
+            final newTags =
+                text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty && !values.contains(e))
+                    .toList();
+
+            if (newTags.isNotEmpty) {
+              values.addAll(newTags);
+              tempController.clear();
+              (controller == null)
+                  ? tempController.text = values.join(',')
+                  : controller!.text = values.join(',');
+            }
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 Widget _buildDetailRow(String label, String value) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0),

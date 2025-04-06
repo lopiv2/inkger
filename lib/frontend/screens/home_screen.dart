@@ -347,6 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Avatar
           PopupMenuButton<String>(
+            offset: Offset(0, 80),
             icon: const CircleAvatar(
               backgroundImage: AssetImage('images/avatars/avatar_01.png'),
               radius: 30,
@@ -354,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelected: (String value) {
               switch (value) {
                 case 'profile':
-                  print('Perfil seleccionado');
+                  context.go("/user-profile");
                   break;
                 case 'settings':
                   print('Configuración seleccionada');

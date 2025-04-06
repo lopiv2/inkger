@@ -3,11 +3,7 @@ class EpubChapter {
   final String title;
   final String content;
 
-  EpubChapter({
-    required this.id,
-    required this.title,
-    required this.content,
-  });
+  EpubChapter({required this.id, required this.title, required this.content});
 }
 
 class NavPoint {
@@ -24,6 +20,16 @@ class NavPoint {
     required this.playOrder,
     this.children = const [],
   });
+
+  @override
+  String toString({int indent = 0}) {
+    String prefix = '  ' * indent;
+    String childrenStr =
+        children.isNotEmpty
+            ? '\n${children.map((c) => c.toString(indent: indent + 1)).join('\n')}'
+            : '';
+    return '${prefix}NavPoint(id: $id, label: "$label", playOrder: $playOrder, src: "$contentSrc")$childrenStr';
+  }
 }
 
 class EpubBook {

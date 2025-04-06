@@ -47,7 +47,7 @@ class _HoverCardState extends State<HoverCardBook> {
                           context,
                           widget.book.id.toString(),
                           widget.book.title,
-                          widget.book.read ?? 0,
+                          widget.book.readingProgress!['readingProgress'],
                         );
                       },
                       splashColor: Colors.white,
@@ -81,6 +81,7 @@ class _HoverCardState extends State<HoverCardBook> {
               bottom: 20,
               right: 8,
               child: PopupMenuButton<String>(
+                offset: Offset(0, 30),
                 onSelected: (value) => debugPrint("Seleccionado: $value"),
                 itemBuilder:
                     (context) => [

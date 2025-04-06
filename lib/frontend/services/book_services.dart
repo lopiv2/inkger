@@ -7,6 +7,7 @@ import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookServices {
   static Future<void> deleteBook(BuildContext context, Book book) async {
@@ -29,10 +30,11 @@ class BookServices {
     }
   }
 
-  static Future<Response> getAllBooks() async {
+  static Future<Response> getAllBooks(int id) async {
     try {
       final response = await ApiService.dio.get(
         '/api/books',
+        queryParameters: {'userId': id}, // <- Parámetro en la URL
         options: Options(validateStatus: (status) => status! < 500),
       );
       return response;
@@ -86,10 +88,13 @@ class BookServices {
     int progress,
     BuildContext context,
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('id');
     try {
       final response = await ApiService.dio.post(
         '/api/bookfile/save-progress',
         data: jsonEncode({
+          'user_id': id,
           'book_id': bookId,
           'progress': progress.clamp(1, 100), // Asegura valor entre 1-100
           'timestamp': DateTime.now().toIso8601String(),

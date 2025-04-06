@@ -34,7 +34,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
   bool _isLoading = true;
   String? _errorMessage;
   bool _isFullScreen = false;
-  double _zoomLevel = 1.0;
+  double zoomLevel = 1.0;
   PageController _pageController = PageController();
 
   @override
@@ -199,6 +199,33 @@ class _CustomReaderComicState extends State<CustomReaderComic>
     }
   }
 
+  /*Widget _buildImageViewer() {
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(child: Text(_errorMessage!));
+    }
+
+    if (_imageData.isEmpty) {
+      return Center(child: Text('No se encontraron imágenes en el archivo'));
+    }
+
+    return GestureDetector(
+      onDoubleTap: _toggleFullScreen,
+      onScaleUpdate: (details) {
+        setState(() {
+          zoomLevel = details.scale.clamp(0.5, 3.0);
+        });
+      },
+      child:
+          _imageData.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : PageFlipComicViewer(pages: _imageData),
+    );
+  }*/
+
   void _goToPage(int index) {
     if (index >= 0 && index < _imagePaths.length) {
       _pageController.animateToPage(
@@ -226,7 +253,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
       onDoubleTap: _toggleFullScreen,
       onScaleUpdate: (details) {
         setState(() {
-          _zoomLevel = details.scale.clamp(0.5, 3.0);
+          zoomLevel = details.scale.clamp(0.5, 3.0);
         });
       },
       child: PageView.builder(
@@ -238,22 +265,51 @@ class _CustomReaderComicState extends State<CustomReaderComic>
           });
         },
         itemBuilder: (context, index) {
-          return InteractiveViewer(
-            minScale: 0.5,
-            maxScale: 3.0,
-            child: Center(
-              child: Image.memory(
-                _imageData[index],
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => _buildImageError(),
-                frameBuilder: (_, child, frame, __) {
-                  if (frame == null) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  return child;
-                },
-              ),
-            ),
+          return AnimatedBuilder(
+            animation: _pageController,
+            builder: (context, child) {
+              double value = 0;
+              if (_pageController.position.haveDimensions) {
+                value = _pageController.page! - index;
+                value = (1 - (value.abs().clamp(0.0, 1.0)));
+              } else {
+                value = index == _currentPageIndex ? 1.0 : 0.0;
+              }
+
+              final rotation =
+                  (_pageController.page ?? _currentPageIndex) - index;
+
+              return Transform(
+                alignment:
+                    rotation < 0 ? Alignment.centerRight : Alignment.centerLeft,
+                transform:
+                    Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY(
+                        rotation * 1.2,
+                      ), // mayor ángulo para hoja más realista
+                child: Opacity(
+                  opacity: value,
+                  child: InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 3.0,
+                    child: Center(
+                      child: Image.memory(
+                        _imageData[index],
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => _buildImageError(),
+                        frameBuilder: (_, child, frame, __) {
+                          if (frame == null) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          return child;
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

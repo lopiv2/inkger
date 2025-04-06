@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:inkger/frontend/models/epub_book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
-import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/epub_parser.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
@@ -33,11 +32,14 @@ class CustomReaderEpub extends StatefulWidget {
 class _CustomReaderEpubState extends State<CustomReaderEpub>
     with FullScreenListener {
   late Map<String, dynamic> epubContent;
-  late List<NavPoint> navPoints;
+  //late List<NavPoint> navPoints;
   int currentNavIndex = 0;
   bool isLoading = true;
   String? errorMessage;
   bool isFullScreen = false;
+  List<NavPoint> flatNavPoints = [];
+  // Mantén la jerárquica si la necesitas para mostrar el árbol en un Drawer, por ejemplo
+  List<NavPoint> hierarchicalNavPoints = [];
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     _loadEpubContent();
     FullScreen.addListener(this);
     currentNavIndex =
-        ((widget.initialProgress / 100) * navPoints.length).round();
+        ((widget.initialProgress / 100) * flatNavPoints.length).round();
   }
 
   @override
@@ -86,7 +88,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
   }
 
   Future<void> _saveProgress() async {
-    int progress = ((currentNavIndex / navPoints.length) * 100).round();
+    int progress = ((currentNavIndex / flatNavPoints.length) * 100).round();
 
     await BookServices.saveReadingProgress(widget.bookId, progress, context);
     context.go('/books');
@@ -108,9 +110,13 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
         throw Exception('No se encontró tabla de contenidos');
       }
 
-      // 3. Parsear puntos de navegación
-      navPoints = EpubParser.parseNavigationPoints(tocContent);
-      if (navPoints.isEmpty) {
+      // Guarda la lista jerárquica
+      hierarchicalNavPoints = EpubParser.parseNavigationPoints(tocContent);
+      if (hierarchicalNavPoints.isEmpty) throw Exception('...');
+
+      flatNavPoints = _flattenNavPoints(hierarchicalNavPoints);
+
+      if (flatNavPoints.isEmpty) {
         throw Exception('No se encontraron puntos de navegación válidos');
       }
 
@@ -123,6 +129,27 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
         errorMessage = 'Error al cargar el EPUB: ${e.toString()}';
       });
     }
+  }
+
+  /// Convierte una lista jerárquica de NavPoints en una lista plana.
+  List<NavPoint> _flattenNavPoints(List<NavPoint> hierarchicalList) {
+    List<NavPoint> flatList = []; // La nueva lista plana
+
+    // Función interna recursiva
+    void flatten(List<NavPoint> points) {
+      for (var point in points) {
+        // Añade el punto actual a la lista plana
+        flatList.add(point);
+        // Si tiene hijos, aplana recursivamente a los hijos
+        if (point.children.isNotEmpty) {
+          flatten(point.children);
+        }
+      }
+    }
+
+    // Inicia el proceso con la lista jerárquica de nivel superior
+    flatten(hierarchicalList);
+    return flatList;
   }
 
   String? _findTocContent() {
@@ -147,7 +174,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
   }
 
   void _goToNextPage() {
-    if (currentNavIndex < navPoints.length - 1) {
+    if (currentNavIndex < flatNavPoints.length - 1) {
       setState(() => currentNavIndex++);
     }
   }
@@ -159,7 +186,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
   }
 
   void _goToPage(int index) {
-    if (index >= 0 && index < navPoints.length) {
+    if (index >= 0 && index < flatNavPoints.length) {
       setState(() => currentNavIndex = index);
     }
   }
@@ -169,8 +196,15 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     if (isLoading) return Center(child: CircularProgressIndicator());
     if (errorMessage != null) return Center(child: Text(errorMessage!));
 
-    final currentNav = navPoints[currentNavIndex];
-    final htmlContent = _getHtmlContent(currentNav.contentSrc);
+    if (flatNavPoints.isEmpty || currentNavIndex < 0 || currentNavIndex >= flatNavPoints.length) {
+         return Center(child: Text('Índice de navegación inválido.'));
+    }
+
+    //final currentNav = navPoints[currentNavIndex];
+    //final htmlContent = _getHtmlContent(currentNav.contentSrc);
+
+    final currentNav = flatNavPoints[currentNavIndex];
+    final htmlContent = _getHtmlContent(currentNav.contentSrc); // _getHtmlContent debe buscar en epubContent
 
     // Manejo de contenido faltante
     if (htmlContent == null) {
@@ -287,9 +321,9 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
   Widget _buildChapterList() {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: navPoints.length,
+      itemCount: flatNavPoints.length,
       itemBuilder: (context, index) {
-        final navPoint = navPoints[index];
+        final navPoint = flatNavPoints[index];
         return ListTile(
           title: Text(navPoint.label),
           selected: index == currentNavIndex,
@@ -438,12 +472,12 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
               onPressed: _goToPrevPage,
               color: currentNavIndex > 0 ? null : Colors.grey,
             ),
-            Text('${currentNavIndex + 1}/${navPoints.length}'),
+            Text('${currentNavIndex + 1}/${flatNavPoints.length}'),
             IconButton(
               icon: Icon(Icons.arrow_forward),
               onPressed: _goToNextPage,
               color:
-                  currentNavIndex < navPoints.length - 1 ? null : Colors.grey,
+                  currentNavIndex < flatNavPoints.length - 1 ? null : Colors.grey,
             ),
           ],
         ),

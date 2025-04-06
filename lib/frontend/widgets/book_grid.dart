@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/book_filter_provider.dart';
+import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
+import 'package:inkger/frontend/widgets/book_view_switcher.dart';
+//import 'package:inkger/frontend/widgets/advanced_filter_menu_books.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:provider/provider.dart';
 import 'dart:typed_data';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum ViewMode { simple, threeD, librarian }
 
@@ -21,11 +27,10 @@ class _BooksGridState extends State<BooksGrid> {
   final double _minCrossAxisCount = 5;
   final double _maxCrossAxisCount = 10;
   ViewMode _selectedViewMode = ViewMode.simple;
-  final ValueNotifier<bool> _hoverNotifier = ValueNotifier(false);
   final ValueNotifier<Color> _dominantColorNotifier = ValueNotifier<Color>(
     Colors.grey,
   ); // Color por defecto
-  late Future<Color> _dominantColorFuture;
+  //late Future<Color> _dominantColorFuture;
   bool _colorCalculated = false;
 
   @override
@@ -44,28 +49,62 @@ class _BooksGridState extends State<BooksGrid> {
   }
 
   Future<void> _loadBooks() async {
+    // First get the provider with listen: false since we're in an async method
     final provider = Provider.of<BooksProvider>(context, listen: false);
-    await provider.loadBooks();
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('id');
+    await provider.loadBooks(id ?? 0);
+
+    // Use listen: false for all Provider.of calls in async methods
+    final books = Provider.of<BooksProvider>(context, listen: false).books;
+    final filters = Provider.of<BookFilterProvider>(context, listen: false);
+
+    // Autores y Publishers únicos ordenados alfabéticamente
+    filters.fillAuthors(
+      books
+          .map((b) => b.author.trim())
+          .where((a) => a.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort(),
+    );
+
+    filters.fillPublishers(
+      books
+          .map((b) => b.publisher!.trim())
+          .where((p) => p.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final filters = Provider.of<BookFilterProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                IconButton(icon: Icon(Icons.menu), onPressed: () {}),
-                IconButton(icon: Icon(Icons.search), onPressed: () {}),
-                IconButton(icon: Icon(Icons.filter_list), onPressed: () {}),
-              ],
-            ),
             Expanded(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      filters.toggleFilterMenu();
+                    },
+                    icon: const Icon(Icons.filter_alt_outlined),
+                    label: const Text('Filtrar'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  BookViewSwitcher(),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.3),
                   Text("Modo:", style: TextStyle(fontSize: 14)),
                   Radio<ViewMode>(
                     value: ViewMode.simple,
@@ -113,6 +152,53 @@ class _BooksGridState extends State<BooksGrid> {
       ),
       body: Column(
         children: [
+          Consumer<BookFilterProvider>(
+            builder: (context, filterProvider, child) {
+              // Solo mostrar el Wrap si hay autores o publishers seleccionados
+              if (filterProvider.isFilterMenuVisible) {
+                return FiltersLayout(context);
+              }
+
+              if (filterProvider.selectedAuthors.isEmpty &&
+                  filterProvider.selectedPublishers.isEmpty) {
+                return SizedBox(); // No mostrar nada si no hay filtros activos
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  spacing: 8.0, // Espacio entre chips
+                  runSpacing: 4.0, // Espacio entre filas de chips
+                  children: [
+                    // Mostrar chips de autores seleccionados
+                    ...filterProvider.selectedAuthors.map((author) {
+                      return Chip(
+                        label: Text("Autor: $author"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar autor del provider
+                          filterProvider.removeAuthor(author);
+                        },
+                      );
+                    }).toList(),
+
+                    // Mostrar chips de publishers seleccionados
+                    ...filterProvider.selectedPublishers.map((publisher) {
+                      return Chip(
+                        label: Text("Editorial: $publisher"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removePublisher(publisher);
+                        },
+                      );
+                    }).toList(),
+                  ],
+                ),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(
               vertical: 16.0,
@@ -139,38 +225,50 @@ class _BooksGridState extends State<BooksGrid> {
                 return Consumer<BooksProvider>(
                   builder: (context, booksProvider, child) {
                     final books = booksProvider.books;
+                    // Filtrar libros según los filtros activos
+                    final filteredBooks = _filterBooks(books);
+
                     if (books.isEmpty)
                       return Center(child: Text("No hay libros disponibles"));
+                    if (filters.isGridView) {
+                      return GridView.builder(
+                        padding: EdgeInsets.all(8),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: _crossAxisCount.round(),
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: _calculateAspectRatio(),
+                          mainAxisExtent: itemHeight,
+                        ),
+                        itemCount: filteredBooks.length,
+                        itemBuilder: (context, index) {
+                          final book = filteredBooks[index];
+                          final coverPath = book.coverPath;
 
-                    return GridView.builder(
-                      padding: EdgeInsets.all(8),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: _crossAxisCount.round(),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: _calculateAspectRatio(),
-                        mainAxisExtent: itemHeight,
-                      ),
-                      itemCount: books.length,
-                      itemBuilder: (context, index) {
-                        final book = books[index];
-                        final coverPath = book.coverPath;
-
-                        switch (_selectedViewMode) {
-                          case ViewMode.simple:
-                            return _buildSimpleMode(context, book, coverPath);
-                          case ViewMode.threeD:
-                            return _build3DMode(
-                              context,
-                              book,
-                              coverPath,
-                              itemHeight,
-                            );
-                          case ViewMode.librarian:
-                            return _buildLibrarianMode(book, coverPath);
-                        }
-                      },
-                    );
+                          switch (_selectedViewMode) {
+                            case ViewMode.simple:
+                              return _buildSimpleMode(context, book, coverPath);
+                            case ViewMode.threeD:
+                              return _build3DMode(
+                                context,
+                                book,
+                                coverPath,
+                                itemHeight,
+                              );
+                            case ViewMode.librarian:
+                              return _buildLibrarianMode(book, coverPath);
+                          }
+                        },
+                      );
+                    } else {
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: filteredBooks.length,
+                        itemBuilder:
+                            (context, index) =>
+                                BookListItem(book: filteredBooks[index]),
+                      );
+                    }
                   },
                 );
               },
@@ -179,6 +277,154 @@ class _BooksGridState extends State<BooksGrid> {
         ],
       ),
     );
+  }
+
+  Widget FiltersLayout(BuildContext context) {
+    final filters = Provider.of<BookFilterProvider>(context);
+    final hasActiveFilters =
+        filters.selectedAuthors.isNotEmpty ||
+        filters.selectedPublishers.isNotEmpty;
+
+    return Visibility(
+      visible: filters.isFilterMenuVisible,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fila de filtros activos con chips
+            if (hasActiveFilters) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text(
+                    'Filtros activos:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  // Chips de autores
+                  ...filters.selectedAuthors.map((author) {
+                    return Chip(
+                      label: Text('Autor: $author'),
+                      onDeleted: () {
+                        filters.removeAuthor(author);
+                      },
+                    );
+                  }),
+                  // Chips de editoriales
+                  ...filters.selectedPublishers.map((publisher) {
+                    return Chip(
+                      label: Text('Editorial: $publisher'),
+                      onDeleted: () {
+                        filters.removePublisher(publisher);
+                      },
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+
+            // Filtros desplegables
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Columna de Autores
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Autor',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona autores'),
+                        items:
+                            filters.availableAuthors.map((author) {
+                              return DropdownMenuItem<String>(
+                                value: author,
+                                child: Text(author),
+                              );
+                            }).toList(),
+                        onChanged: (selectedAuthor) {
+                          if (selectedAuthor != null) {
+                            filters.toggleAuthor(selectedAuthor);
+                          }
+                        },
+                        value: null,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 32),
+
+                // Columna de Editoriales
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Editorial',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona editoriales'),
+                        items:
+                            filters.availablePublishers.map((publisher) {
+                              return DropdownMenuItem<String>(
+                                value: publisher,
+                                child: Text(publisher),
+                              );
+                            }).toList(),
+                        onChanged: (selectedPublisher) {
+                          if (selectedPublisher != null) {
+                            filters.togglePublisher(selectedPublisher);
+                          }
+                        },
+                        value: null,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Función para filtrar los libros
+  List<Book> _filterBooks(List<Book> books) {
+    final filters = Provider.of<BookFilterProvider>(context, listen: false);
+
+    return books.where((book) {
+      final matchesAuthor =
+          filters.selectedAuthors.isEmpty ||
+          filters.selectedAuthors.contains(book.author.trim());
+
+      final matchesPublisher =
+          filters.selectedPublishers.isEmpty ||
+          filters.selectedPublishers.contains(book.publisher?.trim() ?? '');
+
+      return matchesAuthor && matchesPublisher;
+    }).toList();
   }
 
   Widget _buildSimpleMode(BuildContext context, Book book, String? coverPath) {
@@ -199,7 +445,7 @@ class _BooksGridState extends State<BooksGrid> {
                   child: _buildCoverImage(coverPath),
                 ),
                 LinearProgressIndicator(
-                  value: book.read! / 100,
+                  value: book.readingProgress!['readingProgress'] / 100,
                   minHeight: 10,
                   backgroundColor: Colors.green[200],
                   valueColor: AlwaysStoppedAnimation<Color>(

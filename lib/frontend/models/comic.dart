@@ -2,7 +2,6 @@ class Comic {
   final int id;
   final String title;
   final String? description;
-  final int? read;
   final int? fileSize;
   final String? filePath;
   final String? coverPath;
@@ -28,12 +27,12 @@ class Comic {
   final String? web;
   final DateTime? publicationDate;
   final DateTime creationDate;
+  final Map<String, dynamic>? readingProgress; // Añade este campo
 
   Comic({
     required this.id,
     required this.title,
     this.description,
-    this.read = 0,
     this.fileSize,
     this.filePath,
     this.coverPath,
@@ -59,6 +58,7 @@ class Comic {
     this.web,
     this.publicationDate,
     required this.creationDate,
+    this.readingProgress,
   });
 
   factory Comic.fromMap(Map<String, dynamic> map) {
@@ -66,7 +66,7 @@ class Comic {
       id: map['id'],
       title: map['title'],
       description: map['description'],
-      read: map['read'] ?? 0,
+      readingProgress: map['readingProgress'], // Añadido aquí
       fileSize: map['fileSize'],
       filePath: map['filePath'],
       coverPath: map['coverPath'],
@@ -90,9 +90,10 @@ class Comic {
       locations: map['locations'],
       volume: map['volume'],
       web: map['web'],
-      publicationDate: map['publicationDate'] != null 
-          ? DateTime.parse(map['publicationDate']) 
-          : null,
+      publicationDate:
+          map['publicationDate'] != null
+              ? DateTime.parse(map['publicationDate'])
+              : null,
       creationDate: DateTime.parse(map['creationDate']),
     );
   }
@@ -102,7 +103,6 @@ class Comic {
       'id': id,
       'title': title,
       'description': description,
-      'read': read,
       'fileSize': fileSize,
       'filePath': filePath,
       'coverPath': coverPath,
@@ -128,6 +128,7 @@ class Comic {
       'web': web,
       'publicationDate': publicationDate?.toIso8601String(),
       'creationDate': creationDate.toIso8601String(),
+      'readingProgress': readingProgress,
     };
   }
 
@@ -135,7 +136,8 @@ class Comic {
   List<String>? getCharactersList() {
     if (characters == null) return null;
     if (characters is List) return List<String>.from(characters as List);
-    if (characters is String) return (characters as String).split(',').map((e) => e.trim()).toList();
+    if (characters is String)
+      return (characters as String).split(',').map((e) => e.trim()).toList();
     return null;
   }
 }

@@ -15,12 +15,12 @@ class BooksProvider extends ChangeNotifier {
   }
 
   // Método para cargar libros desde la base de datos o la API
-  Future<void> loadBooks() async {
+  Future<void> loadBooks(int id) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final response = await BookServices.getAllBooks();
+      final response = await BookServices.getAllBooks(id);
       if (response.statusCode == 200) {
         _books =
             (response.data as List)

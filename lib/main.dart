@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/app_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
@@ -28,6 +29,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => PreferencesProvider()),
         ChangeNotifierProvider(create: (context) => BooksProvider()),
         ChangeNotifierProvider(create: (context) => ComicsProvider()),
+        ChangeNotifierProvider(create: (context) => BookFilterProvider()),
       ],
       child: MyApp(isInitiallyLoggedIn: isLoggedIn), // Pasa el estado inicial
     ),

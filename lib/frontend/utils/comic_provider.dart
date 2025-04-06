@@ -15,12 +15,12 @@ class ComicsProvider extends ChangeNotifier {
   }
 
   // Método para cargar libros desde la base de datos o la API
-  Future<void> loadcomics() async {
+  Future<void> loadcomics(int id) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final response = await ComicServices.getAllcomics();
+      final response = await ComicServices.getAllcomics(id);
       if (response.statusCode == 200) {
         _comics =
             (response.data as List)
