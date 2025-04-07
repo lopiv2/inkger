@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/utils/comic_filter_provider.dart';
+import 'package:inkger/frontend/utils/comic_list_item.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/frontend/utils/filter_fields.dart';
 import 'package:inkger/frontend/utils/functions.dart';
+import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:provider/provider.dart';
@@ -51,24 +57,132 @@ class _ComicsGridState extends State<ComicsGrid> {
     // Campos requeridos
     final id = prefs.getInt('id');
     await provider.loadcomics(id ?? 0);
+
+    final comics = Provider.of<ComicsProvider>(context, listen: false).comics;
+    final filters = Provider.of<ComicFilterProvider>(context, listen: false);
+
+    // Escritores únicos (con manejo de nulos)
+    final writers =
+        comics
+            .map((b) => b.writer)
+            .where((a) => a != null && a.trim().isNotEmpty)
+            .expand((a) => a!.split(','))
+            .map((name) => name.trim())
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillWriters(writers);
+
+    // Personajes únicos (con manejo de nulos)
+    final characters =
+        comics
+            .map((b) => b.characters)
+            .where((a) => a != null && a.trim().isNotEmpty)
+            .expand((a) => a!.split(','))
+            .map((name) => name.trim())
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillCharacters(characters);
+
+    // Localizaciones únicos (con manejo de nulos)
+    final locations =
+        comics
+            .map((b) => b.locations)
+            .where((a) => a != null && a.trim().isNotEmpty)
+            .expand((a) => a!.split(','))
+            .map((name) => name.trim())
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillLocations(locations);
+
+    // Equipos únicos (con manejo de nulos)
+    final teams =
+        comics
+            .map((b) => b.teams)
+            .where((a) => a != null && a.trim().isNotEmpty)
+            .expand((a) => a!.split(','))
+            .map((name) => name.trim())
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillTeams(teams);
+
+    // Series únicas (con manejo de nulos)
+    final series =
+        comics
+            .map((b) => b.series)
+            .where((a) => a != null && a.trim().isNotEmpty)
+            .expand((a) => a!.split(','))
+            .map((name) => name.trim())
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillSeries(series);
+
+    // Arcos únicos (con manejo de nulos)
+    final storyArc =
+        comics
+            .map((b) => b.storyArc)
+            .where((a) => a != null && a.trim().isNotEmpty)
+            .expand((a) => a!.split(','))
+            .map((name) => name.trim())
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillStoryArcs(storyArc);
+
+    // Publishers únicos (con manejo de nulos)
+    final publishers =
+        comics
+            .map((b) => b.publisher?.trim() ?? '') // Manejo de publisher null
+            .where((p) => p.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    filters.fillPublishers(publishers);
   }
 
   @override
   Widget build(BuildContext context) {
+    final filters = Provider.of<ComicFilterProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                IconButton(icon: Icon(Icons.filter_list), onPressed: () {}),
-              ],
-            ),
             Expanded(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      filters.toggleFilterMenu();
+                    },
+                    icon: const Icon(Icons.filter_alt_outlined),
+                    label: const Text('Filtrar'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  ComicViewSwitcher(),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.3),
                   Text("Modo:", style: TextStyle(fontSize: 14)),
                   Radio<ViewMode>(
                     value: ViewMode.simple,
@@ -116,6 +230,114 @@ class _ComicsGridState extends State<ComicsGrid> {
       ),
       body: Column(
         children: [
+          Consumer<ComicFilterProvider>(
+            builder: (context, filterProvider, child) {
+              // Solo mostrar el Wrap si hay autores o publishers seleccionados
+              if (filterProvider.isFilterMenuVisible) {
+                return FiltersLayout(context);
+              }
+
+              if (filterProvider.selectedPublishers.isEmpty &&
+                  filterProvider.selectedCharacters.isEmpty &&
+                  filterProvider.selectedLocations.isEmpty &&
+                  filterProvider.selectedSeries.isEmpty &&
+                  filterProvider.selectedStoryArcs.isEmpty &&
+                  filterProvider.selectedTeams.isEmpty &&
+                  filterProvider.selectedWriters.isEmpty) {
+                return SizedBox(); // No mostrar nada si no hay filtros activos
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  spacing: 8.0, // Espacio entre chips
+                  runSpacing: 4.0, // Espacio entre filas de chips
+                  children: [
+                    // Mostrar chips de autores seleccionados
+                    ...filterProvider.selectedWriters.map((writer) {
+                      return Chip(
+                        label: Text("Escritor: $writer"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar autor del provider
+                          filterProvider.removeWriter(writer);
+                        },
+                      );
+                    }),
+
+                    // Mostrar chips de publishers seleccionados
+                    ...filterProvider.selectedPublishers.map((publisher) {
+                      return Chip(
+                        label: Text("Editorial: $publisher"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removePublisher(publisher);
+                        },
+                      );
+                    }),
+
+                    // Mostrar chips de personajes seleccionados
+                    ...filterProvider.selectedCharacters.map((character) {
+                      return Chip(
+                        label: Text("Personaje: $character"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removeCharacter(character);
+                        },
+                      );
+                    }),
+                    // Mostrar chips de localizaciones seleccionados
+                    ...filterProvider.selectedLocations.map((location) {
+                      return Chip(
+                        label: Text("Localizacion: $location"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removeLocation(location);
+                        },
+                      );
+                    }),
+                    // Mostrar chips de series seleccionados
+                    ...filterProvider.selectedSeries.map((serie) {
+                      return Chip(
+                        label: Text("Serie: $serie"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removeSeries(serie);
+                        },
+                      );
+                    }),
+                    // Mostrar chips de equipos seleccionados
+                    ...filterProvider.selectedTeams.map((team) {
+                      return Chip(
+                        label: Text("Equipo: $team"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removeTeam(team);
+                        },
+                      );
+                    }),
+                    // Mostrar chips de series seleccionados
+                    ...filterProvider.selectedStoryArcs.map((arc) {
+                      return Chip(
+                        label: Text("Arco: $arc"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removeStoryArc(arc);
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              );
+            },
+          ),
+
           Padding(
             padding: const EdgeInsets.symmetric(
               vertical: 16.0,
@@ -129,6 +351,7 @@ class _ComicsGridState extends State<ComicsGrid> {
               ),
             ),
           ),
+
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -142,44 +365,314 @@ class _ComicsGridState extends State<ComicsGrid> {
                 return Consumer<ComicsProvider>(
                   builder: (context, ComicsProvider, child) {
                     final comics = ComicsProvider.comics;
+                    // Filtrar libros según los filtros activos
+                    final filteredComics = _filterBooks(comics);
                     if (comics.isEmpty)
                       return Center(child: Text("No hay comics disponibles"));
+                    if (filters.isGridView) {
+                      return GridView.builder(
+                        padding: EdgeInsets.all(8),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: _crossAxisCount.round(),
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: _calculateAspectRatio(),
+                          mainAxisExtent: itemHeight,
+                        ),
+                        itemCount: filteredComics.length,
+                        itemBuilder: (context, index) {
+                          final comic = filteredComics[index];
+                          final coverPath = comic.coverPath;
 
-                    return GridView.builder(
-                      padding: EdgeInsets.all(8),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: _crossAxisCount.round(),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: _calculateAspectRatio(),
-                        mainAxisExtent: itemHeight,
-                      ),
-                      itemCount: comics.length,
-                      itemBuilder: (context, index) {
-                        final comic = comics[index];
-                        final coverPath = comic.coverPath;
-
-                        switch (_selectedViewMode) {
-                          case ViewMode.simple:
-                            return _buildSimpleMode(context, comic, coverPath);
-                          case ViewMode.threeD:
-                            return _build3DMode(
-                              context,
-                              comic,
-                              coverPath,
-                              itemHeight,
-                            );
-                          case ViewMode.librarian:
-                            return _buildLibrarianMode(comic, coverPath);
-                        }
-                      },
-                    );
+                          switch (_selectedViewMode) {
+                            case ViewMode.simple:
+                              return _buildSimpleMode(
+                                context,
+                                comic,
+                                coverPath,
+                              );
+                            case ViewMode.threeD:
+                              return _build3DMode(
+                                context,
+                                comic,
+                                coverPath,
+                                itemHeight,
+                              );
+                            case ViewMode.librarian:
+                              return _buildLibrarianMode(comic, coverPath);
+                          }
+                        },
+                      );
+                    } else {
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: filteredComics.length,
+                        itemBuilder:
+                            (context, index) =>
+                                ComicListItem(comic: filteredComics[index]),
+                      );
+                    }
                   },
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Función para filtrar los libros
+  List<Comic> _filterBooks(List<Comic> books) {
+    final filters = Provider.of<ComicFilterProvider>(context, listen: false);
+
+    return books.where((book) {
+      final writerList =
+          book.writer
+              ?.split(',')
+              .map((w) => w.trim())
+              .where((w) => w.isNotEmpty)
+              .toList() ??
+          [];
+
+      final characterList =
+          book.characters
+              ?.split(',')
+              .map((w) => w.trim())
+              .where((w) => w.isNotEmpty)
+              .toList() ??
+          [];
+      final teamList =
+          book.teams
+              ?.split(',')
+              .map((w) => w.trim())
+              .where((w) => w.isNotEmpty)
+              .toList() ??
+          [];
+      final locationList =
+          book.locations
+              ?.split(',')
+              .map((w) => w.trim())
+              .where((w) => w.isNotEmpty)
+              .toList() ??
+          [];
+      final seriesList =
+          book.series
+              ?.split(',')
+              .map((w) => w.trim())
+              .where((w) => w.isNotEmpty)
+              .toList() ??
+          [];
+      final storyArcList =
+          book.storyArc
+              ?.split(',')
+              .map((w) => w.trim())
+              .where((w) => w.isNotEmpty)
+              .toList() ??
+          [];
+
+      final matchesAuthor =
+          filters.selectedWriters.isEmpty ||
+          writerList.any((w) => filters.selectedWriters.contains(w));
+
+      final matchesPublisher =
+          filters.selectedPublishers.isEmpty ||
+          filters.selectedPublishers.contains(book.publisher?.trim() ?? '');
+
+      final matchesCharacter =
+          filters.selectedCharacters.isEmpty ||
+          characterList.any((w) => filters.selectedCharacters.contains(w));
+
+      final matchesTeam =
+          filters.selectedTeams.isEmpty ||
+          teamList.any((w) => filters.selectedTeams.contains(w));
+
+      final matchesLocation =
+          filters.selectedLocations.isEmpty ||
+          locationList.any((w) => filters.selectedLocations.contains(w));
+
+      final matchesSeries =
+          filters.selectedSeries.isEmpty ||
+          seriesList.any((w) => filters.selectedSeries.contains(w));
+
+      final matchesStoryArc =
+          filters.selectedStoryArcs.isEmpty ||
+          storyArcList.any((w) => filters.selectedStoryArcs.contains(w));
+
+      return matchesAuthor &&
+          matchesPublisher &&
+          matchesCharacter &&
+          matchesLocation &&
+          matchesSeries &&
+          matchesStoryArc &&
+          matchesTeam;
+    }).toList();
+  }
+
+  Widget FiltersLayout(BuildContext context) {
+    final filters = Provider.of<ComicFilterProvider>(context);
+    final hasActiveFilters =
+        filters.selectedWriters.isNotEmpty ||
+        filters.selectedCharacters.isNotEmpty ||
+        filters.selectedLocations.isNotEmpty ||
+        filters.selectedSeries.isNotEmpty ||
+        filters.selectedStoryArcs.isNotEmpty ||
+        filters.selectedTeams.isNotEmpty ||
+        filters.selectedPublishers.isNotEmpty;
+
+    return Visibility(
+      visible: filters.isFilterMenuVisible,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fila de filtros activos con chips
+            if (hasActiveFilters) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text(
+                    'Filtros activos:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  // Chips de autores
+                  ...filters.selectedWriters.map((author) {
+                    return Chip(
+                      label: Text('Autor: $author'),
+                      onDeleted: () {
+                        filters.removeWriter(author);
+                      },
+                    );
+                  }),
+                  // Chips de editoriales
+                  ...filters.selectedPublishers.map((publisher) {
+                    return Chip(
+                      label: Text('Editorial: $publisher'),
+                      onDeleted: () {
+                        filters.removePublisher(publisher);
+                      },
+                    );
+                  }),
+                  // Chips de personajes
+                  ...filters.selectedCharacters.map((character) {
+                    return Chip(
+                      label: Text('Personajes: $character'),
+                      onDeleted: () {
+                        filters.removeCharacter(character);
+                      },
+                    );
+                  }),
+                  // Chips de localizaciones
+                  ...filters.selectedLocations.map((location) {
+                    return Chip(
+                      label: Text('Localizacion: $location'),
+                      onDeleted: () {
+                        filters.removeLocation(location);
+                      },
+                    );
+                  }),
+                  // Chips de equipos
+                  ...filters.selectedTeams.map((team) {
+                    return Chip(
+                      label: Text('Equipos: $team'),
+                      onDeleted: () {
+                        filters.removeTeam(team);
+                      },
+                    );
+                  }),
+                  // Chips de series
+                  ...filters.selectedSeries.map((serie) {
+                    return Chip(
+                      label: Text('Series: $serie'),
+                      onDeleted: () {
+                        filters.removeSeries(serie);
+                      },
+                    );
+                  }),
+                  // Chips de arcos de historia
+                  ...filters.selectedStoryArcs.map((storyArc) {
+                    return Chip(
+                      label: Text('Arco: $storyArc'),
+                      onDeleted: () {
+                        filters.removeStoryArc(storyArc);
+                      },
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+
+            // Filtros desplegables
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Columna de Autores
+                FilterFields(
+                  title: "Autor",
+                  hint: 'Selecciona autores',
+                  availableFilters: filters.availableWriters,
+                  toggle: filters.toggleWriter,
+                ),
+
+                const SizedBox(width: 32),
+
+                // Columna de Editoriales
+                FilterFields(
+                  title: "Editorial",
+                  hint: 'Selecciona Editorial',
+                  availableFilters: filters.availablePublishers,
+                  toggle: filters.togglePublisher,
+                ),
+                const SizedBox(width: 32),
+
+                // Columna de Personajes
+                FilterFields(
+                  title: "Personajes",
+                  hint: 'Selecciona personaje',
+                  availableFilters: filters.availableCharacters,
+                  toggle: filters.toggleCharacter,
+                ),
+                const SizedBox(width: 32),
+                // Columna de equipos
+                FilterFields(
+                  title: "Equipos",
+                  hint: 'Selecciona equipo',
+                  availableFilters: filters.availableTeams,
+                  toggle: filters.toggleTeam,
+                ),
+                const SizedBox(width: 32),
+                // Columna de localizaciones
+                FilterFields(
+                  title: "Localizaciones",
+                  hint: 'Selecciona localizacion',
+                  availableFilters: filters.availableLocations,
+                  toggle: filters.toggleLocation,
+                ),
+                const SizedBox(width: 32),
+                // Columna de series
+                FilterFields(
+                  title: "Series",
+                  hint: 'Selecciona serie',
+                  availableFilters: filters.availableSeries,
+                  toggle: filters.toggleSeries,
+                ),
+                const SizedBox(width: 32),
+                // Columna de Arcos
+                FilterFields(
+                  title: "Arcos",
+                  hint: 'Selecciona arco',
+                  availableFilters: filters.availableStoryArcs,
+                  toggle: filters.toggleStoryArc,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -223,7 +716,7 @@ class _ComicsGridState extends State<ComicsGrid> {
             Text(
               comic.title,
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -470,5 +963,5 @@ class _ComicsGridState extends State<ComicsGrid> {
   double _calculateAspectRatio() => 0.6 + (0.1 * (10 - _crossAxisCount));
   double _calculateMainAxisExtent() => 150 + (100 * (10 - _crossAxisCount));
   double _calculateItemHeight() => _calculateMainAxisExtent() * 0.7;
-  double _calculateTextSize() => 8 + (2 * (10 - _crossAxisCount));
+  double _calculateTextSize() => 8 + (2 * (8 - _crossAxisCount));
 }

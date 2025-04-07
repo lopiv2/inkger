@@ -20,9 +20,9 @@ class Comic {
   final String? coverArtist;
   final String? editor;
   final int? pages;
-  final dynamic characters; // Podría ser String, List<String> o Map
-  final dynamic teams;
-  final dynamic locations;
+  final String? characters; // Podría ser String, List<String> o Map
+  final String? teams;
+  final String? locations;
   final int? volume;
   final String? web;
   final DateTime? publicationDate;

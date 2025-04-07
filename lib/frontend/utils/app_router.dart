@@ -4,6 +4,7 @@ import 'package:inkger/frontend/screens/comic_reader_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
+import 'package:inkger/frontend/screens/series_screen.dart';
 import 'package:inkger/frontend/screens/user_profile_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
 import 'package:inkger/frontend/utils/user_profile_loader.dart';
@@ -65,6 +66,44 @@ class AppRouter {
                   );
                 },
                 transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/series',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child:
+                    SeriesScreen(), // Suponiendo que tienes una vista llamada SeriesGrid
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  // Animación de transición combinando Slide y Scale
+                  var tween = Tween<Offset>(
+                    begin: const Offset(0, 1), // Comienza desde abajo
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                  );
+
+                  // Aquí puedes agregar un ScaleTransition para hacerlo más interesante
+                  return SlideTransition(
+                    position: tween,
+                    child: ScaleTransition(
+                      scale: animation.drive(
+                        Tween<double>(begin: 0.8, end: 1.0),
+                      ),
+                      child: child,
+                    ),
+                  );
+                },
+                transitionDuration: const Duration(
+                  milliseconds: 1200,
+                ), // Transición más suave
               );
             },
           ),

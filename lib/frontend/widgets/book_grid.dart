@@ -7,7 +7,6 @@ import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/book_view_switcher.dart';
-//import 'package:inkger/frontend/widgets/advanced_filter_menu_books.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:provider/provider.dart';
@@ -49,34 +48,47 @@ class _BooksGridState extends State<BooksGrid> {
   }
 
   Future<void> _loadBooks() async {
-    // First get the provider with listen: false since we're in an async method
-    final provider = Provider.of<BooksProvider>(context, listen: false);
-    final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getInt('id');
-    await provider.loadBooks(id ?? 0);
+    try {
+      // Obtener provider con listen: false
+      final provider = Provider.of<BooksProvider>(context, listen: false);
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('id');
 
-    // Use listen: false for all Provider.of calls in async methods
-    final books = Provider.of<BooksProvider>(context, listen: false).books;
-    final filters = Provider.of<BookFilterProvider>(context, listen: false);
+      // Cargar libros
+      await provider.loadBooks(id ?? 0);
 
-    // Autores y Publishers únicos ordenados alfabéticamente
-    filters.fillAuthors(
-      books
-          .map((b) => b.author.trim())
-          .where((a) => a.isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort(),
-    );
+      // Obtener libros y filtros
+      final books = Provider.of<BooksProvider>(context, listen: false).books;
+      final filters = Provider.of<BookFilterProvider>(context, listen: false);
 
-    filters.fillPublishers(
-      books
-          .map((b) => b.publisher!.trim())
-          .where((p) => p.isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort(),
-    );
+      // Autores únicos (con manejo de nulos)
+      final authors =
+          books
+              .map((b) => b.author.trim()) // Manejo de author null
+              .where((a) => a.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+
+      filters.fillAuthors(authors);
+
+      // Publishers únicos (con manejo de nulos)
+      final publishers =
+          books
+              .map((b) => b.publisher?.trim() ?? '') // Manejo de publisher null
+              .where((p) => p.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+
+      filters.fillPublishers(publishers);
+    } catch (e) {
+      debugPrint('Error loading books: $e');
+      // Opcional: mostrar snackbar con el error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar libros: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -181,7 +193,7 @@ class _BooksGridState extends State<BooksGrid> {
                           filterProvider.removeAuthor(author);
                         },
                       );
-                    }).toList(),
+                    }),
 
                     // Mostrar chips de publishers seleccionados
                     ...filterProvider.selectedPublishers.map((publisher) {
@@ -193,7 +205,7 @@ class _BooksGridState extends State<BooksGrid> {
                           filterProvider.removePublisher(publisher);
                         },
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               );
@@ -709,5 +721,5 @@ class _BooksGridState extends State<BooksGrid> {
   double _calculateAspectRatio() => 0.6 + (0.1 * (10 - _crossAxisCount));
   double _calculateMainAxisExtent() => 150 + (100 * (10 - _crossAxisCount));
   double _calculateItemHeight() => _calculateMainAxisExtent() * 0.7;
-  double _calculateTextSize() => 8 + (2 * (10 - _crossAxisCount));
+  double _calculateTextSize() => 8 + (2 * (8 - _crossAxisCount));
 }

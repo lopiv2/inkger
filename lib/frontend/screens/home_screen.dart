@@ -333,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: InputBorder.none,
                   filled: true,
                   fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.search, color: Colors.white),
+                  prefixIcon: Icon(Icons.search, color: Colors.black),
                 ),
               ),
             ),

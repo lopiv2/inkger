@@ -58,8 +58,7 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
 
   // Variables para manejar los chips de listas
   List<String> tagsList = comic.tags?.split(',') ?? [];
-  List<String> charactersList = parseCommaSeparatedList(comic.characters);
-
+  List<String> charactersList = comic.characters?.split(',') ?? [];
   List<String> teamsList = parseCommaSeparatedList(comic.teams);
   List<String> locationsList = parseCommaSeparatedList(comic.locations);
   List<String> storyArcList = comic.storyArc?.split(',') ?? [];
@@ -156,10 +155,9 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
                     writerController.text.isNotEmpty
                         ? writerController.text
                         : null,
-                characters: charactersList.isNotEmpty ? charactersList : null,
-                teams: teamsList.isNotEmpty ? teamsList : null,
-                locations:
-                    locationsList.isNotEmpty ? locationsList.join(',') : null,
+                characters: charactersList.join(','),
+                teams: teamsList.join(','),
+                locations: locationsList.join(','),
                 storyArc:
                     storyArcList.isNotEmpty ? storyArcList.join(',') : null,
                 alternateSeries:
