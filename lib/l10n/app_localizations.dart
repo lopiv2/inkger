@@ -113,6 +113,12 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// No description provided for @noSerie.
+  ///
+  /// In en, this message translates to:
+  /// **'No serie'**
+  String get noSerie;
+
   /// No description provided for @scan.
   ///
   /// In en, this message translates to:

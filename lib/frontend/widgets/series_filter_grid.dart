@@ -12,7 +12,8 @@ class SeriesFilterAndGrid extends StatefulWidget {
 
 class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
   String _currentFilter = '#';
-  late Set<String> _availableLetters={}; // Para almacenar las letras con series
+  late Set<String> _availableLetters =
+      {}; // Para almacenar las letras con series
 
   List<String> _filterSeries(List<String> series, String filter) {
     if (filter == '#') {
@@ -33,6 +34,9 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
       String firstLetter = seriesName[0].toLowerCase();
       if (RegExp(r'[a-zA-Z]').hasMatch(firstLetter)) {
         availableLetters.add(firstLetter);
+      }
+      if (RegExp(r'[0-9]').hasMatch(firstLetter)) {
+        availableLetters.add('#');
       }
     }
 
@@ -58,7 +62,9 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
         }
 
         final allSeries = snapshot.data!;
-        _determineAvailableLetters(allSeries); // Determine which letters have series
+        _determineAvailableLetters(
+          allSeries,
+        ); // Determine which letters have series
         final filteredSeries = _filterSeries(allSeries, _currentFilter);
 
         return Column(

@@ -45,6 +45,10 @@ dev_dependencies:
 
 flutter:
   generate: true
+  fonts:
+    - family: icomoon
+      fonts:
+        - asset: assets/fonts/FantasyIcons.ttf
   assets:
     - assets/images/
     - assets/models/

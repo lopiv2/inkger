@@ -5,6 +5,7 @@ import 'package:inkger/frontend/models/series.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/series_filter_grid.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,7 +66,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
     for (var book in books) {
       allSeries.add(
         Series(
-          title: book.series ?? '',
+          title: book.series ?? AppLocalizations.of(context)!.noSerie,
           coverPath: book.coverPath ?? '',
           seriesNumber: book.seriesNumber ?? 0,
         ),
@@ -76,7 +77,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
     for (var comic in comicsProvider.comics) {
       allSeries.add(
         Series(
-          title: comic.series ?? '',
+          title: comic.series ?? AppLocalizations.of(context)!.noSerie,
           coverPath: comic.coverPath ?? '',
           seriesNumber: comic.seriesNumber ?? 0,
         ),

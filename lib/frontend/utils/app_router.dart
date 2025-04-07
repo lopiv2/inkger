@@ -4,6 +4,7 @@ import 'package:inkger/frontend/screens/comic_reader_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
+import 'package:inkger/frontend/screens/name_generators_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
 import 'package:inkger/frontend/screens/user_profile_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
@@ -133,6 +134,31 @@ class AppRouter {
                       parent:
                           animation, // Usa el animation proporcionado por GoRouter
                       curve: Curves.fastOutSlowIn,
+                    ),
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/home-writer/generators', // Use root path for the default home
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: NameGeneratorsScreen(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return ScaleTransition(
+                    scale: CurvedAnimation(
+                      parent:
+                          animation, // Usa el animation proporcionado por GoRouter
+                      curve: Curves.bounceInOut,
                     ),
                     child: child,
                   );
