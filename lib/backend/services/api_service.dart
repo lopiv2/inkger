@@ -18,7 +18,7 @@ class ApiService {
       BaseOptions(
         baseUrl: 'http://${Constants.ApiIP}:3000',
         connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 60),
       ),
     );
 
@@ -116,43 +116,43 @@ class ApiService {
   }
 
   static Future<Response> uploadFile({
-  required Uint8List fileBytes,
-  required String fileName,
-  required String fileType,
-  required String uploadPath,
-  Map<String, dynamic>? metadata,
-  BuildContext? context,
-  ProgressCallback? onSendProgress,
-  CancelToken? cancelToken,
-}) async {
-  try {
-    // Crear el objeto de datos que será convertido a JSON
-    final uploadData = {
-      'type': fileType.toLowerCase(),
-      'uploadPath': uploadPath,
-      if (metadata != null) 'metadata': metadata,
-    };
+    required Uint8List fileBytes,
+    required String fileName,
+    required String fileType,
+    required String uploadPath,
+    Map<String, dynamic>? metadata,
+    BuildContext? context,
+    ProgressCallback? onSendProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      // Crear el objeto de datos que será convertido a JSON
+      final uploadData = {
+        'type': fileType.toLowerCase(),
+        'uploadPath': uploadPath,
+        if (metadata != null) 'metadata': metadata,
+      };
 
-    final formData = FormData.fromMap({
-      'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
-      'uploadData': jsonEncode(uploadData), // Enviamos todo como JSON string
-    });
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+        'uploadData': jsonEncode(uploadData), // Enviamos todo como JSON string
+      });
 
-    return await dio.post(
-      '/api/upload', // Asegúrate que esta ruta coincide con tu endpoint
-      data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-        extra: {'context': context},
-      ),
-      onSendProgress: onSendProgress,
-      cancelToken: cancelToken,
-    );
-  } on DioException catch (e) {
-    debugPrint('Error en uploadFile: ${e.message}');
-    rethrow;
+      return await dio.post(
+        '/api/upload', // Asegúrate que esta ruta coincide con tu endpoint
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          extra: {'context': context},
+        ),
+        onSendProgress: onSendProgress,
+        cancelToken: cancelToken,
+      );
+    } on DioException catch (e) {
+      debugPrint('Error en uploadFile: ${e.message}');
+      rethrow;
+    }
   }
-}
 
   // Helpers para métodos HTTP comunes
   static Future<Response> get(

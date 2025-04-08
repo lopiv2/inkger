@@ -38,7 +38,7 @@ class NameGeneratorsScreen extends StatelessWidget {
     NameGenerator(
       title: 'Races',
       icon: Icons.people,
-      sections: ['Humanoid', 'Beast', 'Spirit'],
+      sections: ['Humanoid', 'Beast', 'Spirit', 'Elves', 'Dwarven'],
     ),
     NameGenerator(
       title: 'Spells',
