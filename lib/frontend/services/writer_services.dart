@@ -5,9 +5,10 @@ import 'package:inkger/backend/services/api_service.dart';
 
 class WriterServices {
   static Future<String> getDataGenerator(String type, String generator) async {
+    
     try {
       final response = await ApiService.dio.get(
-        '/api/writer/generator/$type/$generator',
+        '/api/writer/generator/${type.toLowerCase()}/${generator.toLowerCase()}',
         options: Options(responseType: ResponseType.stream),
       );
 
