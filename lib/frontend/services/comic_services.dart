@@ -132,4 +132,18 @@ class ComicServices {
       //await _saveProgressOffline(comicId, progress);
     }
   }
+  static Future<void> updateComic(Comic comic) async {
+    try {
+      final response = await ApiService.dio.put(
+        '/api/comic/${comic.id}',
+        data: jsonEncode(comic.toJson()),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }

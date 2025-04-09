@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/comic.dart';
+import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:intl/intl.dart'; // Para formatear fechas
 
 List<String> parseCommaSeparatedList(dynamic data) {
@@ -49,6 +52,24 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
   final TextEditingController writerController = TextEditingController(
     text: comic.writer,
   );
+  final TextEditingController pencillerController = TextEditingController(
+    text: comic.penciller,
+  );
+  final TextEditingController lettererController = TextEditingController(
+    text: comic.letterer,
+  );
+  final TextEditingController inkerController = TextEditingController(
+    text: comic.inker,
+  );
+  final TextEditingController coloristController = TextEditingController(
+    text: comic.colorist,
+  );
+  final TextEditingController coverArtistController = TextEditingController(
+    text: comic.coverArtist,
+  );
+  final TextEditingController editorController = TextEditingController(
+    text: comic.editor,
+  );
   final TextEditingController storyArcController = TextEditingController(
     text: comic.storyArc,
   );
@@ -86,6 +107,15 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
                   maxLines: 3,
                 ),
                 _buildEditableField('Escritor:', writerController),
+                _buildEditableField('Dibujante:', pencillerController),
+                _buildEditableField('Entintador:', inkerController),
+                _buildEditableField('Colorista:', coloristController),
+                _buildEditableField('Rotulista:', lettererController),
+                _buildEditableField(
+                  'Artista de portada:',
+                  coverArtistController,
+                ),
+                _buildEditableField('Editor:', editorController),
                 _buildEditableField('Editorial:', publisherController),
                 _buildEditableField('Idioma:', languageController),
                 _buildEditableField('Serie:', seriesController),
@@ -128,7 +158,7 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
           ),
           TextButton(
             child: const Text('Guardar'),
-            onPressed: () {
+            onPressed: () async {
               // Guardar cambios aquí
               // Crea el comic con los nuevos datos editados
               Comic updatedComic = Comic(
@@ -155,6 +185,30 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
                     writerController.text.isNotEmpty
                         ? writerController.text
                         : null,
+                penciller:
+                    pencillerController.text.isNotEmpty
+                        ? pencillerController.text
+                        : null,
+                inker:
+                    inkerController.text.isNotEmpty
+                        ? inkerController.text
+                        : null,
+                colorist:
+                    coloristController.text.isNotEmpty
+                        ? coloristController.text
+                        : null,
+                letterer:
+                    lettererController.text.isNotEmpty
+                        ? lettererController.text
+                        : null,
+                coverArtist:
+                    coverArtistController.text.isNotEmpty
+                        ? coverArtistController.text
+                        : null,
+                editor:
+                    editorController.text.isNotEmpty
+                        ? editorController.text
+                        : null,
                 characters: charactersList.join(','),
                 teams: teamsList.join(','),
                 locations: locationsList.join(','),
@@ -170,9 +224,13 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
                 creationDate: comic.creationDate,
                 // Otros campos adicionales
               );
-
-              // Aquí llamamos a la API para guardar los cambios
-              // _saveComic(updatedComic);
+              await ComicServices.updateComic(updatedComic);
+              CustomSnackBar.show(
+                context,
+                AppLocalizations.of(context)!.metadataUpdated,
+                Colors.green,
+                duration: Duration(seconds: 4),
+              );
               Navigator.pop(context); // Cerrar el diálogo
             },
           ),

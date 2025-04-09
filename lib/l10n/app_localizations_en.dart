@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'Edit';
 
   @override
+  String get metadataUpdated => 'Updated metadata';
+
+  @override
   String get noSerie => 'No serie';
 
   @override

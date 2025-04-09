@@ -113,6 +113,12 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// No description provided for @metadataUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated metadata'**
+  String get metadataUpdated;
+
   /// No description provided for @noSerie.
   ///
   /// In en, this message translates to:

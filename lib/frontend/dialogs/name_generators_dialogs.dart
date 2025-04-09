@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inkger/frontend/models/name_generator.dart';
 import 'package:inkger/frontend/services/writer_services.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 
 class NameGeneratorsDialog extends StatefulWidget {
   final NameGenerator generator;
-  final List<String> sections;
+  final List<GeneratorSection> sections;
 
   const NameGeneratorsDialog({
     super.key,
@@ -24,7 +25,7 @@ class _NameGeneratorsDialogState extends State<NameGeneratorsDialog> {
   @override
   void initState() {
     super.initState();
-    selectedSection = widget.sections.first;
+    selectedSection = widget.sections[0].title;
   }
 
   @override
@@ -33,42 +34,54 @@ class _NameGeneratorsDialogState extends State<NameGeneratorsDialog> {
       backgroundColor: Colors.grey[900],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
-        width: 600,
+        width: 650,
         height: 400,
         child: Row(
           children: [
             // Columna izquierda
             Container(
-              width: 150,
+              width: 180,
               decoration: BoxDecoration(
                 color: Colors.grey[850],
                 borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(16),
                 ),
               ),
-              child: ListView(
-                children:
-                    widget.sections.map((section) {
-                      final isSelected = section == selectedSection;
-                      return ListTile(
-                        title: Text(
-                          section,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey,
-                            fontWeight:
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  hoverColor: Colors.blueGrey, // Color al pasar el ratón
+                  splashColor: Colors.grey[400],
+                  child: ListView(
+                    children:
+                        widget.sections.map((section) {
+                          final isSelected = section == selectedSection;
+                          return ListTile(
+                            leading: Icon(section.icon, color: Colors.white),
+                            tileColor:
                                 isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                          ),
-                        ),
-                        selected: isSelected,
-                        onTap: () {
-                          setState(() {
-                            selectedSection = section;
-                          });
-                        },
-                      );
-                    }).toList(),
+                                    ? Colors.grey[800]
+                                    : null, // Usa tileColor
+                            title: Text(
+                              section.title,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.grey,
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                            selected: isSelected,
+                            onTap: () {
+                              setState(() {
+                                selectedSection = section.title;
+                              });
+                            },
+                          );
+                        }).toList(),
+                  ),
+                ),
               ),
             ),
 
@@ -102,6 +115,7 @@ class _SectionWithDropdownState extends State<SectionWithDropdown> {
   TextEditingController itemController = TextEditingController();
   late TextEditingController _textController;
   final ScrollController _scrollController = ScrollController();
+  String? selectedItem;
 
   void initState() {
     super.initState();
@@ -287,10 +301,44 @@ class _SectionWithDropdownState extends State<SectionWithDropdown> {
               child: ListView.builder(
                 itemCount: itemList.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      itemList[index],
-                      style: TextStyle(color: Colors.white),
+                  final name = itemList[index];
+                  final isSelected = selectedItem == name;
+
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      // Efecto hover y ripple
+                      hoverColor: Colors.blueGrey, // Color al pasar el ratón
+                      splashColor: Colors.grey[400], // Efecto al tocar
+                      onTap: () {
+                        setState(() {
+                          selectedItem = isSelected ? null : name;
+                          if (!isSelected) {
+                            Clipboard.setData(ClipboardData(text: name));
+                            CustomSnackBar.show(
+                              context,
+                              "Copiado: $name",
+                              Colors.green,
+                              duration: Duration(seconds: 4),
+                            );
+                          }
+                        });
+                      },
+                      child: ListTile(
+                        tileColor:
+                            isSelected
+                                ? Colors.grey[800]
+                                : null, // Usa tileColor
+                        title: Text(
+                          name,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        // Añade espacio adicional y feedback visual
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                        visualDensity: VisualDensity.comfortable,
+                      ),
                     ),
                   );
                 },
@@ -299,8 +347,15 @@ class _SectionWithDropdownState extends State<SectionWithDropdown> {
           ),
           SizedBox(height: 8),
           ElevatedButton(
-            onPressed: () {
-              // Lógica para generar algo
+            onPressed: () async {
+              final names = await WriterServices.fetchGeneratedNames(
+                type: selectedType ?? '',
+                generator: widget.selectedSection,
+                number: 20,
+              );
+              setState(() {
+                itemList = names;
+              });
             },
             child: Text('Generar nombres'),
           ),

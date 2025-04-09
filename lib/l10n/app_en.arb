@@ -3,6 +3,7 @@
   "audiobooks": "Audiobooks",
   "books": "Books",
   "edit": "Edit",
+  "metadataUpdated": "Updated metadata",
   "noSerie": "No serie",
   "scan": "Scan",
   "updateMetadata": "Update metadata"

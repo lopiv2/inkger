@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/name_generators_dialogs.dart';
+import 'package:inkger/frontend/models/fantasy_icons.dart';
 import 'package:inkger/frontend/models/name_generator.dart'; // Asegúrate de importar tu modelo
 
 class NameGeneratorsScreen extends StatelessWidget {
@@ -7,53 +8,105 @@ class NameGeneratorsScreen extends StatelessWidget {
   final List<NameGenerator> generators = [
     NameGenerator(
       title: 'Creatures',
-      icon: Icons.catching_pokemon,
-      sections: ['Basic', 'Mythical', 'Hybrids'],
+      mainIcon: Icons.catching_pokemon,
+      sections: [
+        GeneratorSection(title: 'Basic', icon: Icons.face),
+        GeneratorSection(title: 'Mythical', icon: Icons.face_3),
+        GeneratorSection(title: 'Hybrid', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
       title: 'Names',
-      icon: Icons.text_fields,
-      sections: ['First Names', 'Last Names', 'Nicknames'],
+      mainIcon: Icons.text_fields,
+      sections: [
+        GeneratorSection(title: 'First names', icon: Icons.face),
+        GeneratorSection(title: 'Last Names', icon: Icons.face_3),
+        GeneratorSection(title: 'Nicknames', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
       title: 'More',
-      icon: Icons.more_horiz,
-      sections: ['Rare', 'Obscure'],
+      mainIcon: Icons.more_horiz,
+      sections: [
+        GeneratorSection(title: 'Rare', icon: Icons.face),
+        GeneratorSection(title: 'Obscure', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
-      title: 'Oceans',
-      icon: Icons.water,
-      sections: ['Shallow', 'Deep', 'Abyssal'],
+      title: 'Water bodies',
+      mainIcon: Fantasy.ocean,
+      sections: [
+        GeneratorSection(title: 'Sea', icon: Icons.face),
+        GeneratorSection(title: 'Deep', icon: Icons.face_3),
+        GeneratorSection(title: 'Abisal', icon: Icons.face_3),
+        GeneratorSection(title: 'Lake', icon: Icons.face_3),
+        GeneratorSection(title: 'Ocean', icon: Fantasy.ocean),
+      ],
     ),
     NameGenerator(
       title: 'Places',
-      icon: Icons.location_on,
-      sections: ['Cities', 'Villages', 'Ruins'],
+      mainIcon: Icons.location_on,
+      sections: [
+        GeneratorSection(title: 'Cities', icon: Icons.face),
+        GeneratorSection(title: 'Villages', icon: Fantasy.village),
+        GeneratorSection(title: 'Ruins', icon: Icons.face_3),
+        GeneratorSection(title: 'Caves', icon: Icons.face_3),
+        GeneratorSection(title: 'Places of Interes', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
-      title: 'Planets',
-      icon: Icons.public,
-      sections: ['Terrestrial', 'Gas Giants', 'Dwarf Planets'],
+      title: 'Celestial Bodies',
+      mainIcon: Icons.public,
+      sections: [
+        GeneratorSection(title: 'Terrestrial', icon: Icons.face),
+        GeneratorSection(title: 'Giants', icon: Icons.face_3),
+        GeneratorSection(title: 'Dwarf', icon: Icons.face_3),
+        GeneratorSection(title: 'Stars', icon: Icons.face_3),
+        GeneratorSection(title: 'Satellites', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
       title: 'Races',
-      icon: Icons.people,
-      sections: ['Humanoid', 'Beast', 'Spirit', 'Elves', 'Dwarven'],
+      mainIcon: Icons.people,
+      sections: [
+        GeneratorSection(title: 'Humanoid', icon: Fantasy.human),
+        GeneratorSection(title: 'Beast', icon: Fantasy.werewolf),
+        GeneratorSection(title: 'Spirit', icon: Icons.face_3),
+        GeneratorSection(title: 'Elves', icon: Fantasy.elf),
+        GeneratorSection(title: 'Dwarven', icon: Fantasy.dwarf),
+      ],
     ),
     NameGenerator(
       title: 'Spells',
-      icon: Icons.people,
-      sections: ['Fire', 'Water', 'Dark'],
+      mainIcon: Fantasy.magicWand,
+      sections: [
+        GeneratorSection(title: 'Fire', icon: Icons.face),
+        GeneratorSection(title: 'Water', icon: Icons.face_3),
+        GeneratorSection(title: 'Life', icon: Icons.face_3),
+        GeneratorSection(title: 'Dark', icon: Icons.face_3),
+        GeneratorSection(title: 'Wind', icon: Icons.face_3),
+        GeneratorSection(title: 'Earth', icon: Icons.face_3),
+        GeneratorSection(title: 'Lightning', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
       title: 'Tech',
-      icon: Icons.memory,
-      sections: ['AI', 'Robotics', 'Nanotech'],
+      mainIcon: Icons.memory,
+      sections: [
+        GeneratorSection(title: 'AI', icon: Icons.face),
+        GeneratorSection(title: 'Robotics', icon: Icons.face_3),
+        GeneratorSection(title: 'Nanotech', icon: Icons.face_3),
+      ],
     ),
     NameGenerator(
       title: 'Vehicles',
-      icon: Icons.directions_car,
-      sections: ['Land', 'Air', 'Space'],
+      mainIcon: Icons.directions_car,
+      sections: [
+        GeneratorSection(title: 'Land', icon: Icons.face),
+        GeneratorSection(title: 'Air', icon: Icons.face_3),
+        GeneratorSection(title: 'Space', icon: Icons.face_3),
+        GeneratorSection(title: 'Water', icon: Icons.face_3),
+      ],
     ),
   ];
 
@@ -94,7 +147,7 @@ class NameGeneratorsScreen extends StatelessWidget {
   Widget _buildGeneratorCard(
     BuildContext context,
     NameGenerator generator,
-    List<String> sections,
+    List<GeneratorSection> sections,
   ) {
     return Card(
       elevation: 4,
@@ -114,7 +167,7 @@ class NameGeneratorsScreen extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                generator.icon,
+                generator.mainIcon,
                 size: 32,
                 color: Theme.of(context).primaryColor,
               ),
@@ -138,7 +191,7 @@ class NameGeneratorsScreen extends StatelessWidget {
   void showGeneratorDialog(
     BuildContext context,
     NameGenerator generator,
-    List<String> sections,
+    List<GeneratorSection> sections,
   ) {
     showDialog(
       context: context,
