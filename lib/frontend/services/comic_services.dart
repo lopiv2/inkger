@@ -135,7 +135,7 @@ class ComicServices {
   static Future<void> updateComic(Comic comic) async {
     try {
       final response = await ApiService.dio.put(
-        '/api/comic/${comic.id}',
+        '/api/comics/${comic.id}',
         data: jsonEncode(comic.toJson()),
       );
 

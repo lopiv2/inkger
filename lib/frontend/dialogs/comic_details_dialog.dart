@@ -220,6 +220,7 @@ void showComicDetailsDialog(BuildContext context, Comic comic) {
                         : null,
                 fileSize: comic.fileSize,
                 filePath: comic.filePath,
+                coverPath: comic.coverPath,
                 publicationDate: comic.publicationDate,
                 creationDate: comic.creationDate,
                 // Otros campos adicionales
