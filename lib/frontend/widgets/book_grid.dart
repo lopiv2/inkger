@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/book_view_switcher.dart';
+import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:provider/provider.dart';
@@ -228,7 +230,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 double maxHeight = constraints.maxHeight;
-                double itemHeight = _calculateMainAxisExtent();
+                double itemHeight = CommonServices.calculateMainAxisExtent(_crossAxisCount).toDouble();
 
                 // Si el itemHeight es mayor que el espacio disponible, limitarlo
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
@@ -240,8 +242,9 @@ class _BooksGridState extends State<BooksGrid> {
                     // Filtrar libros según los filtros activos
                     final filteredBooks = _filterBooks(books);
 
-                    if (books.isEmpty)
+                    if (books.isEmpty) {
                       return Center(child: Text("No hay libros disponibles"));
+                    }
                     if (filters.isGridView) {
                       return GridView.builder(
                         padding: EdgeInsets.all(8),
@@ -249,7 +252,7 @@ class _BooksGridState extends State<BooksGrid> {
                           crossAxisCount: _crossAxisCount.round(),
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: _calculateAspectRatio(),
+                          childAspectRatio: CommonServices.calculateAspectRatio(_crossAxisCount),
                           mainAxisExtent: itemHeight,
                         ),
                         itemCount: filteredBooks.length,
@@ -440,59 +443,72 @@ class _BooksGridState extends State<BooksGrid> {
   }
 
   Widget _buildSimpleMode(BuildContext context, Book book, String? coverPath) {
-    return Column(
-      children: [
-        HoverCardBook(
-          book: book,
-          onDelete: () => showDeleteConfirmationDialog(context, book),
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            elevation: 4,
-            child: Column(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16.0),
-                  child: _buildCoverImage(coverPath),
-                ),
-                LinearProgressIndicator(
-                  value: book.readingProgress!['readingProgress'] / 100,
-                  minHeight: 10,
-                  backgroundColor: Colors.green[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor,
+  return Column(
+    children: [
+      HoverCardBook(
+        book: book,
+        onDelete: () => showDeleteConfirmationDialog(context, book),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 4,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: buildCoverImage(coverPath ?? ''),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(16.0),
+                    bottomRight: Radius.circular(16.0),
+                  ),
+                  child: LinearProgressIndicator(
+                    value: book.readingProgress!['readingProgress'] / 100,
+                    minHeight: 10,
+                    backgroundColor: Colors.green[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: 8),
-        Column(
-          children: [
-            Text(
-              book.title,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: _calculateTextSize(),
-              ),
+      ),
+      const SizedBox(height: 8),
+      Column(
+        children: [
+          Text(
+            book.title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: CommonServices.calculateTextSize(_crossAxisCount),
             ),
-            Text(
-              book.author,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: _calculateTextSize()),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+          Text(
+            book.author,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount)),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
 
   Widget _build3DMode(
     BuildContext context,
@@ -551,7 +567,7 @@ class _BooksGridState extends State<BooksGrid> {
               elevation: 4,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16.0),
-                child: _buildCoverImage(coverPath),
+                child: buildCoverImage(coverPath ?? ''),
               ),
             ),
           ),
@@ -564,7 +580,7 @@ class _BooksGridState extends State<BooksGrid> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: _calculateTextSize(),
+            fontSize: CommonServices.calculateTextSize(_crossAxisCount),
           ),
         ),
       ],
@@ -573,7 +589,7 @@ class _BooksGridState extends State<BooksGrid> {
 
   Widget _buildLibrarianMode(Book book, String? coverPath) {
     return Container(
-      height: _calculateItemHeight(),
+      height: CommonServices.calculateItemHeight(_crossAxisCount),
       child: Card(
         elevation: 4,
         color: Colors.grey[200],
@@ -584,7 +600,7 @@ class _BooksGridState extends State<BooksGrid> {
               flex: 3,
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                child: _buildCoverImage(coverPath),
+                child: buildCoverImage(coverPath ?? ''),
               ),
             ),
             Expanded(
@@ -598,7 +614,7 @@ class _BooksGridState extends State<BooksGrid> {
                       book.title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: _calculateTextSize() * 0.9,
+                        fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.9,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -606,11 +622,11 @@ class _BooksGridState extends State<BooksGrid> {
                     SizedBox(height: 4),
                     Text(
                       "Autor: ${book.author}",
-                      style: TextStyle(fontSize: _calculateTextSize() * 0.7),
+                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.7),
                     ),
                     Text(
                       "ID: ${book.id}",
-                      style: TextStyle(fontSize: _calculateTextSize() * 0.6),
+                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.6),
                     ),
                   ],
                 ),
@@ -620,42 +636,6 @@ class _BooksGridState extends State<BooksGrid> {
         ),
       ),
     );
-  }
-
-  Widget _buildCoverImage(String? coverPath, {bool calculateColor = false}) {
-    return FutureBuilder<Uint8List?>(
-      future: coverPath != null ? BookServices.getBookCover(coverPath) : null,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError || !snapshot.hasData) {
-          return Center(child: Icon(Icons.broken_image, size: 50));
-        }
-
-        // Cálculo del color solo cuando hay datos y es necesario
-        if (calculateColor && !_colorCalculated && snapshot.hasData) {
-          _calculateDominantColor(snapshot.data!);
-          _colorCalculated = true;
-        }
-
-        return FittedBox(
-          fit: BoxFit.contain,
-          child: Image.memory(snapshot.data!, fit: BoxFit.contain),
-        );
-      },
-    );
-  }
-
-  Future<void> _calculateDominantColor(Uint8List imageBytes) async {
-    try {
-      final color = await getDominantColor(imageBytes);
-      if (mounted) {
-        _dominantColorNotifier.value = color;
-      }
-    } catch (e) {
-      debugPrint('Error calculando color: $e');
-    }
   }
 
   Future<void> showDeleteConfirmationDialog(
@@ -717,9 +697,4 @@ class _BooksGridState extends State<BooksGrid> {
       },
     );
   }
-
-  double _calculateAspectRatio() => 0.6 + (0.1 * (10 - _crossAxisCount));
-  double _calculateMainAxisExtent() => 150 + (100 * (10 - _crossAxisCount));
-  double _calculateItemHeight() => _calculateMainAxisExtent() * 0.7;
-  double _calculateTextSize() => 8 + (2 * (8 - _crossAxisCount));
 }

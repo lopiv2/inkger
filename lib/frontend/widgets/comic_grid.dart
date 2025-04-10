@@ -1,15 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/comic_filter_provider.dart';
 import 'package:inkger/frontend/utils/comic_list_item.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/filter_fields.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
+import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:provider/provider.dart';
@@ -356,7 +356,7 @@ class _ComicsGridState extends State<ComicsGrid> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 double maxHeight = constraints.maxHeight;
-                double itemHeight = _calculateMainAxisExtent();
+                double itemHeight = CommonServices.calculateMainAxisExtent(_crossAxisCount).toDouble();
 
                 // Si el itemHeight es mayor que el espacio disponible, limitarlo
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
@@ -376,7 +376,7 @@ class _ComicsGridState extends State<ComicsGrid> {
                           crossAxisCount: _crossAxisCount.round(),
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: _calculateAspectRatio(),
+                          childAspectRatio: CommonServices.calculateAspectRatio(_crossAxisCount),
                           mainAxisExtent: itemHeight,
                         ),
                         itemCount: filteredComics.length,
@@ -692,18 +692,30 @@ class _ComicsGridState extends State<ComicsGrid> {
               borderRadius: BorderRadius.circular(16.0),
             ),
             elevation: 4,
-            child: Column(
+            child: Stack(
+              alignment: Alignment.bottomCenter,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.0),
-                  child: _buildCoverImage(coverPath),
+                  child: buildCoverImage(coverPath ?? ''),
                 ),
-                LinearProgressIndicator(
-                  value: comic.readingProgress!['readingProgress'] / 100,
-                  minHeight: 10,
-                  backgroundColor: Colors.green[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor,
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(16.0),
+                      bottomRight: Radius.circular(16.0),
+                    ),
+                    child: LinearProgressIndicator(
+                      value: comic.readingProgress!['readingProgress'] / 100,
+                      minHeight: 10,
+                      backgroundColor: Colors.green[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -720,7 +732,7 @@ class _ComicsGridState extends State<ComicsGrid> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: _calculateTextSize(),
+                fontSize: CommonServices.calculateTextSize(_crossAxisCount),
               ),
             ),
             Text(
@@ -728,7 +740,7 @@ class _ComicsGridState extends State<ComicsGrid> {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: _calculateTextSize()),
+              style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount)),
             ),
           ],
         ),
@@ -793,7 +805,7 @@ class _ComicsGridState extends State<ComicsGrid> {
               elevation: 4,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16.0),
-                child: _buildCoverImage(coverPath),
+                child: buildCoverImage(coverPath ?? ''),
               ),
             ),
           ),
@@ -806,7 +818,7 @@ class _ComicsGridState extends State<ComicsGrid> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: _calculateTextSize(),
+            fontSize: CommonServices.calculateTextSize(_crossAxisCount),
           ),
         ),
       ],
@@ -815,7 +827,7 @@ class _ComicsGridState extends State<ComicsGrid> {
 
   Widget _buildLibrarianMode(Comic comic, String? coverPath) {
     return Container(
-      height: _calculateItemHeight(),
+      height: CommonServices.calculateItemHeight(_crossAxisCount),
       child: Card(
         elevation: 4,
         color: Colors.grey[200],
@@ -826,7 +838,7 @@ class _ComicsGridState extends State<ComicsGrid> {
               flex: 3,
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                child: _buildCoverImage(coverPath),
+                child: buildCoverImage(coverPath ?? ''),
               ),
             ),
             Expanded(
@@ -840,7 +852,7 @@ class _ComicsGridState extends State<ComicsGrid> {
                       comic.title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: _calculateTextSize() * 0.9,
+                        fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.9,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -848,11 +860,11 @@ class _ComicsGridState extends State<ComicsGrid> {
                     SizedBox(height: 4),
                     Text(
                       "Autor: ${comic.writer}",
-                      style: TextStyle(fontSize: _calculateTextSize() * 0.7),
+                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.7),
                     ),
                     Text(
                       "ID: ${comic.id}",
-                      style: TextStyle(fontSize: _calculateTextSize() * 0.6),
+                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.6),
                     ),
                   ],
                 ),
@@ -862,42 +874,6 @@ class _ComicsGridState extends State<ComicsGrid> {
         ),
       ),
     );
-  }
-
-  Widget _buildCoverImage(String? coverPath, {bool calculateColor = false}) {
-    return FutureBuilder<Uint8List?>(
-      future: coverPath != null ? ComicServices.getComicCover(coverPath) : null,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError || !snapshot.hasData) {
-          return Center(child: Icon(Icons.broken_image, size: 50));
-        }
-
-        // Cálculo del color solo cuando hay datos y es necesario
-        if (calculateColor && !_colorCalculated && snapshot.hasData) {
-          _calculateDominantColor(snapshot.data!);
-          _colorCalculated = true;
-        }
-
-        return FittedBox(
-          fit: BoxFit.contain,
-          child: Image.memory(snapshot.data!, fit: BoxFit.contain),
-        );
-      },
-    );
-  }
-
-  Future<void> _calculateDominantColor(Uint8List imageBytes) async {
-    try {
-      final color = await getDominantColor(imageBytes);
-      if (mounted) {
-        _dominantColorNotifier.value = color;
-      }
-    } catch (e) {
-      debugPrint('Error calculando color: $e');
-    }
   }
 
   Future<void> showDeleteConfirmationDialog(
@@ -960,8 +936,4 @@ class _ComicsGridState extends State<ComicsGrid> {
     );
   }
 
-  double _calculateAspectRatio() => 0.6 + (0.1 * (10 - _crossAxisCount));
-  double _calculateMainAxisExtent() => 150 + (100 * (10 - _crossAxisCount));
-  double _calculateItemHeight() => _calculateMainAxisExtent() * 0.7;
-  double _calculateTextSize() => 8 + (2 * (8 - _crossAxisCount));
 }

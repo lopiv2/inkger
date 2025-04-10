@@ -1,8 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/comic.dart';
-import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/widgets/cover_art.dart';
 
 class ComicListItem extends StatelessWidget {
   final Comic comic;
@@ -16,31 +14,12 @@ class ComicListItem extends StatelessWidget {
       child: ListTile(
         leading: SizedBox(
           width: 50,
-          child: _buildCoverImage(comic.coverPath),
+          child: buildCoverImage(comic.coverPath ?? ''),
         ),
         title: Text(comic.title),
         subtitle: comic.writer!.isNotEmpty ? Text(comic.writer ?? '') : null,
         trailing: const Icon(Icons.chevron_right),
       ),
-    );
-  }
-
-  Widget _buildCoverImage(String? coverPath, {bool calculateColor = false}) {
-    return FutureBuilder<Uint8List?>(
-      future: coverPath != null ? BookServices.getBookCover(coverPath) : null,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError || !snapshot.hasData) {
-          return Center(child: Icon(Icons.broken_image, size: 50));
-        }
-
-        return FittedBox(
-          fit: BoxFit.contain,
-          child: Image.memory(snapshot.data!, fit: BoxFit.contain),
-        );
-      },
     );
   }
 }

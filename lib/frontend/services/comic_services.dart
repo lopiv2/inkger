@@ -6,6 +6,7 @@ import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,29 +44,6 @@ class ComicServices {
       return response;
     } catch (e) {
       throw Exception('Error al obtener los comics: $e');
-    }
-  }
-
-  static Future<Uint8List?> getComicCover(String coverPath) async {
-    try {
-      final encodedPath = Uri.encodeComponent(coverPath);
-      final response = await ApiService.dio.get(
-        '/api/images/$encodedPath',
-        options: Options(
-          responseType: ResponseType.bytes,
-          validateStatus: (status) => status! < 500,
-        ),
-      );
-
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          (response.data as List).isNotEmpty) {
-        return Uint8List.fromList(response.data as List<int>);
-      }
-      return null; // Devuelve null explícitamente para casos de error
-    } catch (e) {
-      print('Error al obtener portada: $e');
-      return null;
     }
   }
 
@@ -113,7 +91,7 @@ class ComicServices {
         // ✅ Verificar si el widget sigue montado antes de usar el contexto
         CustomSnackBar.show(
           context,
-          'Progreso guardado: $progress%',
+          '${AppLocalizations.of(context)!.savedProgress}: $progress%',
           Colors.green,
           duration: const Duration(seconds: 4),
         );

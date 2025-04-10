@@ -1,101 +1,178 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:inkger/frontend/models/book.dart';
+import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/widgets/chips_field.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Para formatear fechas
 
-void showBookDetailsDialog(BuildContext context, Book book) {
-  final dateFormat = DateFormat('dd/MM/yyyy');
+void showBookDetailsDialog(BuildContext context, Book book) async {
+  final dateFormat = DateFormat('dd/MM/yyyy'); // Formato de fecha
+  final prefs = await SharedPreferences.getInstance();
+  final id = prefs.getInt('id');
 
-  // Controladores de texto
-  final titleController = TextEditingController(text: book.title);
-  final descriptionController = TextEditingController(text: book.description ?? '');
-  final authorController = TextEditingController(text: book.author ?? '');
-  final publisherController = TextEditingController(text: book.publisher ?? '');
-  final languageController = TextEditingController(text: book.language ?? '');
-  final seriesController = TextEditingController(text: book.series ?? '');
-  final seriesNumberController = TextEditingController(text: book.seriesNumber?.toString() ?? '');
-  final tagsController = TextEditingController(text: book.tags ?? '');
+  final provider = Provider.of<BooksProvider>(context, listen: false);
 
-  final fileSizeController = TextEditingController(
-      text: book.fileSize != null ? (book.fileSize! / 1024 / 1024).toStringAsFixed(2) : '');
+  // Controladores para campos editables
+  final TextEditingController titleController = TextEditingController(
+    text: book.title,
+  );
+  final TextEditingController descriptionController = TextEditingController(
+    text: book.description,
+  );
+  final TextEditingController tagsController = TextEditingController(
+    text: book.tags,
+  );
+  final TextEditingController seriesController = TextEditingController(
+    text: book.series,
+  );
+  final TextEditingController seriesNumberController = TextEditingController(
+    text: book.seriesNumber.toString(),
+  );
+  final TextEditingController languageController = TextEditingController(
+    text: book.language,
+  );
+  final TextEditingController publisherController = TextEditingController(
+    text: book.publisher,
+  );
+  final TextEditingController authorController = TextEditingController(
+    text: book.author,
+  );
 
-  final publicationDateController =
-      TextEditingController(text: book.publicationDate != null ? dateFormat.format(book.publicationDate!) : '');
-
-  // Conversión para chips
-  List<String> _toList(dynamic source) {
-    if (source is List) {
-      return source.map((e) => e.toString()).toList();
-    } else if (source is String) {
-      return source
-          .replaceAll('[', '')
-          .replaceAll(']', '')
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    }
-    return [];
-  }
-
-  final tags = _toList(book.tags);
+  // Variables para manejar los chips de listas
+  List<String> tagsList = book.tags?.split(',') ?? [];
 
   showDialog(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: Text('Editar libro'),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.6,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildTextField('Título', titleController),
-                _buildTextField('Autor', authorController),
-                _buildTextField('Editorial', publisherController),
-                _buildTextField('Idioma', languageController),
-                _buildTextField('Serie', seriesController),
-                _buildTextField('Número en serie', seriesNumberController, inputType: TextInputType.number),
-                _buildTextField('Tamaño (MB)', fileSizeController, inputType: TextInputType.number),
-                _buildTextField('Fecha de publicación', publicationDateController),
-                _buildTextField('Descripción', descriptionController, maxLines: 3),
-                const SizedBox(height: 12),
-                _buildChipsField('Etiquetas:', tags, tagsController),
-              ],
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+              book.title,
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.pop(context),
-          ),
-          TextButton(
-            child: const Text('Guardar'),
-            onPressed: () {
-              // Aquí puedes hacer la llamada a tu API para actualizar el libro
-              // Ejemplo:
-              // updateBook(book.id, {
-              //   'title': titleController.text,
-              //   'description': descriptionController.text,
-              //   ...
-              // });
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildEditableField('Título:', titleController),
+                    _buildEditableField(
+                      'Descripción:',
+                      descriptionController,
+                      maxLines: 3,
+                    ),
+                    _buildEditableField('Autor:', authorController),
+                    _buildEditableField('Editorial:', publisherController),
+                    _buildEditableField('Idioma:', languageController),
+                    _buildEditableField('Serie:', seriesController),
+                    _buildEditableField('Nº en serie:', seriesNumberController),
 
-              Navigator.pop(context);
-            },
-          ),
-        ],
+                    ChipsField(
+                      label: 'Etiquetas:',
+                      values: tagsList,
+                      //controller: tagsController,
+                      onChanged: (newValues) {
+                        setState(() {
+                          tagsList = newValues;
+                        });
+                      },
+                    ),
+
+                    if (book.fileSize != null)
+                      _buildDetailRow(
+                        'Tamaño:',
+                        '${(book.fileSize! / 1024 / 1024).toStringAsFixed(2)} MB',
+                      ),
+                    _buildDetailRow(
+                      'Publicación:',
+                      dateFormat.format(book.publicationDate),
+                    ),
+                    _buildDetailRow(
+                      'Añadido:',
+                      dateFormat.format(book.creationDate),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Cerrar'),
+                onPressed: () => Navigator.pop(context),
+              ),
+              TextButton(
+                child: const Text('Guardar'),
+                onPressed: () async {
+                  Book updatedBook = Book(
+                    id: book.id,
+                    title: titleController.text,
+                    description:
+                        descriptionController.text.isNotEmpty
+                            ? descriptionController.text
+                            : null,
+                    tags: tagsList.join(','),
+                    series:
+                        seriesController.text.isNotEmpty
+                            ? seriesController.text
+                            : null,
+                    seriesNumber:
+                        seriesNumberController.text.isNotEmpty
+                            ? int.tryParse(seriesNumberController.text)
+                            : 0,
+                    pages: book.pages,
+                    language:
+                        languageController.text.isNotEmpty
+                            ? languageController.text
+                            : null,
+                    publisher:
+                        publisherController.text.isNotEmpty
+                            ? publisherController.text
+                            : null,
+                    author: authorController.text,
+                    fileSize: book.fileSize,
+                    filePath: book.filePath,
+                    coverPath: book.coverPath,
+                    publicationDate: book.publicationDate,
+                    creationDate: book.creationDate,
+                  );
+
+                  await BookServices.updateBook(updatedBook);
+                  await provider.loadBooks(id ?? 0);
+
+                  CustomSnackBar.show(
+                    context,
+                    AppLocalizations.of(context)!.metadataUpdated,
+                    Colors.green,
+                    duration: Duration(seconds: 4),
+                  );
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
       );
     },
   );
 }
 
-Widget _buildTextField(String label, TextEditingController controller,
-    {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
+// Widget auxiliar para campos editables
+Widget _buildEditableField(
+  String label,
+  TextEditingController controller, {
+  int maxLines = 1,
+}) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
+    padding: const EdgeInsets.symmetric(vertical: 4.0),
     child: TextField(
       controller: controller,
-      keyboardType: inputType,
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
@@ -105,54 +182,22 @@ Widget _buildTextField(String label, TextEditingController controller,
   );
 }
 
-Widget _buildChipsField(
-  String label,
-  List<String> values,
-  TextEditingController controller,
-) {
-  final tempController = TextEditingController();
+// Widget auxiliar para chips (listas de valores)
 
+Widget _buildDetailRow(String label, String value) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Wrap(
-                spacing: 8,
-                children: values.map((value) {
-                  return Chip(
-                    label: Text(value),
-                    onDeleted: () {
-                      values.remove(value);
-                      controller.text = values.join(',');
-                    },
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: tempController,
-          decoration: InputDecoration(
-            labelText: 'Añadir nuevo',
-            border: OutlineInputBorder(),
+    child: RichText(
+      text: TextSpan(
+        style: const TextStyle(color: Colors.black87, fontSize: 16),
+        children: [
+          TextSpan(
+            text: '$label ',
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          onSubmitted: (text) {
-            if (text.trim().isNotEmpty) {
-              values.add(text.trim());
-              tempController.clear();
-              controller.text = values.join(',');
-            }
-          },
-        ),
-      ],
+          TextSpan(text: value),
+        ],
+      ),
     ),
   );
 }

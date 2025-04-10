@@ -91,6 +91,20 @@ Future<EpubBook> parseEpub(Uint8List epubData, String coverPath) async {
   }
 }
 
+Future<void> calculateDominantColor(Uint8List imageBytes, bool mounted) async {
+  final ValueNotifier<Color> _dominantColorNotifier = ValueNotifier<Color>(
+    Colors.grey,
+  ); // Color por defecto
+  try {
+    final color = await getDominantColor(imageBytes);
+    if (mounted) {
+      _dominantColorNotifier.value = color;
+    }
+  } catch (e) {
+    debugPrint('Error calculando color: $e');
+  }
+}
+
 Future<Color> getDominantColor(Uint8List? imageBytes) async {
   if (imageBytes == null) return Colors.grey;
 
@@ -219,4 +233,26 @@ Future<Uint8List> loadImage(String imagePath) async {
   } else {
     throw Exception('Image file not found');
   }
+}
+
+List<String> parseCommaSeparatedList(dynamic data) {
+  if (data == null) return [];
+
+  if (data is List) {
+    return data
+        .expand((item) => item.toString().split(','))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  if (data is String) {
+    return data
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  return [];
 }

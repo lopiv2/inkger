@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:inkger/frontend/models/series.dart';
+import 'package:inkger/frontend/widgets/cover_art.dart';
 
 class SeriesFilterAndGrid extends StatefulWidget {
-  final Future<List<String>> seriesFuture;
+  final Future<List<Series>> seriesFuture;
 
   const SeriesFilterAndGrid({Key? key, required this.seriesFuture})
     : super(key: key);
@@ -12,60 +14,76 @@ class SeriesFilterAndGrid extends StatefulWidget {
 
 class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
   String _currentFilter = '#';
-  late Set<String> _availableLetters =
-      {}; // Para almacenar las letras con series
+  late Set<String> _availableLetters = {};
 
-  List<String> _filterSeries(List<String> series, String filter) {
+  // Filtrar la lista de series de acuerdo con el filtro alfabético
+  List<Series> _filterSeries(List<Series> series, String filter) {
     if (filter == '#') {
       return series
-          .where((s) => s[0].toLowerCase().contains(RegExp(r'[0-9]')))
+          .where((s) => s.title[0].toLowerCase().contains(RegExp(r'[0-9]')))
           .toList();
     }
     return series
-        .where((s) => s[0].toLowerCase() == filter.toLowerCase())
+        .where((s) => s.title[0].toLowerCase() == filter.toLowerCase())
         .toList();
   }
 
-  // Determinar las letras que tienen series
-  void _determineAvailableLetters(List<String> series) {
-    Set<String> availableLetters = Set();
-
-    for (var seriesName in series) {
-      String firstLetter = seriesName[0].toLowerCase();
-      if (RegExp(r'[a-zA-Z]').hasMatch(firstLetter)) {
-        availableLetters.add(firstLetter);
-      }
-      if (RegExp(r'[0-9]').hasMatch(firstLetter)) {
-        availableLetters.add('#');
+  // Determina las letras disponibles (según los títulos de las series)
+  void _determineAvailableLetters(List<Series> seriesList) {
+    Set<String> letters = {};
+    for (var series in seriesList) {
+      String firstChar = series.title[0].toLowerCase();
+      if (RegExp(r'[a-z]').hasMatch(firstChar)) {
+        letters.add(firstChar);
+      } else {
+        letters.add('#');
       }
     }
-
-    // Schedule setState to run after the current build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _availableLetters = availableLetters;
-      });
+      if (mounted) {
+        setState(() {
+          _availableLetters = letters;
+        });
+      }
     });
+  }
+
+  List<Series>? _seriesList;
+
+  void _loadLetters(List<Series> seriesList) {
+    if (_availableLetters.isEmpty) {
+      Set<String> letters = {};
+      for (var series in seriesList) {
+        String firstChar = series.title[0].toLowerCase();
+        if (RegExp(r'[a-z]').hasMatch(firstChar)) {
+          letters.add(firstChar);
+        } else {
+          letters.add('#');
+        }
+      }
+      _availableLetters = letters;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
+    return FutureBuilder<List<Series>>(
       future: widget.seriesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No hay series disponibles.'));
+        }
 
-        final allSeries = snapshot.data!;
-        _determineAvailableLetters(
-          allSeries,
-        ); // Determine which letters have series
-        final filteredSeries = _filterSeries(allSeries, _currentFilter);
+        final seriesList = snapshot.data!;
+        _seriesList ??= seriesList; // ← guarda la lista una sola vez
+        _loadLetters(seriesList);
+        final filteredSeries = _filterSeries(seriesList, _currentFilter);
 
         return Column(
           children: [
@@ -90,15 +108,19 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
                 padding: const EdgeInsets.all(20.0),
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 8, // Dos columnas
-                    crossAxisSpacing: 8, // Espacio entre columnas
-                    mainAxisSpacing: 8, // Espacio entre filas
-                    childAspectRatio:
-                        0.8, // Relación de aspecto para las tarjetas
+                    crossAxisCount: 8,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 0.8,
                   ),
                   itemCount: filteredSeries.length,
                   itemBuilder: (context, index) {
-                    return _buildSeriesCard(filteredSeries[index]);
+                    final series = filteredSeries[index];
+                    return _buildSeriesCard(
+                      series.title,
+                      series.coverPath,
+                      series.itemCount,
+                    );
                   },
                 ),
               ),
@@ -111,18 +133,10 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
 
   Widget _buildAlphabetFilter(String letter) {
     bool isEnabled = _availableLetters.contains(letter.toLowerCase());
-
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: InkWell(
-        onTap:
-            isEnabled
-                ? () {
-                  setState(() {
-                    _currentFilter = letter;
-                  });
-                }
-                : null, // Deshabilitar la acción si no tiene series
+        onTap: isEnabled ? () => setState(() => _currentFilter = letter) : null,
         child: Container(
           width: 40,
           height: 40,
@@ -132,7 +146,7 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
                     ? Theme.of(context).primaryColor
                     : isEnabled
                     ? Colors.grey[400]
-                    : Colors.grey[50], // Gris si está deshabilitado
+                    : Colors.grey[200],
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -144,10 +158,8 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
                         ? Colors.white
                         : isEnabled
                         ? Colors.black
-                        : Colors
-                            .black54, // Gris más claro si está deshabilitado
+                        : Colors.black54,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
               ),
             ),
           ),
@@ -156,55 +168,47 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
     );
   }
 
-  Widget _buildSeriesCard(String seriesName) {
+  Widget _buildSeriesCard(String title, String coverPath, int count) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16), // Bordes redondeados
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Stack(
         children: [
-          // Imagen de fondo
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                'https://via.placeholder.com/150', // Aquí va la URL de la imagen
-                fit: BoxFit.cover,
-              ),
+              child: buildCoverImage(coverPath),
             ),
           ),
-          // Título de la serie
           Positioned(
             bottom: 10,
             left: 10,
             child: Text(
-              seriesName,
+              title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 shadows: [
                   Shadow(
                     blurRadius: 5,
-                    color: Colors.black.withOpacity(0.7),
+                    color: Colors.black,
                     offset: Offset(0, 3),
                   ),
                 ],
               ),
             ),
           ),
-          // Número en la parte superior derecha
           Positioned(
             top: 10,
             right: 10,
             child: CircleAvatar(
               backgroundColor: Colors.red,
               child: Text(
-                '${(seriesName[0].codeUnitAt(0) % 10)}', // Número de ejemplo
-                style: TextStyle(
+                '$count',
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),

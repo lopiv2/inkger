@@ -35,64 +35,79 @@ class _SeriesScreenState extends State<SeriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtenemos las listas de libros y cómics desde sus respectivos providers
+    // Obtener las listas de libros y cómics de los providers
     final booksProvider = Provider.of<BooksProvider>(context);
     final comicsProvider = Provider.of<ComicsProvider>(context);
 
-    // Unimos las listas de libros y cómics y obtenemos las series
-    final seriesList = _getUniqueSeries(
-      booksProvider.books,
-      comicsProvider.comics,
-    );
-
-    // Creamos una lista de nombres de series
-    final seriesNames = seriesList.map((series) => series.title).toList();
+    // Obtener las series únicas con su conteo
+    final uniqueSeries = _getUniqueSeries(booksProvider.books, comicsProvider.comics);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Series'), centerTitle: true),
+      appBar: AppBar(title: const Text('Series'), centerTitle: true),
       body: SeriesFilterAndGrid(
-        seriesFuture: Future.value(
-          seriesNames,
-        ), // Pasamos las series como un Future
+        seriesFuture: Future.value(uniqueSeries), // Pasamos la lista completa de Series
       ),
     );
   }
 
   List<Series> _getUniqueSeries(List<Book> books, List<Comic> comics) {
-    final List<Series> allSeries = [];
-    final comicsProvider = Provider.of<ComicsProvider>(context);
+    final Map<String, SeriesAggregator> seriesMap = {};
 
-    // Agregamos los libros
-    for (var book in books) {
-      allSeries.add(
-        Series(
-          title: book.series ?? AppLocalizations.of(context)!.noSerie,
-          coverPath: book.coverPath ?? '',
-          seriesNumber: book.seriesNumber ?? 0,
-        ),
-      );
-    }
+    void processItem(
+      String originalTitle,
+      String? coverPath,
+      int? seriesNumber,
+    ) {
+      final normalizedTitle = originalTitle.trim().toLowerCase();
+      final aggregator = seriesMap[normalizedTitle] ?? SeriesAggregator();
 
-    // Agregamos los cómics
-    for (var comic in comicsProvider.comics) {
-      allSeries.add(
-        Series(
-          title: comic.series ?? AppLocalizations.of(context)!.noSerie,
-          coverPath: comic.coverPath ?? '',
-          seriesNumber: comic.seriesNumber ?? 0,
-        ),
-      );
-    }
-
-    // Eliminar duplicados basados en el título de la serie
-    final Map<String, Series> uniqueSeriesMap = {};
-    for (var series in allSeries) {
-      if (!uniqueSeriesMap.containsKey(series.title)) {
-        uniqueSeriesMap[series.title] = series;
+      aggregator.count++; // Incrementa el conteo
+      // Si no se ha asignado aún la portada, la asigna
+      if (coverPath != null &&
+          coverPath.isNotEmpty &&
+          aggregator.coverPath.isEmpty) {
+        aggregator.coverPath = coverPath;
       }
+      // Asignamos seriesNumber si aún no existe y se proporcionó
+      if (seriesNumber != null && aggregator.seriesNumber == null) {
+        aggregator.seriesNumber = seriesNumber;
+      }
+      // Guardar el título original (capitalizado o tal cual)
+      if (aggregator.originalTitle.isEmpty) {
+        aggregator.originalTitle = originalTitle.trim();
+      }
+      seriesMap[normalizedTitle] = aggregator;
     }
 
-    // Devolver las series únicas como una lista
-    return uniqueSeriesMap.values.toList();
+    // Procesa cada libro
+    for (var book in books) {
+      final seriesTitle = book.series ?? AppLocalizations.of(context)!.noSerie;
+      processItem(seriesTitle, book.coverPath, book.seriesNumber);
+    }
+
+    // Procesa cada cómic
+    for (var comic in comics) {
+      final seriesTitle = comic.series ?? AppLocalizations.of(context)!.noSerie;
+      processItem(seriesTitle, comic.coverPath, comic.seriesNumber);
+    }
+
+    // Convertir el mapa de agregadores a una lista de Series
+    return seriesMap.values
+        .map(
+          (aggregator) => Series(
+            title: aggregator.originalTitle,
+            coverPath: aggregator.coverPath,
+            seriesNumber: aggregator.seriesNumber ?? 0,
+            itemCount: aggregator.count,
+          ),
+        )
+        .toList();
   }
+}
+
+class SeriesAggregator {
+  int count = 0;
+  String coverPath = '';
+  int? seriesNumber;
+  String originalTitle = '';
 }

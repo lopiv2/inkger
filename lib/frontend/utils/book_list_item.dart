@@ -1,8 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/book.dart';
-import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/widgets/cover_art.dart';
 
 class BookListItem extends StatelessWidget {
   final Book book;
@@ -16,7 +14,7 @@ class BookListItem extends StatelessWidget {
       child: ListTile(
         leading: SizedBox(
           width: 50,
-          child: _buildCoverImage(book.coverPath),
+          child: buildCoverImage(book.coverPath ?? ''),
         ),
         title: Text(book.title),
         subtitle: book.author.isNotEmpty ? Text(book.author) : null,
@@ -25,30 +23,6 @@ class BookListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildCoverImage(String? coverPath, {bool calculateColor = false}) {
-    return FutureBuilder<Uint8List?>(
-      future: coverPath != null ? BookServices.getBookCover(coverPath) : null,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError || !snapshot.hasData) {
-          return Center(child: Icon(Icons.broken_image, size: 50));
-        }
-
-        // Cálculo del color solo cuando hay datos y es necesario
-        /*if (calculateColor && !_colorCalculated && snapshot.hasData) {
-          _calculateDominantColor(snapshot.data!);
-          _colorCalculated = true;
-        }*/
-
-        return FittedBox(
-          fit: BoxFit.contain,
-          child: Image.memory(snapshot.data!, fit: BoxFit.contain),
-        );
-      },
-    );
-  }
 
   Widget _buildPlaceholder() {
     return Container(

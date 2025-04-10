@@ -8,6 +8,7 @@ class Book {
   final String? publisher;
   final String? language;
   final String? coverPath;
+  final int? pages;
   final dynamic identifiers; // Usamos dynamic para Json
   final String? tags;
   final String? series;
@@ -26,6 +27,7 @@ class Book {
     this.publisher,
     this.language,
     this.coverPath,
+    this.pages,
     this.identifiers,
     this.tags,
     this.series,
@@ -47,6 +49,7 @@ class Book {
       publisher: map['publisher'],
       language: map['language'],
       coverPath: map['coverPath'],
+      pages: map['pages'],
       identifiers: map['identifiers'],
       tags: map['tags'],
       series: map['series'],
@@ -58,7 +61,7 @@ class Book {
   }
 
   // Método para convertir el objeto Book a un Map (útil para guardar en la base de datos)
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
@@ -69,6 +72,7 @@ class Book {
       'publisher': publisher,
       'language': language,
       'coverPath': coverPath,
+      'pages': pages,
       'identifiers': identifiers,
       'tags': tags,
       'series': series,

@@ -6,6 +6,7 @@ import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -42,29 +43,7 @@ class BookServices {
       throw Exception('Error al obtener los libros: $e');
     }
   }
-
-  static Future<Uint8List?> getBookCover(String coverPath) async {
-    try {
-      final encodedPath = Uri.encodeComponent(coverPath);
-      final response = await ApiService.dio.get(
-        '/api/images/$encodedPath',
-        options: Options(
-          responseType: ResponseType.bytes,
-          validateStatus: (status) => status! < 500,
-        ),
-      );
-
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          (response.data as List).isNotEmpty) {
-        return Uint8List.fromList(response.data as List<int>);
-      }
-      return null; // Devuelve null explícitamente para casos de error
-    } catch (e) {
-      print('Error al obtener portada: $e');
-      return null;
-    }
-  }
+  
 
   static Future<Uint8List> getBookFile(String bookId) async {
     try {
@@ -109,7 +88,7 @@ class BookServices {
         // ✅ Verificar si el widget sigue montado antes de usar el contexto
         CustomSnackBar.show(
           context,
-          'Progreso guardado: $progress%',
+          '${AppLocalizations.of(context)!.savedProgress}: $progress%',
           Colors.green,
           duration: const Duration(seconds: 4),
         );
@@ -126,6 +105,21 @@ class BookServices {
       }
       // Opcional: Guardar localmente para sincronizar después
       //await _saveProgressOffline(bookId, progress);
+    }
+  }
+
+  static Future<void> updateBook(Book book) async {
+    try {
+      final response = await ApiService.dio.put(
+        '/api/books/${book.id}',
+        data: jsonEncode(book.toJson()),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
     }
   }
 }

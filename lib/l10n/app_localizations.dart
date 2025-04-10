@@ -125,6 +125,12 @@ abstract class AppLocalizations {
   /// **'No serie'**
   String get noSerie;
 
+  /// No description provided for @savedProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress saved'**
+  String get savedProgress;
+
   /// No description provided for @scan.
   ///
   /// In en, this message translates to:
