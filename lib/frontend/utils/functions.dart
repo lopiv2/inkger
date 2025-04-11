@@ -146,7 +146,7 @@ Future<void> loadBookFile(
     Navigator.of(context, rootNavigator: true).pop();
 
     // Navegar a la pantalla del lector
-    context.go(
+    context.push(
       '/ebook-reader/${bookId}', // bookId en la URL
       extra: {
         // Datos complejos como mapa
@@ -195,7 +195,7 @@ Future<void> loadComicFile(
     Navigator.of(context, rootNavigator: true).pop();
 
     // Navegar a la pantalla del lector
-    context.go(
+    context.push(
       '/comic-reader/${comicId}', // bookId en la URL
       extra: {
         // Datos complejos como mapa

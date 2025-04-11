@@ -108,6 +108,67 @@ class BookServices {
     }
   }
 
+  static Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    Book book,
+  ) async {
+    return showDialog<void>(
+      context: Navigator.of(context, rootNavigator: true).context,
+      barrierDismissible: false, // El usuario debe tocar un botón para cerrar
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  '¿Estás seguro de que quieres eliminar el libro "${book.title}"?',
+                ),
+                const SizedBox(height: 8),
+                const Text('Esta acción no se puede deshacer.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Cierra el diálogo primero
+                try {
+                  await BookServices.deleteBook(context, book);
+                  // Opcional: Mostrar mensaje de éxito
+                  CustomSnackBar.show(
+                    context,
+                    '"${book.title}" eliminado correctamente',
+                    Colors.green,
+                    duration: Duration(seconds: 4),
+                  );
+                } catch (e) {
+                  CustomSnackBar.show(
+                    context,
+                    'Error al eliminar: ${e.toString()}',
+                    Colors.red,
+                    duration: Duration(seconds: 4),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   static Future<void> updateBook(Book book) async {
     try {
       final response = await ApiService.dio.put(

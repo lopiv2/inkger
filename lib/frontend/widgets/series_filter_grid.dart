@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/series.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 
@@ -15,6 +16,7 @@ class SeriesFilterAndGrid extends StatefulWidget {
 class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
   String _currentFilter = '#';
   late Set<String> _availableLetters = {};
+  List<Series>? _seriesList;
 
   // Filtrar la lista de series de acuerdo con el filtro alfabético
   List<Series> _filterSeries(List<Series> series, String filter) {
@@ -27,28 +29,6 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
         .where((s) => s.title[0].toLowerCase() == filter.toLowerCase())
         .toList();
   }
-
-  // Determina las letras disponibles (según los títulos de las series)
-  void _determineAvailableLetters(List<Series> seriesList) {
-    Set<String> letters = {};
-    for (var series in seriesList) {
-      String firstChar = series.title[0].toLowerCase();
-      if (RegExp(r'[a-z]').hasMatch(firstChar)) {
-        letters.add(firstChar);
-      } else {
-        letters.add('#');
-      }
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _availableLetters = letters;
-        });
-      }
-    });
-  }
-
-  List<Series>? _seriesList;
 
   void _loadLetters(List<Series> seriesList) {
     if (_availableLetters.isEmpty) {
@@ -172,50 +152,62 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: buildCoverImage(coverPath),
-            ),
-          ),
-          Positioned(
-            bottom: 10,
-            left: 10,
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
-                  Shadow(
-                    blurRadius: 5,
-                    color: Colors.black,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+      child: InkWell(
+        onTap: () {
+          // Navegación con GoRouter
+          context.push(
+            '/series/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
+            extra: coverPath, // Pasamos la ruta de la portada como extra
+          );
+        },
+        hoverColor: Colors.black.withOpacity(0.1),
+        highlightColor: Colors.black.withOpacity(0.2),
+        splashColor: Colors.black.withOpacity(0.3),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: buildCoverImage(coverPath),
               ),
             ),
-          ),
-          Positioned(
-            top: 10,
-            right: 10,
-            child: CircleAvatar(
-              backgroundColor: Colors.red,
+            Positioned(
+              bottom: 10,
+              left: 10,
               child: Text(
-                '$count',
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 5,
+                      color: Colors.black,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+            Positioned(
+              top: 10,
+              right: 10,
+              child: CircleAvatar(
+                backgroundColor: Colors.red,
+                child: Text(
+                  '$count',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -16,6 +16,7 @@ class HoverCardBook extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _HoverCardState createState() => _HoverCardState();
 }
 
@@ -35,6 +36,7 @@ class _HoverCardState extends State<HoverCardBook> {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.yellow, width: 4),
+                  // ignore: deprecated_member_use
                   color: Colors.black.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(16.0),
                 ),
@@ -95,6 +97,7 @@ class _HoverCardState extends State<HoverCardBook> {
                 child: Container(
                   padding: EdgeInsets.all(6),
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: Colors.white.withOpacity(0.8),
                     shape: BoxShape.circle,
                     boxShadow: [

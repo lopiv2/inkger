@@ -94,7 +94,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
     int progress =
         ((_currentPageIndex / (_imagePaths.length - 1)) * 100).round();
     await ComicServices.saveReadingProgress(widget.comicId, progress, context);
-    context.go('/comics');
+    context.pop();
   }
 
   Future<void> _loadCbzContent() async {

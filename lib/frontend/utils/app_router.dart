@@ -5,6 +5,7 @@ import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/screens/name_generators_screen.dart';
+import 'package:inkger/frontend/screens/series_detail_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
 import 'package:inkger/frontend/screens/user_profile_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
@@ -107,6 +108,23 @@ class AppRouter {
                 ), // Transición más suave
               );
             },
+            routes: [
+              GoRoute(
+                path: ':seriesId', // Usamos el título como ID
+                pageBuilder: (context, state) {
+                  final seriesTitle = state.pathParameters['seriesId']!;
+                  final coverPath =
+                      state.extra as String; // Pasamos la coverPath como extra
+                  return NoTransitionPage(
+                    key: state.pageKey,
+                    child: SeriesDetailScreen(
+                      seriesTitle: seriesTitle,
+                      coverPath: coverPath,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           // Ruta de perfil de usuario (pantalla completa)
           GoRoute(
@@ -143,7 +161,8 @@ class AppRouter {
             },
           ),
           GoRoute(
-            path: '/home-writer/generators', // Use root path for the default home
+            path:
+                '/home-writer/generators', // Use root path for the default home
             pageBuilder: (context, state) {
               return CustomTransitionPage(
                 key: state.pageKey,

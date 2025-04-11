@@ -91,7 +91,8 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     int progress = ((currentNavIndex / flatNavPoints.length) * 100).round();
 
     await BookServices.saveReadingProgress(widget.bookId, progress, context);
-    context.go('/books');
+    //context.go('/books');
+    context.pop();
   }
 
   Future<void> _loadEpubContent() async {
