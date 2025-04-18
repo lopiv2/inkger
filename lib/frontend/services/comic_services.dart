@@ -11,6 +11,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicServices {
+  static Future<void> convertToCBR(int comicId) async {}
+  static Future<void> convertToCBZ(int comicId) async {
+    final response = await ApiService.dio.delete('/api/convert-to-cbz/${comicId}');
+
+  }
+
   static Future<void> deletecomic(BuildContext context, Comic comic) async {
     try {
       final comicsProvider = Provider.of<ComicsProvider>(
@@ -86,8 +92,7 @@ class ComicServices {
                 'publisher': item['publisher'],
                 'year': item['start_year'],
                 'image':
-                    item['image'] ??
-                    '', // Aquí manejas la imagen de portada
+                    item['image'] ?? '', // Aquí manejas la imagen de portada
               };
             }).toList();
 

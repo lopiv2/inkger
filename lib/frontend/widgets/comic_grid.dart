@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/dialogs/comic_metadata_search_dialog.dart';
+import 'package:inkger/frontend/dialogs/convert_comic_options_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
@@ -693,6 +694,13 @@ class _ComicsGridState extends State<ComicsGrid> {
       children: [
         HoverCardComic(
           comic: comic,
+          onConvert:
+              () => showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return ConvertOptionsDialog( comicId: comic.id,);
+                },
+              ),
           onSearchMetadata:
               () => showDialog(
                 context: context,
