@@ -1,4 +1,3 @@
-// lib/providers/app_preferences.dart
 class AppPreferences {
   final bool darkMode;
   final String languageCode;
@@ -9,6 +8,8 @@ class AppPreferences {
   final String? audiobookAppDirectory;
   final bool fullScreenMode;
   final bool readerMode;
+  final String? comicvineApiKey;
+  final double defaultGridItemSize; 
 
   AppPreferences({
     required this.darkMode,
@@ -20,6 +21,8 @@ class AppPreferences {
     this.audiobookAppDirectory,
     required this.fullScreenMode,
     required this.readerMode,
+    this.comicvineApiKey,
+    required this.defaultGridItemSize,
   });
 
   AppPreferences.defaults()
@@ -31,7 +34,9 @@ class AppPreferences {
       bookAppDirectory = null,
       audiobookAppDirectory = null,
       fullScreenMode = false,
-      readerMode=true;
+      readerMode = true,
+      comicvineApiKey = null,
+      defaultGridItemSize = 7; 
 
   Map<String, dynamic> toMap() {
     return {
@@ -44,6 +49,8 @@ class AppPreferences {
       'audiobookAppDirectory': audiobookAppDirectory,
       'fullScreenMode': fullScreenMode,
       'readerMode': readerMode,
+      'Comicvine Key': comicvineApiKey,
+      'defaultGridItemSize': defaultGridItemSize,
     };
   }
 
@@ -58,8 +65,11 @@ class AppPreferences {
       audiobookAppDirectory: map['audiobookAppDirectory'] as String?,
       fullScreenMode: map['fullScreenMode'] as bool,
       readerMode: map['readerMode'] as bool,
+      comicvineApiKey: map['Comicvine Key'],
+      defaultGridItemSize: map['defaultGridItemSize'] as double, 
     );
   }
+
   AppPreferences copyWith({
     bool? darkMode,
     String? languageCode,
@@ -70,6 +80,8 @@ class AppPreferences {
     String? audiobookAppDirectory,
     bool? fullScreenMode,
     bool? readerMode,
+    String? comicvineApiKey,
+    double? defaultGridItemSize,
   }) {
     return AppPreferences(
       darkMode: darkMode ?? this.darkMode,
@@ -78,10 +90,11 @@ class AppPreferences {
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       comicAppDirectory: comicAppDirectory ?? this.comicAppDirectory,
       bookAppDirectory: bookAppDirectory ?? this.bookAppDirectory,
-      audiobookAppDirectory:
-          audiobookAppDirectory ?? this.audiobookAppDirectory,
+      audiobookAppDirectory: audiobookAppDirectory ?? this.audiobookAppDirectory,
       fullScreenMode: fullScreenMode ?? this.fullScreenMode,
       readerMode: readerMode ?? this.readerMode,
+      comicvineApiKey: comicvineApiKey ?? this.comicvineApiKey,
+      defaultGridItemSize: defaultGridItemSize ?? this.defaultGridItemSize,
     );
   }
 }

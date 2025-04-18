@@ -47,7 +47,6 @@ class ComicServices {
     }
   }
 
-  //ARREGLAR ESTO
   static Future<Uint8List> getcomicFile(String comicId) async {
     try {
       final response = await ApiService.dio.get(
@@ -57,6 +56,42 @@ class ComicServices {
 
       if (response.statusCode == 200) {
         return Uint8List.fromList(response.data);
+      } else {
+        throw Exception('Error al cargar el comic: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener el comic: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getComicMetadata(
+    int userId,
+    String comic,
+  ) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/comics/search-metadata/$userId/$comic', // Aquí pasas tanto el userId como el comic
+        options: Options(responseType: ResponseType.json),
+      );
+
+      if (response.statusCode == 200) {
+        // Si la respuesta es un array, puedes devolverla como lista
+        List<dynamic> data = response.data;
+
+        // Opcional: Si necesitas procesar los datos para extraer ciertos campos
+        List<Map<String, dynamic>> comics =
+            data.map((item) {
+              return {
+                'name': item['name'],
+                'publisher': item['publisher'],
+                'year': item['start_year'],
+                'image':
+                    item['image'] ??
+                    '', // Aquí manejas la imagen de portada
+              };
+            }).toList();
+
+        return comics;
       } else {
         throw Exception('Error al cargar el comic: ${response.statusCode}');
       }
@@ -110,6 +145,7 @@ class ComicServices {
       //await _saveProgressOffline(comicId, progress);
     }
   }
+
   static Future<void> updateComic(Comic comic) async {
     try {
       final response = await ApiService.dio.put(

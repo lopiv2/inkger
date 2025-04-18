@@ -125,6 +125,12 @@ abstract class AppLocalizations {
   /// **'No serie'**
   String get noSerie;
 
+  /// No description provided for @preferencesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences saved'**
+  String get preferencesSaved;
+
   /// No description provided for @savedProgress.
   ///
   /// In en, this message translates to:

@@ -24,6 +24,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noSerie => 'Sin serie';
 
   @override
+  String get preferencesSaved => 'Preferencias guardadas';
+
+  @override
   String get savedProgress => 'Progreso guardado';
 
   @override

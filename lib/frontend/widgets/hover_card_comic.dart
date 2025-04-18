@@ -6,12 +6,14 @@ import 'package:inkger/frontend/utils/functions.dart';
 class HoverCardComic extends StatefulWidget {
   final Widget child;
   final VoidCallback? onDelete; // Callback para la eliminación
+  final VoidCallback? onSearchMetadata; // Callback para la eliminación
   final Comic comic;
 
   const HoverCardComic({
     super.key,
     required this.child,
     this.onDelete,
+    this.onSearchMetadata,
     required this.comic,
   });
 
@@ -85,6 +87,12 @@ class _HoverCardState extends State<HoverCardComic> {
                 itemBuilder:
                     (context) => [
                       PopupMenuItem(value: "info", child: Text("Información")),
+                      PopupMenuItem(
+                        value: "metadata",
+                        child: Text("Obtener metadatos"),
+                        onTap:
+                            () => widget.onSearchMetadata?.call(),
+                      ),
                       PopupMenuItem(
                         value: "delete",
                         child: Text("Eliminar"),

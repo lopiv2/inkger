@@ -5,19 +5,18 @@ import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/screens/name_generators_screen.dart';
+import 'package:inkger/frontend/screens/preferences_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
-import 'package:inkger/frontend/screens/user_profile_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
 import 'package:inkger/frontend/utils/user_profile_loader.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/widgets/comic_grid.dart';
-import 'package:inkger/frontend/widgets/test/transform_controller.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
-
+  
   AppRouter(this.authProvider);
 
   late final router = GoRouter(
@@ -25,7 +24,6 @@ class AppRouter {
     redirect: (context, state) {
       final isAuth = authProvider.isAuthenticated;
       final isLoginRoute = state.uri.path == '/login';
-
       if (!isAuth && !isLoginRoute) return '/login';
       if (isAuth && isLoginRoute) return '/home';
 
@@ -143,7 +141,8 @@ class AppRouter {
             },
           ),
           GoRoute(
-            path: '/home-writer/generators', // Use root path for the default home
+            path:
+                '/home-writer/generators', // Use root path for the default home
             pageBuilder: (context, state) {
               return CustomTransitionPage(
                 key: state.pageKey,
@@ -214,6 +213,14 @@ class AppRouter {
             pageBuilder:
                 (context, state) =>
                     NoTransitionPage(key: state.pageKey, child: BooksGrid()),
+          ),
+          GoRoute(
+            path: '/settings', // Use root path for the default home
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: PreferencesScreen(),
+                ),
           ),
           GoRoute(
             path: '/books', // Use root path for the default home
