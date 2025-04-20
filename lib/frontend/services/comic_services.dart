@@ -12,9 +12,43 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicServices {
   static Future<void> convertToCBR(int comicId) async {}
-  static Future<void> convertToCBZ(int comicId) async {
-    final response = await ApiService.dio.delete('/api/convert-to-cbz/${comicId}');
 
+  static Future<void> convertToCBZ(BuildContext context, int comicId) async {
+    try {
+      final response = await ApiService.dio.get('/api/convert-to-cbz/$comicId');
+
+      if (!context.mounted) return;
+
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.clearSnackBars(); // Limpia snackbars anteriores
+      final message = response.data['message'];
+      if (response.statusCode == 200) {
+        CustomSnackBar.show(
+          context,
+          message ?? '',
+          Colors.green,
+          duration: Duration(seconds: 4),
+        );
+      } else {
+        CustomSnackBar.show(
+          context,
+          'Error al convertir (${response.statusCode})',
+          Colors.red,
+          duration: Duration(seconds: 4),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error en convertToCBZ: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
   }
 
   static Future<void> deletecomic(BuildContext context, Comic comic) async {
@@ -91,6 +125,7 @@ class ComicServices {
                 'name': item['name'],
                 'publisher': item['publisher'],
                 'year': item['start_year'],
+                'count_of_issues': item['count_of_issues'] ?? 0,
                 'image':
                     item['image'] ?? '', // Aquí manejas la imagen de portada
               };

@@ -12,6 +12,7 @@ class ApiService {
   static BuildContext? _globalContext;
 
   static void initialize(BuildContext context) {
+    if (_globalContext != null) return;
     _globalContext = context;
 
     dio = Dio(

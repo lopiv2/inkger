@@ -132,6 +132,71 @@ class Comic {
     };
   }
 
+  Comic copyWith({
+  int? id,
+  String? title,
+  String? description,
+  int? fileSize,
+  String? filePath,
+  String? coverPath,
+  String? tags,
+  String? series,
+  int? seriesNumber,
+  String? language,
+  String? publisher,
+  String? storyArc,
+  String? alternateSeries,
+  String? writer,
+  String? penciller,
+  String? inker,
+  String? colorist,
+  String? letterer,
+  String? coverArtist,
+  String? editor,
+  int? pages,
+  String? characters,
+  String? teams,
+  String? locations,
+  int? volume,
+  String? web,
+  DateTime? publicationDate,
+  DateTime? creationDate,
+  Map<String, dynamic>? readingProgress,
+}) {
+  return Comic(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    fileSize: fileSize ?? this.fileSize,
+    filePath: filePath ?? this.filePath,
+    coverPath: coverPath ?? this.coverPath,
+    tags: tags ?? this.tags,
+    series: series ?? this.series,
+    seriesNumber: seriesNumber ?? this.seriesNumber,
+    language: language ?? this.language,
+    publisher: publisher ?? this.publisher,
+    storyArc: storyArc ?? this.storyArc,
+    alternateSeries: alternateSeries ?? this.alternateSeries,
+    writer: writer ?? this.writer,
+    penciller: penciller ?? this.penciller,
+    inker: inker ?? this.inker,
+    colorist: colorist ?? this.colorist,
+    letterer: letterer ?? this.letterer,
+    coverArtist: coverArtist ?? this.coverArtist,
+    editor: editor ?? this.editor,
+    pages: pages ?? this.pages,
+    characters: characters ?? this.characters,
+    teams: teams ?? this.teams,
+    locations: locations ?? this.locations,
+    volume: volume ?? this.volume,
+    web: web ?? this.web,
+    publicationDate: publicationDate ?? this.publicationDate,
+    creationDate: creationDate ?? this.creationDate,
+    readingProgress: readingProgress ?? this.readingProgress,
+  );
+}
+
+
   // Método para convertir JSON strings a List (opcional)
   List<String>? getCharactersList() {
     if (characters == null) return null;

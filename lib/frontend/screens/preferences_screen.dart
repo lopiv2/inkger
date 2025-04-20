@@ -15,6 +15,7 @@ class PreferencesScreen extends StatefulWidget {
 class _PreferencesScreenState extends State<PreferencesScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _apiKeyController = TextEditingController();
+  double sliderItemSizeValue=5;
 
   @override
   void initState() {
@@ -22,9 +23,17 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     loadPreferences();
   }
 
+  @override
+void didUpdateWidget(covariant PreferencesScreen oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  loadPreferences(); // Vuelve a cargar preferencias cuando el widget se actualiza
+}
+
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
+      sliderItemSizeValue=7;
+      //sliderItemSizeValue=prefs.getDouble("defaultGridItemSize") ?? 7;
       _apiKeyController.text = prefs.getString("Comicvine Key") ?? '';
     });
   }
@@ -61,10 +70,19 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           key: _formKey,
           child: Column(
             children: [
+              Text("Tamaño de elementos en la parrilla"),
+              Slider(
+                value: sliderItemSizeValue,
+                min: 5,
+                max: 10,
+                divisions: (10 - 5).toInt(),
+                label: sliderItemSizeValue.round().toString(),
+                onChanged: (value) => setState(() => sliderItemSizeValue = value),
+              ),
               TextFormField(
                 controller: _apiKeyController,
                 decoration: const InputDecoration(
-                  labelText: 'API Key',
+                  labelText: 'Comicvine API Key',
                   border: OutlineInputBorder(),
                 ),
               ),

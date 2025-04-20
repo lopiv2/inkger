@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
@@ -19,10 +18,17 @@ class ComicMetadataSearchDialog extends StatefulWidget {
 
 class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
   int? _selectedIndex;
-  List<Map<String, dynamic>> _comics =
-      []; // Lista para almacenar los cómics obtenidos
-  int _currentPage = 0; // Nueva variable de estado
-  int _rowsPerPage = 5; // Nueva variable de estado
+  List<Map<String, dynamic>> _comics = [];
+  int _currentPage = 0;
+  int _rowsPerPage = 10;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +36,11 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
         (_selectedIndex != null && _selectedIndex! < _comics.length)
             ? _comics[_selectedIndex!]
             : null;
-    //print(selectedComic?['image']);
+
     return Dialog(
       child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.6,
-        height: MediaQuery.of(context).size.height * 0.7,
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.95,
         child: Column(
           children: [
             // Título estilo barra superior
@@ -55,34 +61,48 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                 backgroundColor: Colors.blueAccent,
               ),
             ),
+            // Barra de búsqueda y botón
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar en ComicVine...',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      onSubmitted: (_) => _performSearch(),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _performSearch,
+                    child: _isSearching
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text('Buscar'),
+                  ),
+                ],
+              ),
+            ),
             // Contenido dividido: tabla + imagen
             Expanded(
               child: Row(
                 children: [
                   Expanded(
                     flex: 3,
-                    child: FutureBuilder<List<Map<String, dynamic>>>(
-                      // Usamos FutureBuilder para obtener los datos
-                      future: findComicMetadata(widget.comic),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Text('Error: ${snapshot.error}'),
-                          );
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return Center(
-                            child: Text('No se encontraron resultados.'),
-                          );
-                        } else {
-                          _comics =
-                              snapshot
-                                  .data!; // Almacenamos los cómics obtenidos
-
-                          return PaginatedDataTable(
+                    child: _comics.isEmpty
+                        ? Center(child: Text('Ingresa un término de búsqueda'))
+                        : PaginatedDataTable(
                             key: PageStorageKey<String>('comicMetadataTable'),
                             header: Text('Resultados'),
                             columns: [
@@ -92,20 +112,17 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                               DataColumn(label: Text('Publisher')),
                             ],
                             onPageChanged: (pageIndex) {
-                              // Callback al cambiar de página
                               setState(() {
                                 _currentPage = pageIndex;
                               });
                             },
                             onRowsPerPageChanged: (value) {
-                              // Callback al cambiar filas por página
                               setState(() {
                                 _rowsPerPage = value!;
-                                _currentPage =
-                                    0; // Reinicia a la primera página
+                                _currentPage = 0;
                               });
                             },
-                            availableRowsPerPage: [5, 10, 20], // Lista de opciones permitidas
+                            availableRowsPerPage: [5, 10, 20],
                             initialFirstRowIndex: _currentPage,
                             source: ComicDataSource(
                               comics: _comics,
@@ -115,94 +132,85 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                                 });
                               },
                             ),
-                            rowsPerPage: 5,
+                            rowsPerPage: _rowsPerPage,
                             columnSpacing: 20,
                             horizontalMargin: 10,
                             showCheckboxColumn: false,
-                          );
-                        }
-                      },
-                    ),
+                          ),
                   ),
                   VerticalDivider(),
                   // Imagen dinámica
                   Expanded(
                     flex: 2,
-                    child:
-                        selectedComic != null
-                            ? Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    selectedComic['series']!,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                    child: selectedComic != null
+                        ? Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  selectedComic['series']!,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  SizedBox(height: 10),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withAlpha(177),
-                                          blurRadius: 10, // Difuminado
-                                          spreadRadius: 2, // Extensión
-                                          offset: Offset(3, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    constraints: BoxConstraints(
-                                      maxHeight:
-                                          MediaQuery.of(context).size.height *
-                                          0.4, // Altura máxima
-                                      maxWidth:
-                                          MediaQuery.of(context).size.width *
-                                          0.3, // Ancho máximo
-                                    ),
-                                    child: AspectRatio(
-                                      aspectRatio:
-                                          2 / 3, // Proporción típica de cómics
-                                      child: FutureBuilder<Uint8List>(
-                                        future: _getProxyImageBytes(
-                                          selectedComic!['image']['small_url'],
-                                        ),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            return Image.memory(
-                                              snapshot.data!,
-                                              fit:
-                                                  BoxFit
-                                                      .contain, // Ajusta manteniendo proporción
-                                            );
-                                          } else if (snapshot.hasError) {
-                                            return Icon(Icons.error);
-                                          }
-                                          return Center(
-                                            child: CircularProgressIndicator(),
-                                          );
-                                        },
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(177),
+                                        blurRadius: 10,
+                                        spreadRadius: 2,
+                                        offset: Offset(3, 3),
                                       ),
+                                    ],
+                                  ),
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.of(context).size.height * 0.55,
+                                    maxWidth:
+                                        MediaQuery.of(context).size.width * 0.45,
+                                  ),
+                                  child: AspectRatio(
+                                    aspectRatio: 2 / 3,
+                                    child: FutureBuilder<Uint8List>(
+                                      future: _getProxyImageBytes(
+                                        selectedComic!['image']['small_url'],
+                                      ),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasData) {
+                                          return Image.memory(
+                                            snapshot.data!,
+                                            fit: BoxFit.contain,
+                                          );
+                                        } else if (snapshot.hasError) {
+                                          return Icon(Icons.error);
+                                        }
+                                        return Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      },
                                     ),
                                   ),
-                                ],
-                              ),
-                            )
-                            : Center(child: Text('Selecciona un resultado')),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Center(child: Text('Selecciona un resultado')),
                   ),
                 ],
               ),
             ),
-            // Botón de búsqueda
+            // Botón de cerrar
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(
                 onPressed: () {
-                  findComicMetadata(widget.comic);
+                  Navigator.of(context).pop();
                 },
-                child: Text('Buscar'),
+                child: Text('Cerrar'),
               ),
             ),
           ],
@@ -211,16 +219,44 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
     );
   }
 
+  Future<void> _performSearch() async {
+    if (_searchController.text.isEmpty) return;
+
+    setState(() {
+      _isSearching = true;
+      _comics = []; // Limpiar resultados anteriores
+    });
+
+    try {
+      final results = await findComicMetadata(widget.comic.copyWith(
+        title: _searchController.text,
+      ));
+
+      setState(() {
+        _comics = results;
+        _selectedIndex = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al buscar: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isSearching = false;
+      });
+    }
+  }
+
   Future<Uint8List> _getProxyImageBytes(String originalUrl) async {
     try {
       final response = await ApiService.dio.get(
         "/api/proxy",
         queryParameters: {"url": originalUrl},
         options: Options(
-          responseType: ResponseType.bytes, // Recibir los bytes directamente
+          responseType: ResponseType.bytes,
         ),
       );
-      return response.data; // Devuelve los bytes de la imagen
+      return response.data;
     } catch (e) {
       print("Error al obtener imagen: $e");
       throw Exception("No se pudo cargar la imagen");
@@ -239,19 +275,15 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
       comic.title,
     );
 
-    // Aquí procesas los resultados de la API de ComicVine
-    List<Map<String, dynamic>> comics =
-        searchResults.map((result) {
-          return {
-            'series': result['name'] ?? 'Desconocido',
-            'year': result['year'] ?? 'N/A',
-            'issues': result['count_of_issues']?.toString() ?? '0',
-            'publisher': result['publisher']?['name'] ?? 'Desconocido',
-            'image': result['image'] ?? '',
-          };
-        }).toList();
-
-    return comics;
+    return searchResults.map((result) {
+      return {
+        'series': result['name'] ?? 'Desconocido',
+        'year': result['year'] ?? 'N/A',
+        'issues': result['count_of_issues']?.toString() ?? '0',
+        'publisher': result['publisher']?['name'] ?? 'Desconocido',
+        'image': result['image'] ?? '',
+      };
+    }).toList();
   }
 }
 
