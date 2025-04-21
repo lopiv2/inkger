@@ -6,6 +6,7 @@ import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/book_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
@@ -94,6 +95,8 @@ class _BooksGridState extends State<BooksGrid> {
   @override
   Widget build(BuildContext context) {
     final filters = Provider.of<BookFilterProvider>(context);
+    final prefs = Provider.of<PreferencesProvider>(context, listen: false);
+    _crossAxisCount = prefs.preferences.defaultGridItemSize;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -228,7 +231,10 @@ class _BooksGridState extends State<BooksGrid> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 double maxHeight = constraints.maxHeight;
-                double itemHeight = CommonServices.calculateMainAxisExtent(_crossAxisCount).toDouble();
+                double itemHeight =
+                    CommonServices.calculateMainAxisExtent(
+                      _crossAxisCount,
+                    ).toDouble();
 
                 // Si el itemHeight es mayor que el espacio disponible, limitarlo
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
@@ -250,7 +256,9 @@ class _BooksGridState extends State<BooksGrid> {
                           crossAxisCount: _crossAxisCount.round(),
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: CommonServices.calculateAspectRatio(_crossAxisCount),
+                          childAspectRatio: CommonServices.calculateAspectRatio(
+                            _crossAxisCount,
+                          ),
                           mainAxisExtent: itemHeight,
                         ),
                         itemCount: filteredBooks.length,
@@ -441,6 +449,73 @@ class _BooksGridState extends State<BooksGrid> {
   }
 
   Widget _buildSimpleMode(BuildContext context, Book book, String? coverPath) {
+    return Column(
+      children: [
+        HoverCardBook(
+          book: book,
+          onDelete: () => showDeleteConfirmationDialog(context, book),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            elevation: 4,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: buildCoverImage(coverPath ?? ''),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(16.0),
+                      bottomRight: Radius.circular(16.0),
+                    ),
+                    child: LinearProgressIndicator(
+                      value: book.readingProgress!['readingProgress'] / 100,
+                      minHeight: 10,
+                      backgroundColor: Colors.green[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Column(
+          children: [
+            Text(
+              book.title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: CommonServices.calculateTextSize(_crossAxisCount),
+              ),
+            ),
+            Text(
+              book.author,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: CommonServices.calculateTextSize(_crossAxisCount),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
   return Column(
     children: [
       HoverCardBook(
@@ -612,7 +687,9 @@ class _BooksGridState extends State<BooksGrid> {
                       book.title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.9,
+                        fontSize:
+                            CommonServices.calculateTextSize(_crossAxisCount) *
+                            0.9,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -620,11 +697,19 @@ class _BooksGridState extends State<BooksGrid> {
                     SizedBox(height: 4),
                     Text(
                       "Autor: ${book.author}",
-                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.7),
+                      style: TextStyle(
+                        fontSize:
+                            CommonServices.calculateTextSize(_crossAxisCount) *
+                            0.7,
+                      ),
                     ),
                     Text(
                       "ID: ${book.id}",
-                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.6),
+                      style: TextStyle(
+                        fontSize:
+                            CommonServices.calculateTextSize(_crossAxisCount) *
+                            0.6,
+                      ),
                     ),
                   ],
                 ),

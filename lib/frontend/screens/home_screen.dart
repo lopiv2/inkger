@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/backend/services/preferences_service.dart';
 import 'package:inkger/frontend/buttons/import_button.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/side_bar_reader.dart';
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadPreferences() async {
+    final response = await CommonServices.loadSettingsToSharedPrefs();
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -49,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         listen: false,
       );
+      await preferencesProvider.loadFromSharedPrefs();
       await preferencesProvider.refreshPathsFromDatabase();
     } catch (e) {
       setState(() {
@@ -186,47 +189,52 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      child: AnimatedToggleSwitch<bool>.dual(
-                        current: preferences.preferences.readerMode,
-                        first: false,
-                        second: true,
-                        height: 30,
-                        spacing: 50.0,
-                        style: const ToggleStyle(
-                          borderColor: Colors.transparent,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black26,
-                              spreadRadius: 1,
-                              blurRadius: 2,
-                              offset: Offset(0, 1.5),
-                            ),
-                          ],
-                        ),
-                        styleBuilder:
-                            (b) => ToggleStyle(
-                              indicatorColor: b ? Colors.red : Colors.green,
-                            ),
-                        iconBuilder:
-                            (value) =>
-                                value
-                                    ? const Icon(Icons.history_edu)
-                                    : const Icon(Icons.library_books),
-                        textBuilder:
-                            (value) =>
-                                value
-                                    ? const Center(child: Text('Writer'))
-                                    : const Center(child: Text('Reader')),
-                        onChanged:
-                            (b) => {
-                              preferences.preferences.readerMode == false
-                                  ? context.go('/home-writer')
-                                  : context.go('/home'),
-                              preferences.toggleFullReaderMode(
-                                !preferences.preferences.readerMode,
+                      child:
+                          preferences.isLoading
+                              ? const CircularProgressIndicator()
+                              : AnimatedToggleSwitch<bool>.dual(
+                                current: preferences.preferences.readerMode,
+                                first: false,
+                                second: true,
+                                height: 30,
+                                spacing: 50.0,
+                                style: const ToggleStyle(
+                                  borderColor: Colors.transparent,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      spreadRadius: 1,
+                                      blurRadius: 2,
+                                      offset: Offset(0, 1.5),
+                                    ),
+                                  ],
+                                ),
+                                styleBuilder:
+                                    (b) => ToggleStyle(
+                                      indicatorColor:
+                                          b ? Colors.red : Colors.green,
+                                    ),
+                                iconBuilder:
+                                    (value) =>
+                                        value
+                                            ? const Icon(Icons.history_edu)
+                                            : const Icon(Icons.library_books),
+                                textBuilder:
+                                    (value) =>
+                                        value
+                                            ? const Center(
+                                              child: Text('Writer'),
+                                            )
+                                            : const Center(
+                                              child: Text('Reader'),
+                                            ),
+                                onChanged: (b) {
+                                  preferences.toggleFullReaderMode(
+                                    b,
+                                  ); // ya no necesitas comparar
+                                  context.go(b ? '/home-writer' : '/home');
+                                },
                               ),
-                            },
-                      ),
                     ),
                   ],
                 ),
@@ -355,10 +363,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelected: (String value) {
               switch (value) {
                 case 'profile':
-                  context.go("/user-profile");
+                  context.push("/user-profile");
                   break;
                 case 'settings':
-                  print('Configuración seleccionada');
+                  context.push("/settings");
                   break;
                 case 'logout':
                   _logout();

@@ -34,6 +34,8 @@ class PreferencesProvider with ChangeNotifier {
         'audiobookAppDirectory': prefs.getString('audiobookAppDirectory'),
         'fullScreenMode': prefs.getBool('fullScreenMode') ?? false,
         'readerMode': prefs.getBool('readerMode') ?? false,
+        'Comicvine Key': prefs.getString('Comicvine Key'),
+        'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,
       });
     } catch (e) {
       _prefs = AppPreferences.defaults();
@@ -41,6 +43,18 @@ class PreferencesProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> loadFromSharedPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    _prefs = _prefs.copyWith(
+      readerMode: prefs.getBool('readerMode') ?? false,
+      fullScreenMode: prefs.getBool('fullScreenMode') ?? false,
+      // ...otros valores que guardas
+    );
+
+    notifyListeners();
   }
 
   // Método para actualizar las rutas desde el backend
@@ -83,6 +97,7 @@ class PreferencesProvider with ChangeNotifier {
           await prefs.remove(key);
         }
     }
+    notifyListeners();
   }
 
   // Nuevo método para cambiar el modo pantalla completa
@@ -108,19 +123,6 @@ class PreferencesProvider with ChangeNotifier {
     for (final entry in map.entries) {
       await _savePreference(entry.key, entry.value);
     }
-  }
-
-  // Métodos específicos para cada preferencia
-  Future<void> setDarkMode(bool value) async {
-    _prefs = _prefs.copyWith(darkMode: value);
-    await _savePreference('darkMode', value);
-    notifyListeners();
-  }
-
-  Future<void> setLanguage(String languageCode) async {
-    _prefs = _prefs.copyWith(languageCode: languageCode);
-    await _savePreference('languageCode', languageCode);
-    notifyListeners();
   }
 
   Future<void> updateLibraryPath(String libraryType, String newPath) async {
@@ -152,9 +154,9 @@ class PreferencesProvider with ChangeNotifier {
     }
   }
 
-  Future<void> setComicDirectory(String? path) async {
-    _prefs = _prefs.copyWith(comicAppDirectory: path);
-    await _savePreference('comicAppDirectory', path);
+  Future<void> setAudiobookDirectory(String? path) async {
+    _prefs = _prefs.copyWith(audiobookAppDirectory: path);
+    await _savePreference('audiobookAppDirectory', path);
     notifyListeners();
   }
 
@@ -164,9 +166,15 @@ class PreferencesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setAudiobookDirectory(String? path) async {
-    _prefs = _prefs.copyWith(audiobookAppDirectory: path);
-    await _savePreference('audiobookAppDirectory', path);
+  Future<void> setComicDirectory(String? path) async {
+    _prefs = _prefs.copyWith(comicAppDirectory: path);
+    await _savePreference('comicAppDirectory', path);
+    notifyListeners();
+  }
+
+  Future<void> setDefaultGridItemSize(double size) async {
+    _prefs = _prefs.copyWith(defaultGridItemSize: size);
+    await _savePreference('defaultGridItemSize', size);
     notifyListeners();
   }
 

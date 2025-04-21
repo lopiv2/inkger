@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
+import 'package:inkger/frontend/dialogs/comic_metadata_search_dialog.dart';
+import 'package:inkger/frontend/dialogs/convert_comic_options_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
@@ -7,13 +9,12 @@ import 'package:inkger/frontend/utils/comic_filter_provider.dart';
 import 'package:inkger/frontend/utils/comic_list_item.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/filter_fields.dart';
-import 'package:inkger/frontend/utils/functions.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:provider/provider.dart';
-import 'dart:typed_data';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -160,6 +161,8 @@ class _ComicsGridState extends State<ComicsGrid> {
   @override
   Widget build(BuildContext context) {
     final filters = Provider.of<ComicFilterProvider>(context);
+    final prefs = Provider.of<PreferencesProvider>(context, listen: false);
+    _crossAxisCount = prefs.preferences.defaultGridItemSize;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -356,7 +359,10 @@ class _ComicsGridState extends State<ComicsGrid> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 double maxHeight = constraints.maxHeight;
-                double itemHeight = CommonServices.calculateMainAxisExtent(_crossAxisCount).toDouble();
+                double itemHeight =
+                    CommonServices.calculateMainAxisExtent(
+                      _crossAxisCount,
+                    ).toDouble();
 
                 // Si el itemHeight es mayor que el espacio disponible, limitarlo
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
@@ -376,7 +382,9 @@ class _ComicsGridState extends State<ComicsGrid> {
                           crossAxisCount: _crossAxisCount.round(),
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: CommonServices.calculateAspectRatio(_crossAxisCount),
+                          childAspectRatio: CommonServices.calculateAspectRatio(
+                            _crossAxisCount,
+                          ),
                           mainAxisExtent: itemHeight,
                         ),
                         itemCount: filteredComics.length,
@@ -686,6 +694,20 @@ class _ComicsGridState extends State<ComicsGrid> {
       children: [
         HoverCardComic(
           comic: comic,
+          onConvert:
+              () => showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return ConvertOptionsDialog( comicId: comic.id,);
+                },
+              ),
+          onSearchMetadata:
+              () => showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return ComicMetadataSearchDialog(comic: comic);
+                },
+              ),
           onDelete: () => showDeleteConfirmationDialog(context, comic),
           child: Card(
             shape: RoundedRectangleBorder(
@@ -740,7 +762,9 @@ class _ComicsGridState extends State<ComicsGrid> {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount)),
+              style: TextStyle(
+                fontSize: CommonServices.calculateTextSize(_crossAxisCount),
+              ),
             ),
           ],
         ),
@@ -852,7 +876,9 @@ class _ComicsGridState extends State<ComicsGrid> {
                       comic.title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.9,
+                        fontSize:
+                            CommonServices.calculateTextSize(_crossAxisCount) *
+                            0.9,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -860,11 +886,19 @@ class _ComicsGridState extends State<ComicsGrid> {
                     SizedBox(height: 4),
                     Text(
                       "Autor: ${comic.writer}",
-                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.7),
+                      style: TextStyle(
+                        fontSize:
+                            CommonServices.calculateTextSize(_crossAxisCount) *
+                            0.7,
+                      ),
                     ),
                     Text(
                       "ID: ${comic.id}",
-                      style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount) * 0.6),
+                      style: TextStyle(
+                        fontSize:
+                            CommonServices.calculateTextSize(_crossAxisCount) *
+                            0.6,
+                      ),
                     ),
                   ],
                 ),
@@ -935,5 +969,4 @@ class _ComicsGridState extends State<ComicsGrid> {
       },
     );
   }
-
 }
