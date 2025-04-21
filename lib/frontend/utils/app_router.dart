@@ -6,6 +6,7 @@ import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/screens/name_generators_screen.dart';
 import 'package:inkger/frontend/screens/preferences_screen.dart';
+import 'package:inkger/frontend/screens/series_detail_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
 import 'package:inkger/frontend/utils/user_profile_loader.dart';

@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/dialogs/volume_issues_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicMetadataSearchDialog extends StatefulWidget {
@@ -34,8 +37,8 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
   Widget build(BuildContext context) {
     final selectedComic =
         (_selectedIndex != null && _selectedIndex! < _comics.length)
-            ? _comics[_selectedIndex!]
-            : null;
+        ? _comics[_selectedIndex!]
+        : null;
 
     return Dialog(
       child: SizedBox(
@@ -126,10 +129,21 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                             initialFirstRowIndex: _currentPage,
                             source: ComicDataSource(
                               comics: _comics,
-                              onRowSelected: (index) {
+                              onRowSelected: (index) async {
                                 setState(() {
                                   _selectedIndex = index;
                                 });
+                                final selected = _comics[index];
+                                final issues = await getIssuesForVolume(
+                                  selected['id'],
+                                );
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => VolumeIssuesDialog(
+                                    issues: issues,
+                                    volumeTitle: selected['series'],
+                                  ),
+                                );
                               },
                             ),
                             rowsPerPage: _rowsPerPage,
@@ -169,14 +183,16 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                                   ),
                                   constraints: BoxConstraints(
                                     maxHeight:
-                                        MediaQuery.of(context).size.height * 0.55,
+                                        MediaQuery.of(context).size.height *
+                                        0.55,
                                     maxWidth:
-                                        MediaQuery.of(context).size.width * 0.45,
+                                        MediaQuery.of(context).size.width *
+                                        0.45,
                                   ),
                                   child: AspectRatio(
                                     aspectRatio: 2 / 3,
                                     child: FutureBuilder<Uint8List>(
-                                      future: _getProxyImageBytes(
+                                      future: CommonServices.getProxyImageBytes(
                                         selectedComic!['image']['small_url'],
                                       ),
                                       builder: (context, snapshot) {
@@ -219,6 +235,18 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getIssuesForVolume(String volumeId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('id');
+    final searchResults = await ComicServices.getIssuesForVolume(
+      userId ?? 0,
+      volumeId,
+    );
+
+    //print(searchResults);
+    return searchResults;
+  }
+
   Future<void> _performSearch() async {
     if (_searchController.text.isEmpty) return;
 
@@ -228,9 +256,9 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
     });
 
     try {
-      final results = await findComicMetadata(widget.comic.copyWith(
-        title: _searchController.text,
-      ));
+      final results = await findComicMetadata(
+        widget.comic.copyWith(title: _searchController.text),
+      );
 
       setState(() {
         _comics = results;
@@ -244,22 +272,6 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
       setState(() {
         _isSearching = false;
       });
-    }
-  }
-
-  Future<Uint8List> _getProxyImageBytes(String originalUrl) async {
-    try {
-      final response = await ApiService.dio.get(
-        "/api/proxy",
-        queryParameters: {"url": originalUrl},
-        options: Options(
-          responseType: ResponseType.bytes,
-        ),
-      );
-      return response.data;
-    } catch (e) {
-      print("Error al obtener imagen: $e");
-      throw Exception("No se pudo cargar la imagen");
     }
   }
 
@@ -277,6 +289,7 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
 
     return searchResults.map((result) {
       return {
+        'id': result['id']?.toString() ?? '0',
         'series': result['name'] ?? 'Desconocido',
         'year': result['year'] ?? 'N/A',
         'issues': result['count_of_issues']?.toString() ?? '0',

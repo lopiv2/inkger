@@ -29,6 +29,20 @@ class CommonServices {
     }
   }
 
+  static Future<Uint8List> getProxyImageBytes(String originalUrl) async {
+    try {
+      final response = await ApiService.dio.get(
+        "/api/proxy",
+        queryParameters: {"url": originalUrl},
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return response.data;
+    } catch (e) {
+      print("Error al obtener imagen: $e");
+      throw Exception("No se pudo cargar la imagen");
+    }
+  }
+
   static Future<void> loadSettingsToSharedPrefs() async {
     final response = await ApiService.dio.get(
       '/api/settings',
@@ -47,14 +61,14 @@ class CommonServices {
   }
 
   static Future<Response> saveSettingsToSharedPrefs(
-      SharedPreferences prefs, Map<String, dynamic> body) async {
+    SharedPreferences prefs,
+    Map<String, dynamic> body,
+  ) async {
     final response = await ApiService.dio.put(
       '/api/settings',
       data: jsonEncode(body),
       options: Options(
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         validateStatus: (status) => status != null && status < 500,
       ),
     );

@@ -6,12 +6,14 @@ import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/book_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:provider/provider.dart';
+import 'dart:typed_data';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -516,72 +518,6 @@ class _BooksGridState extends State<BooksGrid> {
       ],
     );
   }
-  return Column(
-    children: [
-      HoverCardBook(
-        book: book,
-        onDelete: () => BookServices.showDeleteConfirmationDialog(context, book),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          elevation: 4,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16.0),
-                child: buildCoverImage(coverPath ?? ''),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(16.0),
-                    bottomRight: Radius.circular(16.0),
-                  ),
-                  child: LinearProgressIndicator(
-                    value: book.readingProgress!['readingProgress'] / 100,
-                    minHeight: 10,
-                    backgroundColor: Colors.green[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Column(
-        children: [
-          Text(
-            book.title,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: CommonServices.calculateTextSize(_crossAxisCount),
-            ),
-          ),
-          Text(
-            book.author,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: CommonServices.calculateTextSize(_crossAxisCount)),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
 
   Widget _build3DMode(
     BuildContext context,
@@ -718,6 +654,66 @@ class _BooksGridState extends State<BooksGrid> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    Book book,
+  ) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // El usuario debe tocar un botón para cerrar
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  '¿Estás seguro de que quieres eliminar el libro "${book.title}"?',
+                ),
+                const SizedBox(height: 8),
+                const Text('Esta acción no se puede deshacer.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Cierra el diálogo primero
+                try {
+                  await BookServices.deleteBook(context, book);
+                  // Opcional: Mostrar mensaje de éxito
+                  CustomSnackBar.show(
+                    context,
+                    '"${book.title}" eliminado correctamente',
+                    Colors.green,
+                    duration: Duration(seconds: 4),
+                  );
+                } catch (e) {
+                  CustomSnackBar.show(
+                    context,
+                    'Error al eliminar: ${e.toString()}',
+                    Colors.red,
+                    duration: Duration(seconds: 4),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

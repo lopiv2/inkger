@@ -117,19 +117,21 @@ class ComicServices {
       if (response.statusCode == 200) {
         // Si la respuesta es un array, puedes devolverla como lista
         List<dynamic> data = response.data;
+        final encoder = JsonEncoder.withIndent('  ');
+        final prettyJson = encoder.convert(data);
+        //print(prettyJson);
 
         // Opcional: Si necesitas procesar los datos para extraer ciertos campos
-        List<Map<String, dynamic>> comics =
-            data.map((item) {
-              return {
-                'name': item['name'],
-                'publisher': item['publisher'],
-                'year': item['start_year'],
-                'count_of_issues': item['count_of_issues'] ?? 0,
-                'image':
-                    item['image'] ?? '', // Aquí manejas la imagen de portada
-              };
-            }).toList();
+        List<Map<String, dynamic>> comics = data.map((item) {
+          return {
+            'id': item['id'],
+            'name': item['name'],
+            'publisher': item['publisher'],
+            'year': item['start_year'],
+            'count_of_issues': item['count_of_issues'] ?? 0,
+            'image': item['image'] ?? '', // Aquí manejas la imagen de portada
+          };
+        }).toList();
 
         return comics;
       } else {
@@ -137,6 +139,56 @@ class ComicServices {
       }
     } catch (e) {
       throw Exception('Error al obtener el comic: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getIssuesForVolume(
+    int userId,
+    String volumeId,
+  ) async {
+    final response = await ApiService.dio.get(
+      '/api/comics/search-volume-issues/$userId/$volumeId',
+      options: Options(responseType: ResponseType.json),
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+
+      // Ya es una lista directamente
+      if (data is List) {
+        return data.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception(
+          'Se esperaba una lista, se recibió: ${data.runtimeType}',
+        );
+      }
+    } else {
+      throw Exception('Error al obtener los issues del volumen');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getIssueInfo(
+    int userId,
+    int issueId,
+  ) async {
+    final response = await ApiService.dio.get(
+      '/api/comics/search-issue-data/$userId/$issueId',
+      options: Options(responseType: ResponseType.json),
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+
+      // Ya es una lista directamente
+      if (data is List) {
+        return data.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception(
+          'Se esperaba una lista, se recibió: ${data.runtimeType}',
+        );
+      }
+    } else {
+      throw Exception('Error al obtener los issues del volumen');
     }
   }
 
