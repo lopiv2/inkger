@@ -60,22 +60,35 @@ class CommonServices {
     }
   }
 
-  static Future<Response> saveSettingsToSharedPrefs(
+  static Future<Response> saveMultipleSettingsToSharedPrefs(
     SharedPreferences prefs,
-    Map<String, dynamic> body,
+    List<Map<String, dynamic>> settings,
   ) async {
     final response = await ApiService.dio.put(
       '/api/settings',
-      data: jsonEncode(body),
+      data: jsonEncode({'settings': settings}),
       options: Options(
         headers: {'Content-Type': 'application/json'},
         validateStatus: (status) => status != null && status < 500,
       ),
     );
 
-    // Si la respuesta fue exitosa, guarda el valor localmente
+    // Si la respuesta fue exitosa, guarda los valores localmente
     if (response.statusCode == 200) {
-      await prefs.setString('Comicvine Key', body['value']);
+      for (var setting in settings) {
+        final key = setting['key'];
+        final value = setting['value'];
+
+        if (value is String) {
+          await prefs.setString(key, value);
+        } else if (value is int) {
+          await prefs.setInt(key, value);
+        } else if (value is double) {
+          await prefs.setDouble(key, value);
+        } else if (value is bool) {
+          await prefs.setBool(key, value);
+        }
+      }
     }
 
     return response;

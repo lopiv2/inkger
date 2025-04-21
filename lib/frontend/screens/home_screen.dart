@@ -90,151 +90,130 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Logotipo
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (
-                        Widget child,
-                        Animation<double> animation,
-                      ) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SizeTransition(
-                            sizeFactor: animation,
-                            axis: Axis.horizontal,
-                            child: child,
-                          ),
-                        );
-                      },
-                      child:
-                          !isReaderMode
-                              ? TopBarLogo(
-                                backGroundColor: Colors.blueGrey,
-                                borderColor: Colors.black,
-                                imagePath: 'images/logo_inkger.png',
-                              )
-                              : TopBarLogo(
-                                backGroundColor: Colors.grey[850],
-                                borderColor: Colors.grey[700]!,
-                                imagePath: 'images/logo_inkger_white.png',
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SizeTransition(
+                                sizeFactor: animation,
+                                axis: Axis.horizontal,
+                                child: child,
                               ),
+                            );
+                          },
+                      child: !isReaderMode
+                          ? TopBarLogo(
+                              backGroundColor: Colors.blueGrey,
+                              borderColor: Colors.black,
+                              imagePath: 'images/logo_inkger.png',
+                            )
+                          : TopBarLogo(
+                              backGroundColor: Colors.grey[850],
+                              borderColor: Colors.grey[700]!,
+                              imagePath: 'images/logo_inkger_white.png',
+                            ),
                     ),
                     Expanded(
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         switchInCurve: Curves.easeInOut,
                         switchOutCurve: Curves.easeInOut,
-                        transitionBuilder: (
-                          Widget child,
-                          Animation<double> animation,
-                        ) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SizeTransition(
-                              sizeFactor: animation,
-                              axis: Axis.horizontal,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child:
-                            !isReaderMode
-                                // Sidebar
-                                ? Sidebar(
-                                  onItemSelected: (selectedItem) {
-                                    if (selectedItem == 'Tests') {
-                                      context.go('/tests');
-                                    } else if (selectedItem == 'Home') {
-                                      context.go('/home');
-                                    }
-                                  },
-                                )
-                                : SidebarWriter(
-                                  onItemSelected: (selectedItem) {
-                                    if (selectedItem == 'Tests') {
-                                      context.go('/tests');
-                                    } else if (selectedItem == 'Home') {
-                                      context.go('/home');
-                                    }
-                                  },
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: SizeTransition(
+                                  sizeFactor: animation,
+                                  axis: Axis.horizontal,
+                                  child: child,
                                 ),
+                              );
+                            },
+                        child: !isReaderMode
+                            // Sidebar
+                            ? Sidebar(
+                                onItemSelected: (selectedItem) {
+                                  if (selectedItem == 'Tests') {
+                                    context.go('/tests');
+                                  } else if (selectedItem == 'Home') {
+                                    context.go('/home');
+                                  }
+                                },
+                              )
+                            : SidebarWriter(
+                                onItemSelected: (selectedItem) {
+                                  if (selectedItem == 'Tests') {
+                                    context.go('/tests');
+                                  } else if (selectedItem == 'Home') {
+                                    context.go('/home');
+                                  }
+                                },
+                              ),
                       ),
                     ),
                     Container(
                       padding: EdgeInsets.all(10),
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color:
-                            preferences.preferences.readerMode == false
-                                ? Colors.blueGrey
-                                : Colors.grey[850],
+                        color: preferences.preferences.readerMode == false
+                            ? Colors.blueGrey
+                            : Colors.grey[850],
                         border: Border(
                           bottom: BorderSide(
-                            color:
-                                preferences.preferences.readerMode == false
-                                    ? Colors.black
-                                    : Colors.grey[700]!,
+                            color: preferences.preferences.readerMode == false
+                                ? Colors.black
+                                : Colors.grey[700]!,
                             width: 2,
                           ),
                           right: BorderSide(
-                            color:
-                                preferences.preferences.readerMode == false
-                                    ? Colors.black
-                                    : Colors.grey[700]!,
+                            color: preferences.preferences.readerMode == false
+                                ? Colors.black
+                                : Colors.grey[700]!,
                             width: 2,
                           ),
                           left: BorderSide(
-                            color:
-                                preferences.preferences.readerMode == false
-                                    ? Colors.black
-                                    : Colors.grey[700]!,
+                            color: preferences.preferences.readerMode == false
+                                ? Colors.black
+                                : Colors.grey[700]!,
                             width: 2,
                           ),
                         ),
                       ),
-                      child:
-                          preferences.isLoading
-                              ? const CircularProgressIndicator()
-                              : AnimatedToggleSwitch<bool>.dual(
-                                current: preferences.preferences.readerMode,
-                                first: false,
-                                second: true,
-                                height: 30,
-                                spacing: 50.0,
-                                style: const ToggleStyle(
-                                  borderColor: Colors.transparent,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      spreadRadius: 1,
-                                      blurRadius: 2,
-                                      offset: Offset(0, 1.5),
-                                    ),
-                                  ],
-                                ),
-                                styleBuilder:
-                                    (b) => ToggleStyle(
-                                      indicatorColor:
-                                          b ? Colors.red : Colors.green,
-                                    ),
-                                iconBuilder:
-                                    (value) =>
-                                        value
-                                            ? const Icon(Icons.history_edu)
-                                            : const Icon(Icons.library_books),
-                                textBuilder:
-                                    (value) =>
-                                        value
-                                            ? const Center(
-                                              child: Text('Writer'),
-                                            )
-                                            : const Center(
-                                              child: Text('Reader'),
-                                            ),
-                                onChanged: (b) {
-                                  preferences.toggleFullReaderMode(
-                                    b,
-                                  ); // ya no necesitas comparar
-                                  context.go(b ? '/home-writer' : '/home');
-                                },
+                      child: preferences.isLoading
+                          ? const CircularProgressIndicator()
+                          : AnimatedToggleSwitch<bool>.dual(
+                              current: preferences.preferences.readerMode,
+                              first: false,
+                              second: true,
+                              height: 30,
+                              spacing: 50.0,
+                              style: const ToggleStyle(
+                                borderColor: Colors.transparent,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    spreadRadius: 1,
+                                    blurRadius: 2,
+                                    offset: Offset(0, 1.5),
+                                  ),
+                                ],
                               ),
+                              styleBuilder: (b) => ToggleStyle(
+                                indicatorColor: b ? Colors.red : Colors.green,
+                              ),
+                              iconBuilder: (value) => value
+                                  ? const Icon(Icons.history_edu)
+                                  : const Icon(Icons.library_books),
+                              textBuilder: (value) => value
+                                  ? const Center(child: Text('Writer'))
+                                  : const Center(child: Text('Reader')),
+                              onChanged: (b) {
+                                preferences.toggleFullReaderMode(
+                                  b,
+                                ); // ya no necesitas comparar
+                                context.go(b ? '/home-writer' : '/home');
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -247,36 +226,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Barra superior
                 if (!isFullScreen)
                   AnimatedSwitcher(
-                    transitionBuilder: (
-                      Widget child,
-                      Animation<double> animation,
-                    ) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SizeTransition(
-                          sizeFactor: animation,
-                          axis: Axis.horizontal,
-                          child: child,
-                        ),
-                      );
-                    },
-                    duration: Duration(milliseconds: 300),
-                    child:
-                        !isReaderMode
-                            ? TopBar(
-                              backGroundColor: Colors.blueGrey,
-                              borderColor: Colors.black,
-                            )
-                            : TopBar(
-                              backGroundColor: Colors.grey[850],
-                              borderColor: Colors.grey[700],
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SizeTransition(
+                              sizeFactor: animation,
+                              axis: Axis.horizontal,
+                              child: child,
                             ),
+                          );
+                        },
+                    duration: Duration(milliseconds: 300),
+                    child: !isReaderMode
+                        ? TopBar(
+                            backGroundColor: Colors.blueGrey,
+                            borderColor: Colors.black,
+                          )
+                        : TopBar(
+                            backGroundColor: Colors.grey[850],
+                            borderColor: Colors.grey[700],
+                          ),
                   ),
                 // Área de contenido dinámico
                 Expanded(
-                  child: Container(
-                    color: Colors.blueGrey,
-                    child: widget.content, // Contenido inyectado por el router
+                  child: Builder(
+                    builder: (context) {
+                      if (!mounted) return const SizedBox();
+                      return Container(
+                        color: Colors.blueGrey,
+                        child: widget.content,
+                      );
+                    },
                   ),
                 ),
               ],
