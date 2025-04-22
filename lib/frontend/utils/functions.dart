@@ -256,3 +256,8 @@ List<String> parseCommaSeparatedList(dynamic data) {
 
   return [];
 }
+
+String prettifyJson(Map<String, dynamic> jsonMap) {
+  const encoder = JsonEncoder.withIndent('  ');
+  return encoder.convert(jsonMap);
+}

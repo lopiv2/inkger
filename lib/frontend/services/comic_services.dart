@@ -167,7 +167,7 @@ class ComicServices {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getIssueInfo(
+  static Future<Map<String, dynamic>> getIssueInfo(
     int userId,
     int issueId,
   ) async {
@@ -180,8 +180,8 @@ class ComicServices {
       final data = response.data;
 
       // Ya es una lista directamente
-      if (data is List) {
-        return data.cast<Map<String, dynamic>>();
+      if (data is Map<String, dynamic>) {
+        return data;
       } else {
         throw Exception(
           'Se esperaba una lista, se recibió: ${data.runtimeType}',
@@ -235,6 +235,40 @@ class ComicServices {
       }
       // Opcional: Guardar localmente para sincronizar después
       //await _saveProgressOffline(comicId, progress);
+    }
+  }
+
+  static Future<void> sendDataComicToSave(
+    Map<String, dynamic> selectedIssue,
+    BuildContext context,
+    Comic comic,
+    String volumeTitle,
+    String publisher,
+  ) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/comics/save-metadata', // Ajusta según tu endpoint
+        data: {
+          ...selectedIssue,
+          'comic_id': comic.id,
+          'volumeTitle': volumeTitle,
+          'publisher': publisher,
+        },
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode == 200) {
+        CustomSnackBar.show(
+          context,
+          'Metadatos de Comic actualizados',
+          Colors.green,
+          duration: const Duration(seconds: 4),
+        );
+      } else {
+        print('Error al guardar el cómic: ${response.data['error']}');
+      }
+    } catch (e) {
+      print('Excepción al guardar el cómic: $e');
     }
   }
 

@@ -1,8 +1,5 @@
-import 'dart:convert';
 import 'dart:typed_data';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/dialogs/volume_issues_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
@@ -140,8 +137,10 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                                 showDialog(
                                   context: context,
                                   builder: (context) => VolumeIssuesDialog(
+                                    comic: widget.comic,
                                     issues: issues,
                                     volumeTitle: selected['series'],
+                                    publisher: selected['publisher'],
                                   ),
                                 );
                               },

@@ -1,17 +1,23 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/utils/functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VolumeIssuesDialog extends StatefulWidget {
   final List<Map<String, dynamic>> issues;
   final String volumeTitle;
+  final String publisher;
+  final Comic comic;
 
   const VolumeIssuesDialog({
     Key? key,
     required this.issues,
     required this.volumeTitle,
+    required this.comic,
+    required this.publisher,
   }) : super(key: key);
 
   @override
@@ -20,6 +26,7 @@ class VolumeIssuesDialog extends StatefulWidget {
 
 class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
   int _selectedIssueIndex = 0;
+  late Map<String, dynamic> selectedIssueData;
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +72,9 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
                                   setState(() {
                                     _selectedIssueIndex = index;
                                   });
-                                  final data = await getIssuesForVolume(
+                                  selectedIssueData = await getIssuesForVolume(
                                     issue['id'],
                                   );
-                                  print(data);
                                 },
                               );
                             },
@@ -147,7 +153,14 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
               child: Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(selectedIssue);
+                    sendSelectedComicToBackend(
+                      selectedIssueData,
+                      context,
+                      widget.comic,
+                      widget.volumeTitle,
+                      widget.publisher,
+                    );
+                    //Navigator.of(context).pop(selectedIssue);
                   },
                   child: const Text('Seleccionar cómic'),
                 ),
@@ -160,11 +173,27 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
   }
 }
 
-Future<List<Map<String, dynamic>>> getIssuesForVolume(int issueId) async {
+Future<void> sendSelectedComicToBackend(
+  Map<String, dynamic> selectedIssue,
+  BuildContext context,
+  Comic comic,
+  String volumeTitle,
+  String publisher,
+) async {
+  final searchResults = await ComicServices.sendDataComicToSave(
+    selectedIssue,
+    context,
+    comic,
+    volumeTitle,
+    publisher,
+  );
+}
+
+Future<Map<String, dynamic>> getIssuesForVolume(int issueId) async {
   final prefs = await SharedPreferences.getInstance();
   final userId = prefs.getInt('id');
   final searchResults = await ComicServices.getIssueInfo(userId ?? 0, issueId);
 
-  //print(searchResults);
+  //print(prettifyJson(searchResults));
   return searchResults;
 }
