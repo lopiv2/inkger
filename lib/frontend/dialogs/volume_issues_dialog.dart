@@ -1,9 +1,12 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VolumeIssuesDialog extends StatefulWidget {
@@ -152,7 +155,7 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
               padding: const EdgeInsets.all(12.0),
               child: Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     sendSelectedComicToBackend(
                       selectedIssueData,
                       context,
@@ -160,7 +163,16 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
                       widget.volumeTitle,
                       widget.publisher,
                     );
-                    //Navigator.of(context).pop(selectedIssue);
+                    final prefs = await SharedPreferences.getInstance();
+                    final provider = Provider.of<ComicsProvider>(
+                      context,
+                      listen: false,
+                    );
+                    context.pop();
+                    context.pop();
+                    //context.go("/comics");
+                    await provider.loadcomics(prefs.getInt('id') ?? 0);
+                    //context.go("/comics");
                   },
                   child: const Text('Seleccionar cómic'),
                 ),
