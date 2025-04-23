@@ -2,6 +2,8 @@
   "@@locale": "en",
   "audiobooks": "Audiobooks",
   "books": "Books",
+  "dashboard": "Dashboard",
+  "documentFormats": "Document formats", 
   "edit": "Edit",
   "metadataUpdated": "Updated metadata",
   "noSerie": "No serie",

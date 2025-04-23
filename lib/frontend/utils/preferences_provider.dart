@@ -36,6 +36,8 @@ class PreferencesProvider with ChangeNotifier {
         'readerMode': prefs.getBool('readerMode') ?? false,
         'Comicvine Key': prefs.getString('Comicvine Key'),
         'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,
+        'themeColor': prefs.getString('themeColor') ?? '#2196F3',
+        'backgroundImagePath': prefs.getString('backgroundImagePath'),
       });
     } catch (e) {
       _prefs = AppPreferences.defaults();
@@ -80,16 +82,16 @@ class PreferencesProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     switch (T) {
-      case bool:
+      case const (bool):
         await prefs.setBool(key, value as bool);
         break;
-      case String:
+      case const (String):
         await prefs.setString(key, value as String);
         break;
-      case double:
+      case const (double):
         await prefs.setDouble(key, value as double);
         break;
-      case int:
+      case const (int):
         await prefs.setInt(key, value as int);
         break;
       default:

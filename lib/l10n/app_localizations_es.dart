@@ -15,6 +15,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get books => 'Libros';
 
   @override
+  String get dashboard => 'Panel de control';
+
+  @override
+  String get documentFormats => 'Formatos de documentos';
+
+  @override
   String get edit => 'Editar';
 
   @override

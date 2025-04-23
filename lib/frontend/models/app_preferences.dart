@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class AppPreferences {
   final bool darkMode;
   final String languageCode;
@@ -9,7 +11,9 @@ class AppPreferences {
   final bool fullScreenMode;
   final bool readerMode;
   final String? comicvineApiKey;
-  final double defaultGridItemSize; 
+  final double defaultGridItemSize;
+  final Color themeColor; // nuevo
+  final String? backgroundImagePath; // nuevo
 
   AppPreferences({
     required this.darkMode,
@@ -23,20 +27,24 @@ class AppPreferences {
     required this.readerMode,
     this.comicvineApiKey,
     required this.defaultGridItemSize,
+    required this.themeColor,
+    this.backgroundImagePath,
   });
 
   AppPreferences.defaults()
-    : darkMode = false,
-      languageCode = 'es',
-      textScaleFactor = 1.0,
-      notificationsEnabled = true,
-      comicAppDirectory = null,
-      bookAppDirectory = null,
-      audiobookAppDirectory = null,
-      fullScreenMode = false,
-      readerMode = true,
-      comicvineApiKey = null,
-      defaultGridItemSize = 7; 
+      : darkMode = false,
+        languageCode = 'es',
+        textScaleFactor = 1.0,
+        notificationsEnabled = true,
+        comicAppDirectory = null,
+        bookAppDirectory = null,
+        audiobookAppDirectory = null,
+        fullScreenMode = false,
+        readerMode = true,
+        comicvineApiKey = null,
+        defaultGridItemSize = 7,
+        themeColor = Colors.blueGrey, // valor por defecto
+        backgroundImagePath = null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -44,13 +52,15 @@ class AppPreferences {
       'languageCode': languageCode,
       'textScaleFactor': textScaleFactor,
       'notificationsEnabled': notificationsEnabled,
-      'lastFileDirectory': comicAppDirectory,
+      'comicAppDirectory': comicAppDirectory,
       'bookAppDirectory': bookAppDirectory,
       'audiobookAppDirectory': audiobookAppDirectory,
       'fullScreenMode': fullScreenMode,
       'readerMode': readerMode,
       'Comicvine Key': comicvineApiKey,
       'defaultGridItemSize': defaultGridItemSize,
+      'themeColor': themeColor.value, // se guarda como int
+      'backgroundImagePath': backgroundImagePath,
     };
   }
 
@@ -66,7 +76,9 @@ class AppPreferences {
       fullScreenMode: map['fullScreenMode'] as bool,
       readerMode: map['readerMode'] as bool,
       comicvineApiKey: map['Comicvine Key'],
-      defaultGridItemSize: map['defaultGridItemSize'] as double, 
+      defaultGridItemSize: map['defaultGridItemSize'] as double,
+      themeColor: Color(map['themeColor'] as int),
+      backgroundImagePath: map['backgroundImagePath'] as String?,
     );
   }
 
@@ -82,6 +94,8 @@ class AppPreferences {
     bool? readerMode,
     String? comicvineApiKey,
     double? defaultGridItemSize,
+    Color? themeColor,
+    String? backgroundImagePath,
   }) {
     return AppPreferences(
       darkMode: darkMode ?? this.darkMode,
@@ -95,6 +109,8 @@ class AppPreferences {
       readerMode: readerMode ?? this.readerMode,
       comicvineApiKey: comicvineApiKey ?? this.comicvineApiKey,
       defaultGridItemSize: defaultGridItemSize ?? this.defaultGridItemSize,
+      themeColor: themeColor ?? this.themeColor,
+      backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
     );
   }
 }

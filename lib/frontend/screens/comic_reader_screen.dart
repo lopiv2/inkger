@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomReaderComic extends StatefulWidget {
   final Uint8List cbzBytes;
@@ -91,9 +93,15 @@ class _CustomReaderComicState extends State<CustomReaderComic>
   Future<void> _saveProgress() async {
     if (_imagePaths.isEmpty) return;
 
-    int progress =
-        ((_currentPageIndex / (_imagePaths.length - 1)) * 100).round();
+    int progress = ((_currentPageIndex / (_imagePaths.length - 1)) * 100)
+        .round();
     await ComicServices.saveReadingProgress(widget.comicId, progress, context);
+    final provider = Provider.of<ComicsProvider>(context, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+
+    // Campos requeridos
+    final id = prefs.getInt('id');
+    await provider.loadcomics(id ?? 0);
     context.pop();
   }
 
@@ -280,14 +288,14 @@ class _CustomReaderComicState extends State<CustomReaderComic>
                   (_pageController.page ?? _currentPageIndex) - index;
 
               return Transform(
-                alignment:
-                    rotation < 0 ? Alignment.centerRight : Alignment.centerLeft,
-                transform:
-                    Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(
-                        rotation * 1.2,
-                      ), // mayor ángulo para hoja más realista
+                alignment: rotation < 0
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(
+                    rotation * 1.2,
+                  ), // mayor ángulo para hoja más realista
                 child: Opacity(
                   opacity: value,
                   child: InteractiveViewer(
@@ -393,24 +401,23 @@ class _CustomReaderComicState extends State<CustomReaderComic>
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder:
-                    (context) => Container(
-                      height: MediaQuery.of(context).size.height * 0.8,
-                      child: Column(
-                        children: [
-                          AppBar(
-                            title: Text('Seleccionar página'),
-                            actions: [
-                              IconButton(
-                                icon: Icon(Icons.close),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                            ],
+                builder: (context) => Container(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  child: Column(
+                    children: [
+                      AppBar(
+                        title: Text('Seleccionar página'),
+                        actions: [
+                          IconButton(
+                            icon: Icon(Icons.close),
+                            onPressed: () => Navigator.pop(context),
                           ),
-                          Expanded(child: _buildPageList()),
                         ],
                       ),
-                    ),
+                      Expanded(child: _buildPageList()),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -430,10 +437,9 @@ class _CustomReaderComicState extends State<CustomReaderComic>
             IconButton(
               icon: Icon(Icons.arrow_forward),
               onPressed: _goToNextPage,
-              color:
-                  _currentPageIndex < _imagePaths.length - 1
-                      ? null
-                      : Colors.grey,
+              color: _currentPageIndex < _imagePaths.length - 1
+                  ? null
+                  : Colors.grey,
             ),
           ],
         ),

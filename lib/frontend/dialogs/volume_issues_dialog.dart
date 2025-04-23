@@ -6,6 +6,7 @@ import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -156,23 +157,33 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
               child: Center(
                 child: ElevatedButton(
                   onPressed: () async {
-                    sendSelectedComicToBackend(
+                    final currentContext = context;
+
+                    await sendSelectedComicToBackend(
                       selectedIssueData,
-                      context,
+                      currentContext,
                       widget.comic,
                       widget.volumeTitle,
                       widget.publisher,
                     );
+
+                    if (!context.mounted) return;
+
                     final prefs = await SharedPreferences.getInstance();
                     final provider = Provider.of<ComicsProvider>(
                       context,
                       listen: false,
                     );
-                    context.pop();
-                    context.pop();
-                    //context.go("/comics");
                     await provider.loadcomics(prefs.getInt('id') ?? 0);
-                    //context.go("/comics");
+
+                    // 2) Cierra **ambos** dialogs con Navigator.pop
+                    if (Navigator.of(context).canPop())
+                      Navigator.of(context).pop(); // cierra IssueDialog
+                    if (Navigator.of(context).canPop())
+                      Navigator.of(context).pop(); // cierra MetadataDialog
+
+                    // Ahora redirigimos con go_router
+                    context.go('/comics');
                   },
                   child: const Text('Seleccionar cómic'),
                 ),

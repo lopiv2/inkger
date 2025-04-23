@@ -182,6 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: preferences.isLoading
                           ? const CircularProgressIndicator()
                           : AnimatedToggleSwitch<bool>.dual(
+                            animationDuration: Duration(seconds: 1),
                               current: preferences.preferences.readerMode,
                               first: false,
                               second: true,
@@ -250,14 +251,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 // Área de contenido dinámico
                 Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      if (!mounted) return const SizedBox();
-                      return Container(
-                        color: Colors.blueGrey,
-                        child: widget.content,
-                      );
-                    },
+                  child: Container(
+                    color: Colors.blueGrey,
+                    child: widget.content,
                   ),
                 ),
               ],

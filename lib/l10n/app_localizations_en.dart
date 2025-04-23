@@ -15,6 +15,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get books => 'Books';
 
   @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get documentFormats => 'Document formats';
+
+  @override
   String get edit => 'Edit';
 
   @override

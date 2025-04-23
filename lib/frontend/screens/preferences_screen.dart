@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_colorpicker/flutter_colorpicker.dart'; // Asegúrate de tener este paquete
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/l10n/app_localizations.dart';
@@ -15,7 +15,10 @@ class PreferencesScreen extends StatefulWidget {
 class _PreferencesScreenState extends State<PreferencesScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _apiKeyController = TextEditingController();
+  final TextEditingController _backgroundImageController = TextEditingController();
+
   double sliderItemSizeValue = 5;
+  Color themeColor = Colors.blue; // 🎨 Nuevo campo para color
 
   @override
   void initState() {
@@ -23,17 +26,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     loadPreferences();
   }
 
-  @override
-  void didUpdateWidget(covariant PreferencesScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    loadPreferences(); // Vuelve a cargar preferencias cuando el widget se actualiza
-  }
-
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      //sliderItemSizeValue = 7;
-      //sliderItemSizeValue = prefs.getDouble("defaultGridItemSize") ?? 7;
       final rawValue = prefs.get("defaultGridItemSize");
 
       if (rawValue is double) {
@@ -43,7 +38,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       } else {
         sliderItemSizeValue = 7.0;
       }
+
       _apiKeyController.text = prefs.getString("Comicvine Key") ?? '';
+      _backgroundImageController.text = prefs.getString("backgroundImagePath") ?? '';
+      int? colorValue = prefs.getInt("themeColor");
+      if (colorValue != null) themeColor = Color(colorValue);
     });
   }
 
@@ -60,8 +59,17 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       {
         'userId': userId,
         'key': 'defaultGridItemSize',
-        'value': sliderItemSizeValue
-            .toString(), // Convierte a String si tu backend espera strings
+        'value': sliderItemSizeValue.toString(),
+      },
+      {
+        'userId': userId,
+        'key': 'backgroundImagePath',
+        'value': _backgroundImageController.text.trim(),
+      },
+      {
+        'userId': userId,
+        'key': 'themeColor',
+        'value': themeColor.value.toString(),
       },
     ];
 
@@ -70,20 +78,42 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       settings,
     );
 
-    // Guardar también en local
     await prefs.setString("Comicvine Key", _apiKeyController.text.trim());
     await prefs.setDouble("defaultGridItemSize", sliderItemSizeValue);
+    await prefs.setString("backgroundImagePath", _backgroundImageController.text.trim());
+    await prefs.setInt("themeColor", themeColor.value);
 
-    if (res.statusCode == 200) {
-      if (context.mounted) {
-        CustomSnackBar.show(
-          context,
-          AppLocalizations.of(context)!.preferencesSaved,
-          Colors.green,
-          duration: const Duration(seconds: 4),
-        );
-      }
+    if (res.statusCode == 200 && context.mounted) {
+      CustomSnackBar.show(
+        context,
+        AppLocalizations.of(context)!.preferencesSaved,
+        Colors.green,
+        duration: const Duration(seconds: 4),
+      );
     }
+  }
+
+  void _pickThemeColor() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Seleccionar color de tema'),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: themeColor,
+              onColorChanged: (color) => setState(() => themeColor = color),
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cerrar'),
+              onPressed: () => Navigator.of(context).pop(),
+            )
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -94,7 +124,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            // 🟩 Primera columna: preferencias
             Expanded(
               flex: 2,
               child: Form(
@@ -112,8 +141,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       max: 10,
                       divisions: 5,
                       label: sliderItemSizeValue.round().toString(),
-                      onChanged: (value) =>
-                          setState(() => sliderItemSizeValue = value),
+                      onChanged: (value) => setState(() => sliderItemSizeValue = value),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -122,6 +150,32 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         labelText: 'Comicvine API Key',
                         border: OutlineInputBorder(),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _backgroundImageController,
+                      decoration: const InputDecoration(
+                        labelText: 'Ruta de imagen de fondo',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text("Color de tema: "),
+                        GestureDetector(
+                          onTap: _pickThemeColor,
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: themeColor,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
@@ -133,13 +187,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 ),
               ),
             ),
-
-            const SizedBox(width: 24), // 🧱 Espacio entre columnas
-            // 🟦 Segunda columna: para contenido adicional
-            Expanded(
-              flex: 3,
-              child: Container(padding: const EdgeInsets.all(16)),
-            ),
+            const SizedBox(width: 24),
+            Expanded(flex: 3, child: Container(padding: const EdgeInsets.all(16))),
           ],
         ),
       ),

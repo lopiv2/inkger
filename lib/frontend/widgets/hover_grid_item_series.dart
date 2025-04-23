@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
@@ -103,10 +102,9 @@ class HoverableGridItemState extends State<HoverableGridItem> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               decoration: BoxDecoration(
-                color:
-                    widget.isBook
-                        ? Colors.blue.withOpacity(0.9)
-                        : Colors.green.withOpacity(0.9),
+                color: widget.isBook
+                    ? Colors.blue.withOpacity(0.9)
+                    : Colors.green.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -138,10 +136,9 @@ class HoverableGridItemState extends State<HoverableGridItem> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               decoration: BoxDecoration(
-                color:
-                    widget.isBook
-                        ? Colors.blue.withOpacity(0.9)
-                        : Colors.green.withOpacity(0.9),
+                color: widget.isBook
+                    ? Colors.blue.withOpacity(0.9)
+                    : Colors.green.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -189,12 +186,19 @@ class HoverableGridItemState extends State<HoverableGridItem> {
           child: IconButton(
             color: Colors.white,
             onPressed: () {
-              loadBookFile(
-                context,
-                widget.item.id.toString(),
-                widget.item.title,
-                widget.item.readingProgress!['readingProgress'],
-              );
+              widget.isBook
+                  ? loadBookFile(
+                      context,
+                      widget.item.id.toString(),
+                      widget.item.title,
+                      widget.item.readingProgress!['readingProgress'],
+                    )
+                  : loadComicFile(
+                      context,
+                      widget.item.id.toString(),
+                      widget.item.title,
+                      widget.item.readingProgress!['readingProgress'],
+                    );
             },
             icon: Icon(widget.isBook ? Icons.menu_book : Icons.photo_library),
           ),
@@ -217,11 +221,10 @@ class HoverableGridItemState extends State<HoverableGridItem> {
                 icon: const Icon(Icons.edit, size: 20, color: Colors.white),
               ),
               IconButton(
-                onPressed:
-                    () => BookServices.showDeleteConfirmationDialog(
-                      context,
-                      widget.item,
-                    ),
+                onPressed: () => BookServices.showDeleteConfirmationDialog(
+                  context,
+                  widget.item,
+                ),
                 icon: const Icon(Icons.delete, size: 20, color: Colors.white),
               ),
             ],

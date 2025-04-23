@@ -22,7 +22,7 @@ class Sidebar extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            _buildHoverMenuItem(context, Icons.home, 'Inicio', 'Home'),
+            _buildHoverMenuItem(context, Icons.home, 'Inicio', '/home',),
             _buildHoverLibraryMenu(context),
             _buildHoverMenuItem(
               context,

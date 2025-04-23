@@ -107,6 +107,18 @@ abstract class AppLocalizations {
   /// **'Books'**
   String get books;
 
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @documentFormats.
+  ///
+  /// In en, this message translates to:
+  /// **'Document formats'**
+  String get documentFormats;
+
   /// No description provided for @edit.
   ///
   /// In en, this message translates to:

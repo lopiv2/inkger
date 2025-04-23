@@ -37,6 +37,8 @@ dependencies:
   flutter_fullscreen: ^1.1.0
   animated_toggle_switch: ^0.8.4
   flutter_image_compress: ^2.4.0
+  flutter_svg: ^2.1.0
+  flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
   flutter_test:

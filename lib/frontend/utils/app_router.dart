@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/screens/comic_reader_screen.dart';
+import 'package:inkger/frontend/screens/dashboard_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
@@ -17,7 +18,7 @@ import 'package:inkger/frontend/widgets/comic_grid.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
-  
+
   AppRouter(this.authProvider);
 
   late final router = GoRouter(
@@ -34,9 +35,8 @@ class AppRouter {
       // Ruta de login (pantalla completa)
       GoRoute(
         path: '/login',
-        pageBuilder:
-            (context, state) =>
-                MaterialPage(key: state.pageKey, child: LoginScreen()),
+        pageBuilder: (context, state) =>
+            MaterialPage(key: state.pageKey, child: LoginScreen()),
       ),
 
       // Layout principal con sidebar (shell route)
@@ -50,21 +50,48 @@ class AppRouter {
             pageBuilder: (context, state) {
               return CustomTransitionPage(
                 key: state.pageKey,
+                child: DashboardScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        ),
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/books', // Use root path for the default home
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
                 child: BooksGrid(),
-                transitionsBuilder: (
-                  context,
-                  animation,
-                  secondaryAnimation,
-                  child,
-                ) {
-                  return FadeTransition(
-                    opacity: CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeInOut,
-                    ),
-                    child: child,
-                  );
-                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      // Animación de deslizamiento desde la derecha
+                      const begin = Offset(
+                        1.0,
+                        0.0,
+                      ); // Comienza fuera de la pantalla a la derecha
+                      const end = Offset.zero; // Llega al centro de la pantalla
+                      const curve = Curves.easeInOut;
+
+                      var tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      var offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
                 transitionDuration: const Duration(milliseconds: 1000),
               );
             },
@@ -76,31 +103,31 @@ class AppRouter {
                 key: state.pageKey,
                 child:
                     SeriesScreen(), // Suponiendo que tienes una vista llamada SeriesGrid
-                transitionsBuilder: (
-                  context,
-                  animation,
-                  secondaryAnimation,
-                  child,
-                ) {
-                  // Animación de transición combinando Slide y Scale
-                  var tween = Tween<Offset>(
-                    begin: const Offset(0, 1), // Comienza desde abajo
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                  );
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      // Animación de transición combinando Slide y Scale
+                      var tween =
+                          Tween<Offset>(
+                            begin: const Offset(0, 1), // Comienza desde abajo
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeInOut,
+                            ),
+                          );
 
-                  // Aquí puedes agregar un ScaleTransition para hacerlo más interesante
-                  return SlideTransition(
-                    position: tween,
-                    child: ScaleTransition(
-                      scale: animation.drive(
-                        Tween<double>(begin: 0.8, end: 1.0),
-                      ),
-                      child: child,
-                    ),
-                  );
-                },
+                      // Aquí puedes agregar un ScaleTransition para hacerlo más interesante
+                      return SlideTransition(
+                        position: tween,
+                        child: ScaleTransition(
+                          scale: animation.drive(
+                            Tween<double>(begin: 0.8, end: 1.0),
+                          ),
+                          child: child,
+                        ),
+                      );
+                    },
                 transitionDuration: const Duration(
                   milliseconds: 1200,
                 ), // Transición más suave
@@ -127,11 +154,8 @@ class AppRouter {
           // Ruta de perfil de usuario (pantalla completa)
           GoRoute(
             path: '/user-profile',
-            pageBuilder:
-                (context, state) => MaterialPage(
-                  key: state.pageKey,
-                  child: UserProfileLoader(),
-                ),
+            pageBuilder: (context, state) =>
+                MaterialPage(key: state.pageKey, child: UserProfileLoader()),
           ),
           GoRoute(
             path: '/home-writer', // Use root path for the default home
@@ -139,21 +163,17 @@ class AppRouter {
               return CustomTransitionPage(
                 key: state.pageKey,
                 child: WriterWelcomeScreen(),
-                transitionsBuilder: (
-                  context,
-                  animation,
-                  secondaryAnimation,
-                  child,
-                ) {
-                  return ScaleTransition(
-                    scale: CurvedAnimation(
-                      parent:
-                          animation, // Usa el animation proporcionado por GoRouter
-                      curve: Curves.fastOutSlowIn,
-                    ),
-                    child: child,
-                  );
-                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return ScaleTransition(
+                        scale: CurvedAnimation(
+                          parent:
+                              animation, // Usa el animation proporcionado por GoRouter
+                          curve: Curves.fastOutSlowIn,
+                        ),
+                        child: child,
+                      );
+                    },
                 transitionDuration: const Duration(milliseconds: 1000),
               );
             },
@@ -165,21 +185,17 @@ class AppRouter {
               return CustomTransitionPage(
                 key: state.pageKey,
                 child: NameGeneratorsScreen(),
-                transitionsBuilder: (
-                  context,
-                  animation,
-                  secondaryAnimation,
-                  child,
-                ) {
-                  return ScaleTransition(
-                    scale: CurvedAnimation(
-                      parent:
-                          animation, // Usa el animation proporcionado por GoRouter
-                      curve: Curves.bounceInOut,
-                    ),
-                    child: child,
-                  );
-                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return ScaleTransition(
+                        scale: CurvedAnimation(
+                          parent:
+                              animation, // Usa el animation proporcionado por GoRouter
+                          curve: Curves.bounceInOut,
+                        ),
+                        child: child,
+                      );
+                    },
                 transitionDuration: const Duration(milliseconds: 1000),
               );
             },
@@ -228,23 +244,15 @@ class AppRouter {
           ),
           GoRoute(
             path: '/audiobooks', // Use root path for the default home
-            pageBuilder:
-                (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
+            pageBuilder: (context, state) =>
+                NoTransitionPage(key: state.pageKey, child: BooksGrid()),
           ),
           GoRoute(
             path: '/settings', // Use root path for the default home
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: PreferencesScreen(),
-                ),
-          ),
-          GoRoute(
-            path: '/books', // Use root path for the default home
-            pageBuilder:
-                (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: BooksGrid()),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: PreferencesScreen(),
+            ),
           ),
           GoRoute(
             path: '/comics',
@@ -252,31 +260,24 @@ class AppRouter {
               return CustomTransitionPage(
                 key: state.pageKey,
                 child: ComicsGrid(),
-                transitionsBuilder: (
-                  context,
-                  animation,
-                  secondaryAnimation,
-                  child,
-                ) {
-                  return FadeTransition(
-                    opacity: CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeInOut,
-                    ),
-                    child: child,
-                  );
-                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        ),
+                        child: child,
+                      );
+                    },
                 transitionDuration: const Duration(milliseconds: 2000),
               );
             },
           ),
           GoRoute(
             path: '/tests',
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: CentralContent(),
-                ),
+            pageBuilder: (context, state) =>
+                NoTransitionPage(key: state.pageKey, child: CentralContent()),
           ),
         ],
       ),

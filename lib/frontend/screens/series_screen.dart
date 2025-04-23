@@ -15,42 +15,53 @@ class SeriesScreen extends StatefulWidget {
 }
 
 class _SeriesScreenState extends State<SeriesScreen> {
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    // Usar WidgetsBinding para posponer la carga después del build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadComics();
-    });
+    _loadComics();
   }
 
   Future<void> _loadComics() async {
     final provider = Provider.of<ComicsProvider>(context, listen: false);
     final prefs = await SharedPreferences.getInstance();
 
-    // Campos requeridos
     final id = prefs.getInt('id');
-    await provider.loadcomics(id ?? 0);
+    if (id != null) {
+      await provider.loadcomics(id);
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Obtener las listas de libros y cómics de los providers
     final booksProvider = Provider.of<BooksProvider>(context);
     final comicsProvider = Provider.of<ComicsProvider>(context);
 
-    // Obtener las series únicas con su conteo
-    final uniqueSeries = _getUniqueSeries(booksProvider.books, comicsProvider.comics);
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final uniqueSeries = _getUniqueSeries(context,booksProvider.books, comicsProvider.comics);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Series'), centerTitle: true),
       body: SeriesFilterAndGrid(
-        seriesFuture: Future.value(uniqueSeries), // Pasamos la lista completa de Series
+        seriesFuture: Future.value(uniqueSeries),
       ),
     );
   }
+}
 
-  List<Series> _getUniqueSeries(List<Book> books, List<Comic> comics) {
+  List<Series> _getUniqueSeries(BuildContext context,List<Book> books, List<Comic> comics) {
     final Map<String, SeriesAggregator> seriesMap = {};
 
     void processItem(
@@ -103,7 +114,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
         )
         .toList();
   }
-}
+
 
 class SeriesAggregator {
   int count = 0;

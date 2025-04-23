@@ -1,15 +1,18 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_fullscreen/flutter_fullscreen.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:inkger/frontend/models/epub_book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/epub_parser.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomReaderEpub extends StatefulWidget {
   final Uint8List epubBytes;
@@ -46,8 +49,8 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     super.initState();
     _loadEpubContent();
     FullScreen.addListener(this);
-    currentNavIndex =
-        ((widget.initialProgress / 100) * flatNavPoints.length).round();
+    currentNavIndex = ((widget.initialProgress / 100) * flatNavPoints.length)
+        .round();
   }
 
   @override
@@ -92,6 +95,12 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
 
     await BookServices.saveReadingProgress(widget.bookId, progress, context);
     //context.go('/books');
+    final provider = Provider.of<BooksProvider>(context, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+
+    // Campos requeridos
+    final id = prefs.getInt('id');
+    await provider.loadBooks(id ?? 0);
     context.pop();
   }
 
@@ -197,15 +206,19 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     if (isLoading) return Center(child: CircularProgressIndicator());
     if (errorMessage != null) return Center(child: Text(errorMessage!));
 
-    if (flatNavPoints.isEmpty || currentNavIndex < 0 || currentNavIndex >= flatNavPoints.length) {
-         return Center(child: Text('Índice de navegación inválido.'));
+    if (flatNavPoints.isEmpty ||
+        currentNavIndex < 0 ||
+        currentNavIndex >= flatNavPoints.length) {
+      return Center(child: Text('Índice de navegación inválido.'));
     }
 
     //final currentNav = navPoints[currentNavIndex];
     //final htmlContent = _getHtmlContent(currentNav.contentSrc);
 
     final currentNav = flatNavPoints[currentNavIndex];
-    final htmlContent = _getHtmlContent(currentNav.contentSrc); // _getHtmlContent debe buscar en epubContent
+    final htmlContent = _getHtmlContent(
+      currentNav.contentSrc,
+    ); // _getHtmlContent debe buscar en epubContent
 
     // Manejo de contenido faltante
     if (htmlContent == null) {
@@ -272,18 +285,31 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
     final imageData = epubContent[imagePath];
 
     if (imageData is Uint8List) {
-      return Image.memory(
-        imageData,
-        scale: 0.5,
-        fit: BoxFit.scaleDown,
-        errorBuilder: (_, __, ___) => _buildImageError(),
-        frameBuilder: (_, child, frame, __) {
-          if (frame == null) {
-            return Center(child: CircularProgressIndicator());
-          }
-          return child;
-        },
-      );
+      // Detecta si es un SVG
+      final isSvg = imagePath.toLowerCase().endsWith('.svg');
+
+      if (isSvg) {
+        return SvgPicture.memory(
+          imageData,
+          placeholderBuilder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+          height: 150,
+          fit: BoxFit.contain,
+        );
+      } else {
+        return Image.memory(
+          imageData,
+          scale: 0.5,
+          fit: BoxFit.scaleDown,
+          errorBuilder: (_, __, ___) => _buildImageError(),
+          frameBuilder: (_, child, frame, __) {
+            if (frame == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return child;
+          },
+        );
+      }
     }
 
     return _buildImageError();
@@ -380,37 +406,36 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
         // 3. Mostrar el fragmento usando flutter_widget_from_html
         showDialog(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                content: SizedBox(
-                  width:
-                      MediaQuery.of(context).size.width *
-                      0.3, // Ajusta el ancho del diálogo
-                  child: SingleChildScrollView(
-                    child: HtmlWidget(
-                      fragmentElement.outerHtml,
-                      textStyle: TextStyle(fontSize: 16),
-                      customWidgetBuilder: (element) {
-                        // Manejo personalizado para imágenes u otros elementos
-                        if (element.localName == 'img') {
-                          final src = element.attributes['src'];
-                          if (src != null) {
-                            // Implementa tu lógica para mostrar imágenes
-                            return Image.network(src);
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
+          builder: (context) => AlertDialog(
+            content: SizedBox(
+              width:
+                  MediaQuery.of(context).size.width *
+                  0.3, // Ajusta el ancho del diálogo
+              child: SingleChildScrollView(
+                child: HtmlWidget(
+                  fragmentElement.outerHtml,
+                  textStyle: TextStyle(fontSize: 16),
+                  customWidgetBuilder: (element) {
+                    // Manejo personalizado para imágenes u otros elementos
+                    if (element.localName == 'img') {
+                      final src = element.attributes['src'];
+                      if (src != null) {
+                        // Implementa tu lógica para mostrar imágenes
+                        return Image.network(src);
+                      }
+                    }
+                    return null;
+                  },
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Cerrar'),
-                  ),
-                ],
               ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cerrar'),
+              ),
+            ],
+          ),
         );
       } else {
         CustomSnackBar.show(
@@ -477,8 +502,9 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
             IconButton(
               icon: Icon(Icons.arrow_forward),
               onPressed: _goToNextPage,
-              color:
-                  currentNavIndex < flatNavPoints.length - 1 ? null : Colors.grey,
+              color: currentNavIndex < flatNavPoints.length - 1
+                  ? null
+                  : Colors.grey,
             ),
           ],
         ),

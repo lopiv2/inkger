@@ -5,6 +5,7 @@ import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/chips_field.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/editable_html_field.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -102,11 +103,12 @@ void showComicDetailsDialog(BuildContext context, Comic comic) async {
                   children: [
                     // Información básica (campos editables)
                     _buildEditableField('Título:', titleController),
-                    _buildEditableField(
+                    EditableHtmlField(label: 'Descripción:', controller: descriptionController,),
+                    /*_buildEditableField(
                       'Descripción:',
                       descriptionController,
                       maxLines: 3,
-                    ),
+                    ),*/
                     _buildEditableField('Escritor:', writerController),
                     _buildEditableField('Dibujante:', pencillerController),
                     _buildEditableField('Entintador:', inkerController),

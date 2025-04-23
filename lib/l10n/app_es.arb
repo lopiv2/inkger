@@ -2,6 +2,8 @@
   "@@locale": "es",
   "audiobooks": "Audiolibros",
   "books": "Libros",
+  "dashboard": "Panel de control", 
+  "documentFormats": "Formatos de documentos", 
   "edit": "Editar",
   "metadataUpdated": "Metadatos actualizados",
   "noSerie": "Sin serie",
