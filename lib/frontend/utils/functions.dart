@@ -105,6 +105,11 @@ Future<void> calculateDominantColor(Uint8List imageBytes, bool mounted) async {
   }
 }
 
+Color hexToColor(String hex) {
+  hex = hex.replaceFirst('#', '');
+  return Color(int.parse(hex, radix: 16));
+}
+
 Future<Color> getDominantColor(Uint8List? imageBytes) async {
   if (imageBytes == null) return Colors.grey;
 

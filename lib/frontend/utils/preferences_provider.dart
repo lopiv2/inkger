@@ -79,28 +79,20 @@ class PreferencesProvider with ChangeNotifier {
 
   // Método para guardar preferencias
   Future<void> _savePreference<T>(String key, T value) async {
-    final prefs = await SharedPreferences.getInstance();
+  final prefs = await SharedPreferences.getInstance();
 
-    switch (T) {
-      case const (bool):
-        await prefs.setBool(key, value as bool);
-        break;
-      case const (String):
-        await prefs.setString(key, value as String);
-        break;
-      case const (double):
-        await prefs.setDouble(key, value as double);
-        break;
-      case const (int):
-        await prefs.setInt(key, value as int);
-        break;
-      default:
-        if (value == null) {
-          await prefs.remove(key);
-        }
-    }
-    notifyListeners();
+  if (value is bool) {
+    await prefs.setBool(key, value);
+  } else if (value is String) {
+    await prefs.setString(key, value);
+  } else if (value is double) {
+    await prefs.setDouble(key, value);
+  } else if (value is int) {
+    await prefs.setInt(key, value);
+  } else if (value == null) {
+    await prefs.remove(key);
   }
+}
 
   // Nuevo método para cambiar el modo pantalla completa
   Future<void> toggleFullScreenMode(bool value) async {

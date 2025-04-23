@@ -6,14 +6,12 @@ import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
-import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/book_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:provider/provider.dart';
-import 'dart:typed_data';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,7 +31,7 @@ class _BooksGridState extends State<BooksGrid> {
     Colors.grey,
   ); // Color por defecto
   //late Future<Color> _dominantColorFuture;
-  bool _colorCalculated = false;
+  //bool _colorCalculated = false;
 
   @override
   void dispose() {

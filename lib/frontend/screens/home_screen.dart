@@ -38,7 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  //Cargar preferencias en SharedPrefs desde API y BBDD
   Future<void> loadPreferences() async {
+    // ignore: unused_local_variable
     final response = await CommonServices.loadSettingsToSharedPrefs();
     setState(() {
       isLoading = true;
@@ -74,6 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final preferences = Provider.of<PreferencesProvider>(context);
     final isFullScreen = preferences.preferences.fullScreenMode;
     final isReaderMode = preferences.preferences.readerMode;
+    late Color themeColor = Colors.blueGrey;
+    themeColor = preferences.preferences.themeColor;
 
     return Scaffold(
       body: Row(
@@ -103,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                       child: !isReaderMode
                           ? TopBarLogo(
-                              backGroundColor: Colors.blueGrey,
+                              backGroundColor: themeColor,
                               borderColor: Colors.black,
                               imagePath: 'images/logo_inkger.png',
                             )
@@ -156,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: preferences.preferences.readerMode == false
-                            ? Colors.blueGrey
+                            ? themeColor
                             : Colors.grey[850],
                         border: Border(
                           bottom: BorderSide(
@@ -241,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     duration: Duration(milliseconds: 300),
                     child: !isReaderMode
                         ? TopBar(
-                            backGroundColor: Colors.blueGrey,
+                            backGroundColor: themeColor,
                             borderColor: Colors.black,
                           )
                         : TopBar(
@@ -252,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Área de contenido dinámico
                 Expanded(
                   child: Container(
-                    color: Colors.blueGrey,
+                    color: themeColor,
                     child: widget.content,
                   ),
                 ),

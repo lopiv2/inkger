@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
-import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/hover_grid_item_series.dart';
 import 'package:provider/provider.dart';

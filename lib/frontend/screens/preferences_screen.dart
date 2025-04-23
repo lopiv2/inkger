@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart'; // Asegúrate de tener este paquete
+import 'package:inkger/frontend/models/app_preferences.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/utils/functions.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PreferencesScreen extends StatefulWidget {
@@ -15,10 +19,12 @@ class PreferencesScreen extends StatefulWidget {
 class _PreferencesScreenState extends State<PreferencesScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _apiKeyController = TextEditingController();
-  final TextEditingController _backgroundImageController = TextEditingController();
+  final TextEditingController _backgroundImageController =
+      TextEditingController();
 
   double sliderItemSizeValue = 5;
   Color themeColor = Colors.blue; // 🎨 Nuevo campo para color
+  String hexColor = "#000000";
 
   @override
   void initState() {
@@ -40,9 +46,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       }
 
       _apiKeyController.text = prefs.getString("Comicvine Key") ?? '';
-      _backgroundImageController.text = prefs.getString("backgroundImagePath") ?? '';
-      int? colorValue = prefs.getInt("themeColor");
-      if (colorValue != null) themeColor = Color(colorValue);
+      _backgroundImageController.text =
+          prefs.getString("backgroundImagePath") ?? '';
+      Color? colorValue = hexToColor(prefs.getString("themeColor") ?? '');
+
+      themeColor = colorValue;
     });
   }
 
@@ -66,11 +74,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         'key': 'backgroundImagePath',
         'value': _backgroundImageController.text.trim(),
       },
-      {
-        'userId': userId,
-        'key': 'themeColor',
-        'value': themeColor.value.toString(),
-      },
+      {'userId': userId, 'key': 'themeColor', 'value': hexColor},
     ];
 
     final res = await CommonServices.saveMultipleSettingsToSharedPrefs(
@@ -78,14 +82,28 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       settings,
     );
 
-    await prefs.setString("Comicvine Key", _apiKeyController.text.trim());
-    await prefs.setDouble("defaultGridItemSize", sliderItemSizeValue);
-    await prefs.setString("backgroundImagePath", _backgroundImageController.text.trim());
-    await prefs.setInt("themeColor", themeColor.value);
+    final newPrefs = AppPreferences(
+      comicvineApiKey: _apiKeyController.text.trim(),
+      defaultGridItemSize: sliderItemSizeValue,
+      backgroundImagePath: _backgroundImageController.text.trim(),
+      themeColor: hexToColor(hexColor),
+      darkMode: false,
+      languageCode: '',
+      textScaleFactor: 2,
+      notificationsEnabled: true,
+      fullScreenMode: false,
+      readerMode: false,
+    );
+
+    // ignore: use_build_context_synchronously
+    final prefsProvider = context.read<PreferencesProvider>();
+    await prefsProvider.updatePreferences(newPrefs);
 
     if (res.statusCode == 200 && context.mounted) {
       CustomSnackBar.show(
+        // ignore: use_build_context_synchronously
         context,
+        // ignore: use_build_context_synchronously
         AppLocalizations.of(context)!.preferencesSaved,
         Colors.green,
         duration: const Duration(seconds: 4),
@@ -102,14 +120,17 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           content: SingleChildScrollView(
             child: ColorPicker(
               pickerColor: themeColor,
-              onColorChanged: (color) => setState(() => themeColor = color),
+              onColorChanged: (color) => setState(() {
+                themeColor = color;
+                hexColor = colorToHex(color);
+              }),
             ),
           ),
           actions: [
             TextButton(
               child: const Text('Cerrar'),
               onPressed: () => Navigator.of(context).pop(),
-            )
+            ),
           ],
         );
       },
@@ -118,6 +139,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final prefsProvider = context.watch<PreferencesProvider>();
+
+    if (prefsProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Preferencias')),
       body: Padding(
@@ -141,7 +167,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       max: 10,
                       divisions: 5,
                       label: sliderItemSizeValue.round().toString(),
-                      onChanged: (value) => setState(() => sliderItemSizeValue = value),
+                      onChanged: (value) =>
+                          setState(() => sliderItemSizeValue = value),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -175,6 +202,15 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                             ),
                           ),
                         ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              themeColor = Colors.blueGrey;
+                              hexColor = colorToHex(themeColor);
+                            });
+                          },
+                          child: const Text("Color por defecto"),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -188,7 +224,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               ),
             ),
             const SizedBox(width: 24),
-            Expanded(flex: 3, child: Container(padding: const EdgeInsets.all(16))),
+            Expanded(
+              flex: 3,
+              child: Container(padding: const EdgeInsets.all(16)),
+            ),
           ],
         ),
       ),

@@ -153,7 +153,6 @@ class CommonServices {
     SharedPreferences prefs,
     List<Map<String, dynamic>> settings,
   ) async {
-    print(settings);
     final response = await ApiService.dio.put(
       '/api/settings',
       data: jsonEncode({'settings': settings}),

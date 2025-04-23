@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/dialogs/edit_library_dialog.dart';
 import 'package:inkger/frontend/utils/constants.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class Sidebar extends StatelessWidget {
   final Function(String) onItemSelected;
@@ -11,9 +13,15 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    late Color themeColor = Colors.blueGrey;
+    final preferencesProvider = Provider.of<PreferencesProvider>(
+      context,
+      listen: false,
+    );
+    themeColor = preferencesProvider.preferences.themeColor;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.blueGrey,
+        color: themeColor,
         border: Border.all(color: Colors.black, width: 2),
       ),
       width: 250,
@@ -22,7 +30,7 @@ class Sidebar extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            _buildHoverMenuItem(context, Icons.home, 'Inicio', '/home',),
+            _buildHoverMenuItem(context, Icons.home, 'Inicio', '/home'),
             _buildHoverLibraryMenu(context),
             _buildHoverMenuItem(
               context,
@@ -139,41 +147,40 @@ class Sidebar extends StatelessWidget {
   ) {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, color: Colors.white),
-      onSelected:
-          (value) => _handleMenuSelection(context, value, title, libraryId),
-      itemBuilder:
-          (context) => [
-            PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  const Icon(Icons.edit, color: Colors.black),
-                  const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.edit),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'scan',
-              child: Row(
-                children: [
-                  const Icon(Icons.scanner, color: Colors.black),
-                  const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.scan),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'update_metadata',
-              child: Row(
-                children: [
-                  const Icon(Icons.update, color: Colors.black),
-                  const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.updateMetadata),
-                ],
-              ),
-            ),
-          ],
+      onSelected: (value) =>
+          _handleMenuSelection(context, value, title, libraryId),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              const Icon(Icons.edit, color: Colors.black),
+              const SizedBox(width: 8),
+              Text(AppLocalizations.of(context)!.edit),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'scan',
+          child: Row(
+            children: [
+              const Icon(Icons.scanner, color: Colors.black),
+              const SizedBox(width: 8),
+              Text(AppLocalizations.of(context)!.scan),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'update_metadata',
+          child: Row(
+            children: [
+              const Icon(Icons.update, color: Colors.black),
+              const SizedBox(width: 8),
+              Text(AppLocalizations.of(context)!.updateMetadata),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -199,9 +206,8 @@ class Sidebar extends StatelessWidget {
   void _showEditDialog(BuildContext context, String title, String libraryId) {
     showDialog(
       context: context,
-      builder:
-          (context) =>
-              EditLibraryDialog(libraryTitle: title, libraryId: libraryId),
+      builder: (context) =>
+          EditLibraryDialog(libraryTitle: title, libraryId: libraryId),
     );
   }
 }

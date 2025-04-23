@@ -117,9 +117,6 @@ class ComicServices {
       if (response.statusCode == 200) {
         // Si la respuesta es un array, puedes devolverla como lista
         List<dynamic> data = response.data;
-        final encoder = JsonEncoder.withIndent('  ');
-        final prettyJson = encoder.convert(data);
-        //print(prettyJson);
 
         // Opcional: Si necesitas procesar los datos para extraer ciertos campos
         List<Map<String, dynamic>> comics = data.map((item) {
