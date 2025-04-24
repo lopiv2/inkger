@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -48,38 +50,34 @@ Future<EpubBook> parseEpub(Uint8List epubData, String coverPath) async {
     final title = titleElement.text;
 
     // Extraer los capítulos
-    final manifestItems =
-        opfXml
-            .findAllElements('item')
-            .map(
-              (item) => {
-                'id': item.getAttribute('id'),
-                'href': item.getAttribute('href'),
-                'type': item.getAttribute('media-type'),
-              },
-            )
-            .toList();
+    final manifestItems = opfXml
+        .findAllElements('item')
+        .map(
+          (item) => {
+            'id': item.getAttribute('id'),
+            'href': item.getAttribute('href'),
+            'type': item.getAttribute('media-type'),
+          },
+        )
+        .toList();
 
-    final chapters =
-        manifestItems
-            .where((item) => item['type'] == 'application/xhtml+xml')
-            .map((item) {
-              final chapterFile = archive.files.firstWhere(
-                (file) => file.name.contains(item['href']!),
-                orElse:
-                    () =>
-                        throw Exception(
-                          'No se encontró el archivo del capítulo ${item['href']}',
-                        ),
-              );
+    final chapters = manifestItems
+        .where((item) => item['type'] == 'application/xhtml+xml')
+        .map((item) {
+          final chapterFile = archive.files.firstWhere(
+            (file) => file.name.contains(item['href']!),
+            orElse: () => throw Exception(
+              'No se encontró el archivo del capítulo ${item['href']}',
+            ),
+          );
 
-              return EpubChapter(
-                id: item['id']!,
-                title: item['href']!.split('/').last,
-                content: utf8.decode(chapterFile.content as List<int>),
-              );
-            })
-            .toList();
+          return EpubChapter(
+            id: item['id']!,
+            title: item['href']!.split('/').last,
+            content: utf8.decode(chapterFile.content as List<int>),
+          );
+        })
+        .toList();
 
     return EpubBook(
       title: title,
@@ -222,6 +220,11 @@ Future<void> loadComicFile(
       ),
     );
   }
+}
+
+Future<void> logout(BuildContext context) async {
+  final auth = Provider.of<AuthProvider>(context, listen: false);
+  await auth.logout();
 }
 
 Future<Uint8List> blobToUint8List(html.Blob blob) async {

@@ -6,7 +6,6 @@ import 'package:inkger/backend/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonServices {
-
   static Future<int> fetchAudioBookCount() async {
     final response = await ApiService.dio.get(
       '/api/count-audiobooks',
@@ -35,7 +34,8 @@ class CommonServices {
     );
 
     if (response.statusCode == 200) {
-      return response.data['count']; // Cambia 'count' por el campo correcto en la respuesta
+      return response
+          .data['count']; // Cambia 'count' por el campo correcto en la respuesta
     } else {
       throw Exception('Failed to load book count');
     }
@@ -51,7 +51,8 @@ class CommonServices {
     );
 
     if (response.statusCode == 200) {
-      return response.data['count']; // Cambia 'count' por el campo correcto en la respuesta
+      return response
+          .data['count']; // Cambia 'count' por el campo correcto en la respuesta
     } else {
       throw Exception('Failed to load comic count');
     }
@@ -60,12 +61,12 @@ class CommonServices {
   static Future<Map<String, int>> fetchDocumentFormatsCount() async {
     try {
       final response = await ApiService.dio.get(
-      '/api/count-document-formats',
-      options: Options(
-        responseType: ResponseType.json,
-        validateStatus: (status) => status! < 500,
-      ),
-    );
+        '/api/count-document-formats',
+        options: Options(
+          responseType: ResponseType.json,
+          validateStatus: (status) => status! < 500,
+        ),
+      );
 
       if (response.statusCode == 200) {
         // Si la respuesta es exitosa, parseamos el JSON
@@ -89,7 +90,8 @@ class CommonServices {
     );
     if (response.statusCode == 200) {
       // Suponiendo que la respuesta de la API es un JSON con un campo "count"
-      return response.data['count']; // Cambia 'count' por el campo correcto en la respuesta
+      return response
+          .data['count']; // Cambia 'count' por el campo correcto en la respuesta
     } else {
       throw Exception('Failed to load series count');
     }
@@ -181,6 +183,22 @@ class CommonServices {
     }
 
     return response;
+  }
+
+  static Future<void> scanPendingFolder() async {
+    final response = await ApiService.dio.get(
+      '/api/scan',
+      options: Options(
+        responseType: ResponseType.json,
+        validateStatus: (status) => status! < 500,
+      ),
+    );
+    if (response.statusCode == 200) {
+      // Suponiendo que la respuesta de la API es un JSON con un campo "count"
+      return response.data['items'] ?? [];
+    } else {
+      throw Exception('Failed to retrieve new files');
+    }
   }
 
   static double calculateAspectRatio(crossAxisCount) =>
