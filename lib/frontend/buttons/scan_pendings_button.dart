@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/import_file.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScanPendingFilesButton extends StatefulWidget {
   final double iconSize;
@@ -48,8 +53,17 @@ class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
                     ? Theme.of(context).primaryColor
                     : widget.iconColor,
               ),
-              onPressed: () {
-                CommonServices.scanPendingFolder();
+              onPressed: () async {
+                await CommonServices.scanPendingFolder();
+                final prefs = await SharedPreferences.getInstance();
+                final id = prefs.getInt('id');
+                if (!mounted) return;
+                final provider = Provider.of<ComicsProvider>(
+                  context,
+                  listen: false,
+                );
+                context.go('/comics');
+                await provider.loadcomics(id ?? 0); // Espera a que se completen
               },
             ),
             if (widget.showBadge)

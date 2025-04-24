@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/library_services.dart';
 
@@ -43,15 +42,6 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-    }
-  }
-
-  Future<void> _selectFolder() async {
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-    if (selectedDirectory != null) {
-      setState(() {
-        _pathController.text = selectedDirectory;
-      });
     }
   }
 
