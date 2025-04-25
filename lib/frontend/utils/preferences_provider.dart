@@ -35,9 +35,11 @@ class PreferencesProvider with ChangeNotifier {
         'fullScreenMode': prefs.getBool('fullScreenMode') ?? false,
         'readerMode': prefs.getBool('readerMode') ?? false,
         'Comicvine Key': prefs.getString('Comicvine Key'),
-        'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,
-        'themeColor': prefs.getString('themeColor') ?? '#2196F3',
+        'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,  
+        'themeColor': prefs.getInt('themeColor') ?? 4284513675,
         'backgroundImagePath': prefs.getString('backgroundImagePath'),
+        'scanInterval': prefs.getDouble('scanInterval') ?? 1.0,
+
       });
     } catch (e) {
       _prefs = AppPreferences.defaults();

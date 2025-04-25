@@ -125,6 +125,12 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// No description provided for @filesImportedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'New files successfully imported'**
+  String get filesImportedSuccess;
+
   /// No description provided for @metadataUpdated.
   ///
   /// In en, this message translates to:

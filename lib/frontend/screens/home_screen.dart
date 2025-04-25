@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isFullScreen = preferences.preferences.fullScreenMode;
     final isReaderMode = preferences.preferences.readerMode;
     late Color themeColor = Colors.blueGrey;
-    themeColor = preferences.preferences.themeColor;
+    themeColor = Color(preferences.preferences.themeColor);
 
     return Scaffold(
       body: Row(

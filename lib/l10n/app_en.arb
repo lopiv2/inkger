@@ -5,6 +5,7 @@
   "dashboard": "Dashboard",
   "documentFormats": "Document formats", 
   "edit": "Edit",
+  "filesImportedSuccess": "New files successfully imported",
   "metadataUpdated": "Updated metadata",
   "noSerie": "No serie",
   "preferencesSaved": "Preferences saved",

@@ -105,6 +105,9 @@ Future<void> calculateDominantColor(Uint8List imageBytes, bool mounted) async {
 
 Color hexToColor(String hex) {
   hex = hex.replaceFirst('#', '');
+  if (hex.length == 6) {
+    hex = 'FF$hex'; // Añade el canal alpha por defecto
+  }
   return Color(int.parse(hex, radix: 16));
 }
 

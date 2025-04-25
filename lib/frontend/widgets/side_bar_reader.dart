@@ -18,7 +18,7 @@ class Sidebar extends StatelessWidget {
       context,
       listen: false,
     );
-    themeColor = preferencesProvider.preferences.themeColor;
+    themeColor = Color(preferencesProvider.preferences.themeColor);
     return Container(
       decoration: BoxDecoration(
         color: themeColor,

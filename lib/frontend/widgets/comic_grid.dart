@@ -21,6 +21,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum ViewMode { simple, threeD, librarian }
 
 class ComicsGrid extends StatefulWidget {
+  const ComicsGrid({super.key});
+
   @override
   State<ComicsGrid> createState() => _ComicsGridState();
 }
@@ -34,7 +36,7 @@ class _ComicsGridState extends State<ComicsGrid> {
     Colors.grey,
   ); // Color por defecto
   //late Future<Color> _dominantColorFuture;
-  bool _colorCalculated = false;
+  //bool _colorCalculated = false;
 
   @override
   void dispose() {

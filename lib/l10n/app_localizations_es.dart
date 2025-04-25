@@ -24,6 +24,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get edit => 'Editar';
 
   @override
+  String get filesImportedSuccess => 'Nuevos archivos importados satisfactoriamente';
+
+  @override
   String get metadataUpdated => 'Metadatos actualizados';
 
   @override

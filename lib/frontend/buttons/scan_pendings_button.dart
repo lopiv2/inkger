@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/common_services.dart';
-import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
-import 'package:inkger/frontend/widgets/import_file.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,6 +35,40 @@ class ScanPendingFilesButton extends StatefulWidget {
 
 class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
   bool _isHovering = false;
+  bool hasPending = false;
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    final preferencesProvider = Provider.of<PreferencesProvider>(
+      context,
+      listen: false,
+    );
+    checkPending();
+    timer = Timer.periodic(
+      Duration(minutes: preferencesProvider.preferences.scanInterval),
+      (_) => checkPending(),
+    );
+  }
+
+  Future<void> checkPending() async {
+    try {
+      final res = await CommonServices.checkIfPendingFiles();
+      final data = res.data;
+      setState(() {
+        hasPending = data["hasPending"];
+      });
+    } catch (e) {
+      print("Error checking pending files: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +100,20 @@ class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
                   context,
                   listen: false,
                 );
+                setState(() {
+                  hasPending = false;
+                });
                 context.go('/comics');
                 await provider.loadcomics(id ?? 0); // Espera a que se completen
+                CustomSnackBar.show(
+                  context,
+                  AppLocalizations.of(context)!.filesImportedSuccess,
+                  Colors.green,
+                  duration: Duration(seconds: 4),
+                );
               },
             ),
-            if (widget.showBadge)
+            if (hasPending)
               Positioned(
                 top: -2,
                 right: -2,

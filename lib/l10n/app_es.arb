@@ -5,6 +5,7 @@
   "dashboard": "Panel de control", 
   "documentFormats": "Formatos de documentos", 
   "edit": "Editar",
+  "filesImportedSuccess": "Nuevos archivos importados satisfactoriamente",
   "metadataUpdated": "Metadatos actualizados",
   "noSerie": "Sin serie",
   "preferencesSaved": "Preferencias guardadas",

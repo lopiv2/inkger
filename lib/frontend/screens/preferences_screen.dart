@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart'; // Asegúrate de tener este paquete
 import 'package:inkger/frontend/models/app_preferences.dart';
 import 'package:inkger/frontend/services/common_services.dart';
-import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/l10n/app_localizations.dart';
@@ -23,6 +22,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       TextEditingController();
 
   double sliderItemSizeValue = 5;
+  double sliderScanIntervalValue = 1;
   Color themeColor = Colors.blue; // 🎨 Nuevo campo para color
   String hexColor = "#000000";
 
@@ -36,6 +36,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       final rawValue = prefs.get("defaultGridItemSize");
+      final rawValueScan = prefs.get("scanInterval");
+      final rawThemeColor = prefs.get("themeColor");
+      int colorIntTheme;
 
       if (rawValue is double) {
         sliderItemSizeValue = rawValue;
@@ -44,13 +47,23 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       } else {
         sliderItemSizeValue = 7.0;
       }
+      if (rawValueScan is double) {
+        sliderScanIntervalValue = rawValueScan;
+      } else if (rawValueScan is String) {
+        sliderScanIntervalValue = double.tryParse(rawValueScan) ?? 5.0;
+      } else {
+        sliderScanIntervalValue = 5.0;
+      }
+      if (rawThemeColor is String) {
+        colorIntTheme = int.tryParse(rawThemeColor) ?? 0;
+      } else {
+        colorIntTheme = 0;
+      }
 
       _apiKeyController.text = prefs.getString("Comicvine Key") ?? '';
       _backgroundImageController.text =
           prefs.getString("backgroundImagePath") ?? '';
-      Color? colorValue = hexToColor(prefs.getString("themeColor") ?? '');
-
-      themeColor = colorValue;
+      themeColor = Color(colorIntTheme);
     });
   }
 
@@ -74,7 +87,12 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         'key': 'backgroundImagePath',
         'value': _backgroundImageController.text.trim(),
       },
-      {'userId': userId, 'key': 'themeColor', 'value': hexColor},
+      {'userId': userId, 'key': 'themeColor', 'value': themeColor.toARGB32().toString()},
+      {
+        'userId': userId,
+        'key': 'scanInterval',
+        'value': sliderScanIntervalValue.toString(),
+      },
     ];
 
     final res = await CommonServices.saveMultipleSettingsToSharedPrefs(
@@ -86,13 +104,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       comicvineApiKey: _apiKeyController.text.trim(),
       defaultGridItemSize: sliderItemSizeValue,
       backgroundImagePath: _backgroundImageController.text.trim(),
-      themeColor: hexToColor(hexColor),
+      themeColor: themeColor.toARGB32(),
       darkMode: false,
       languageCode: '',
       textScaleFactor: 2,
       notificationsEnabled: true,
       fullScreenMode: false,
       readerMode: false,
+      scanInterval: 1,
     );
 
     // ignore: use_build_context_synchronously
@@ -122,7 +141,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               pickerColor: themeColor,
               onColorChanged: (color) => setState(() {
                 themeColor = color;
-                hexColor = colorToHex(color);
+                //hexColor = colorToHex(color);
               }),
             ),
           ),
@@ -171,6 +190,20 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           setState(() => sliderItemSizeValue = value),
                     ),
                     const SizedBox(height: 16),
+                    Text(
+                      "Frecuencia de escaneo de archivos nuevos (en minutos)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Slider(
+                      value: sliderScanIntervalValue,
+                      min: 1,
+                      max: 15,
+                      divisions: 15,
+                      label: sliderScanIntervalValue.round().toString(),
+                      onChanged: (value) =>
+                          setState(() => sliderScanIntervalValue = value),
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _apiKeyController,
                       decoration: const InputDecoration(
@@ -206,7 +239,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           onPressed: () {
                             setState(() {
                               themeColor = Colors.blueGrey;
-                              hexColor = colorToHex(themeColor);
+                              //hexColor = colorToHex(themeColor);
                             });
                           },
                           child: const Text("Color por defecto"),

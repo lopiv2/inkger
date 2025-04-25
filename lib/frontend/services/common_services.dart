@@ -6,6 +6,23 @@ import 'package:inkger/backend/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonServices {
+
+  static Future<Response> checkIfPendingFiles() async {
+    final response = await ApiService.dio.get(
+      '/api/library/pending',
+      options: Options(
+        responseType: ResponseType.json,
+        validateStatus: (status) => status! < 500,
+      ),
+    );
+    if (response.statusCode == 200) {
+      // Suponiendo que la respuesta de la API es un JSON con un campo "count"
+      return response;
+    } else {
+      throw Exception('Failed to retrieve new files');
+    }
+  }
+
   static Future<int> fetchAudioBookCount() async {
     final response = await ApiService.dio.get(
       '/api/count-audiobooks',
