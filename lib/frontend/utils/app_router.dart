@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inkger/frontend/screens/calendar_screen.dart';
 import 'package:inkger/frontend/screens/comic_reader_screen.dart';
 import 'package:inkger/frontend/screens/dashboard_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
@@ -156,6 +157,33 @@ class AppRouter {
             path: '/user-profile',
             pageBuilder: (context, state) =>
                 MaterialPage(key: state.pageKey, child: UserProfileLoader()),
+          ),
+          GoRoute(
+            path: '/calendar',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: CalendarScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(0.0, 1.0); // Empieza desde abajo
+                      const end = Offset.zero; // Termina en su posición normal
+                      const curve = Curves.easeInOut; // Curva de animación
+
+                      final tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 800),
+              );
+            },
           ),
           GoRoute(
             path: '/home-writer', // Use root path for the default home

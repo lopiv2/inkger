@@ -8,6 +8,7 @@ import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_filter_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/frontend/utils/event_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ComicsProvider()),
         ChangeNotifierProvider(create: (context) => BookFilterProvider()),
         ChangeNotifierProvider(create: (context) => ComicFilterProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
       ],
       child: MyApp(isInitiallyLoggedIn: isLoggedIn), // Pasa el estado inicial
     ),
