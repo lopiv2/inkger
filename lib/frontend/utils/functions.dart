@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -272,3 +273,37 @@ String prettifyJson(Map<String, dynamic> jsonMap) {
   const encoder = JsonEncoder.withIndent('  ');
   return encoder.convert(jsonMap);
 }
+
+  Future<void> saveDateTime(
+    SharedPreferences prefs,
+    String key,
+    dynamic dateValue,
+  ) async {
+    if (dateValue == null) return;
+
+    if (dateValue is DateTime) {
+      await prefs.setString(key, dateValue.toIso8601String());
+    } else if (dateValue is String) {
+      // Si ya viene como string ISO8601, guardarlo directamente
+      if (_isIso8601(dateValue)) {
+        await prefs.setString(key, dateValue);
+      } else {
+        // Intentar parsear si es otro formato de fecha
+        try {
+          final dateTime = DateTime.parse(dateValue);
+          await prefs.setString(key, dateTime.toIso8601String());
+        } catch (e) {
+          debugPrint('Error parsing date $key: $e');
+        }
+      }
+    }
+  }
+
+  bool _isIso8601(String dateString) {
+    try {
+      DateTime.parse(dateString);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }

@@ -13,6 +13,9 @@ class User {
   final String? avatarUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final DateTime? lastLogin;
+
+  @JsonKey(name: 'role', fromJson: _roleFromJson, toJson: _roleToJson)
   final List<String> roles;
 
   User({
@@ -24,8 +27,22 @@ class User {
     this.avatarUrl,
     required this.createdAt,
     required this.updatedAt,
+    required this.lastLogin,
     required this.roles,
   });
+
+  static List<String> _roleFromJson(dynamic value) {
+    if (value is String) {
+      return [value];
+    } else if (value is List) {
+      return List<String>.from(value);
+    } else {
+      return [];
+    }
+  }
+
+  static dynamic _roleToJson(List<String> roles) =>
+      roles.length == 1 ? roles[0] : roles;
 
   // Método copyWith para actualizaciones inmutables
   User copyWith({
@@ -37,6 +54,7 @@ class User {
     String? avatarUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? lastLogin,
     List<String>? roles,
   }) {
     return User(
@@ -48,6 +66,7 @@ class User {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastLogin: lastLogin ?? this.lastLogin,
       roles: roles ?? this.roles,
     );
   }

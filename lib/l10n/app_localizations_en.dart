@@ -36,6 +36,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preferencesSaved => 'Preferences saved';
 
   @override
+  String get profileSaved => 'Profile successfully updated';
+
+  @override
+  String get profileSavedError => 'Error updating profile';
+
+  @override
   String get savedProgress => 'Progress saved';
 
   @override

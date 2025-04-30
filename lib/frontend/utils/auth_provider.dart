@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/utils/functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -74,43 +75,11 @@ class AuthProvider with ChangeNotifier {
     await prefs.setString('email', data['email']);
     await prefs.setString('role', data['role']);
     // Manejo seguro de fechas
-    await _saveDateTime(prefs, 'createdAt', data['createdAt']);
-    await _saveDateTime(prefs, 'updatedAt', data['updatedAt']);
+    await saveDateTime(prefs, 'createdAt', data['createdAt']);
+    await saveDateTime(prefs, 'updatedAt', data['updatedAt']);
+    await saveDateTime(prefs, 'lastLogin', data['lastLogin']);
   }
 
-  Future<void> _saveDateTime(
-    SharedPreferences prefs,
-    String key,
-    dynamic dateValue,
-  ) async {
-    if (dateValue == null) return;
-
-    if (dateValue is DateTime) {
-      await prefs.setString(key, dateValue.toIso8601String());
-    } else if (dateValue is String) {
-      // Si ya viene como string ISO8601, guardarlo directamente
-      if (_isIso8601(dateValue)) {
-        await prefs.setString(key, dateValue);
-      } else {
-        // Intentar parsear si es otro formato de fecha
-        try {
-          final dateTime = DateTime.parse(dateValue);
-          await prefs.setString(key, dateTime.toIso8601String());
-        } catch (e) {
-          debugPrint('Error parsing date $key: $e');
-        }
-      }
-    }
-  }
-
-  bool _isIso8601(String dateString) {
-    try {
-      DateTime.parse(dateString);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
 
   Future<void> _clearAuthData() async {
     final prefs = await SharedPreferences.getInstance();

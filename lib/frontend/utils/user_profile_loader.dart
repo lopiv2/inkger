@@ -56,10 +56,12 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
       // Manejo seguro de fechas
       DateTime? createdAt;
       DateTime? updatedAt;
+      DateTime? lastLogin;
 
       try {
         final createdAtStr = prefs.getString('createdAt');
         final updatedAtStr = prefs.getString('updatedAt');
+        final loggedAtStr = prefs.getString('lastLogin');
 
         if (createdAtStr != null) {
           createdAt = DateTime.parse(createdAtStr);
@@ -67,6 +69,9 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
 
         if (updatedAtStr != null) {
           updatedAt = DateTime.parse(updatedAtStr);
+        }
+        if (loggedAtStr != null) {
+          lastLogin = DateTime.parse(loggedAtStr);
         }
       } catch (e) {
         debugPrint('Error parseando fechas: $e');
@@ -82,6 +87,7 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
         roles: roles,
         createdAt: createdAt,
         updatedAt: updatedAt,
+        lastLogin: lastLogin,
       );
     } catch (e) {
       debugPrint('Error cargando usuario desde SharedPreferences: $e');

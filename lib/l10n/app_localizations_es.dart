@@ -36,6 +36,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get preferencesSaved => 'Preferencias guardadas';
 
   @override
+  String get profileSaved => 'Perfil actualizado con exito';
+
+  @override
+  String get profileSavedError => 'Error al actualizar perfil';
+
+  @override
   String get savedProgress => 'Progreso guardado';
 
   @override

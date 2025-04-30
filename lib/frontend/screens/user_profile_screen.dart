@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/user.dart';
 import 'package:inkger/frontend/services/user_services.dart';
+import 'package:inkger/frontend/utils/functions.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Asegúrate de importar tu modelo de usuario
 
@@ -31,13 +34,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     loadUserDetails();
     loadRoles();
-    _usernameController.text = user!.username;
-    _emailController.text = user!.email;
-    _nameController.text = user!.name ?? '';
-
-    /*_usernameController.text = widget.user.username;
-    _emailController.text = widget.user.email;
-    _nameController.text = widget.user.name ?? '';*/
   }
 
   Future<void> loadRoles() async {
@@ -52,17 +48,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> loadUserDetails() async {
-  final prefs = await SharedPreferences.getInstance();
-  final userId = prefs.getInt('id');
-  final fetchedUser = await UserServices.getUserDetails(userId!);
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('id');
+    final fetchedUser = await UserServices.getUserDetails(userId!);
 
-  setState(() {
-    user = fetchedUser;
-    _usernameController.text = user!.username;
-    _emailController.text = user!.email;
-    _nameController.text = user!.name ?? '';
-  });
-}
+    setState(() {
+      user = fetchedUser;
+      _usernameController.text = user!.username;
+      _emailController.text = user!.email;
+      _nameController.text = user!.name ?? '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,25 +139,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildUserInfoSection() {
-  if (user == null) {
-    return const Center(child: CircularProgressIndicator());
-  }
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-  return Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInfoRow(Icons.email, 'Email:', user!.email),
-          _buildInfoRow(Icons.person, 'Username:', user!.username),
-          if (user!.name != null && user!.name!.isNotEmpty)
-            _buildInfoRow(Icons.badge, 'Nombre completo:', user!.name!),
-        ],
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoRow(Icons.email, 'Email:', user!.email),
+            _buildInfoRow(Icons.person, 'Username:', user!.username),
+            if (user!.name != null && user!.name!.isNotEmpty)
+              _buildInfoRow(Icons.badge, 'Nombre completo:', user!.name!),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildAccountInfoSection() {
     return Card(
@@ -185,6 +181,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? DateFormat(
                       'dd MMM yyyy - HH:mm',
                     ).format(widget.user.updatedAt!)
+                  : 'No actualizado',
+            ),
+            _buildInfoRow(
+              Icons.update,
+              'Última conexion:',
+              widget.user.lastLogin != null
+                  ? DateFormat(
+                      'dd MMM yyyy - HH:mm',
+                    ).format(widget.user.lastLogin!)
                   : 'No actualizado',
             ),
             const SizedBox(height: 8),
@@ -375,11 +380,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _changePassword() {
+  Future<void> _changePassword() async {
     if (_passwordFormKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contraseña cambiada con éxito')),
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('id');
+      bool success = await UserServices.updatePassword(
+        userId!,
+        _passwordController.text,
       );
+      if (success) {
+        // Manejo seguro de fechas
+        CustomSnackBar.show(
+          context,
+          AppLocalizations.of(context)!.profileSaved,
+          Colors.green,
+          duration: Duration(seconds: 4),
+        );
+      } else {
+        CustomSnackBar.show(
+          context,
+          AppLocalizations.of(context)!.profileSavedError,
+          Colors.red,
+          duration: const Duration(seconds: 3),
+        );
+      }
     }
   }
 
@@ -400,18 +424,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil actualizado con éxito')),
+        await prefs.setString('name', name);
+        await prefs.setString('username', username);
+        await prefs.setString('email', email);
+        // Manejo seguro de fechas
+        CustomSnackBar.show(
+          context,
+          AppLocalizations.of(context)!.profileSaved,
+          Colors.green,
+          duration: Duration(seconds: 4),
         );
-        // Aquí puedes actualizar los datos del usuario en el estado si es necesario
-        /*setState(() {
-        widget.user.username = username;
-        widget.user.email = email;
-        widget.user.name = name;
-      });*/
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al actualizar el perfil')),
+        CustomSnackBar.show(
+          context,
+          AppLocalizations.of(context)!.profileSavedError,
+          Colors.red,
+          duration: const Duration(seconds: 3),
         );
       }
     }

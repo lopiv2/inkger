@@ -9,6 +9,8 @@
   "metadataUpdated": "Updated metadata",
   "noSerie": "No serie",
   "preferencesSaved": "Preferences saved",
+  "profileSaved": "Profile successfully updated",
+  "profileSavedError": "Error updating profile",
   "savedProgress": "Progress saved",
   "scan": "Scan",
   "updateMetadata": "Update metadata"

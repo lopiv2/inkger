@@ -4,24 +4,23 @@ import 'package:inkger/frontend/models/user.dart';
 
 class UserServices {
   // Función para actualizar la contraseña del usuario
-  static Future<Map<String, dynamic>> updatePassword(int userId, String oldPassword, String newPassword) async {
+  static Future<bool> updatePassword(int userId, String newPassword) async {
     try {
       final response = await ApiService.dio.put(
         '/api/users/$userId/password',
         data: {
-          'oldPassword': oldPassword,
           'newPassword': newPassword,
         },
       );
       // Verificar que la respuesta sea exitosa
       if (response.statusCode == 200) {
-        return {'success': true, 'message': 'Contraseña actualizada correctamente'};
+        return true;
       } else {
-        return {'success': false, 'message': 'Error al actualizar la contraseña'};
+        return false;
       }
     } catch (e) {
       debugPrint('Error al actualizar la contraseña: $e');
-      return {'success': false, 'message': 'Error al conectar con el servidor'};
+      return false;
     }
   }
 

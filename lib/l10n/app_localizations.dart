@@ -149,6 +149,18 @@ abstract class AppLocalizations {
   /// **'Preferences saved'**
   String get preferencesSaved;
 
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile successfully updated'**
+  String get profileSaved;
+
+  /// No description provided for @profileSavedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating profile'**
+  String get profileSavedError;
+
   /// No description provided for @savedProgress.
   ///
   /// In en, this message translates to:
