@@ -32,6 +32,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     loadPreferences();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -55,9 +60,16 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         sliderScanIntervalValue = 5.0;
       }
       if (rawThemeColor is String) {
-        colorIntTheme = int.tryParse(rawThemeColor) ?? 0;
+        // Intenta convertir la cadena en un entero.
+        colorIntTheme =
+            int.tryParse(rawThemeColor) ??
+            Colors.blue.value; // Valor por defecto si la conversión falla
+      } else if (rawThemeColor is int) {
+        // Si ya es un entero, no hace falta convertirlo, solo asignarlo
+        colorIntTheme = rawThemeColor;
       } else {
-        colorIntTheme = 0;
+        colorIntTheme =
+            Colors.blue.value; // Valor por defecto si no es ni String ni int
       }
 
       _apiKeyController.text = prefs.getString("Comicvine Key") ?? '';
@@ -87,7 +99,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         'key': 'backgroundImagePath',
         'value': _backgroundImageController.text.trim(),
       },
-      {'userId': userId, 'key': 'themeColor', 'value': themeColor.toARGB32().toString()},
+      {
+        'userId': userId,
+        'key': 'themeColor',
+        'value': themeColor.value.toString(),
+      },
       {
         'userId': userId,
         'key': 'scanInterval',
@@ -104,14 +120,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       comicvineApiKey: _apiKeyController.text.trim(),
       defaultGridItemSize: sliderItemSizeValue,
       backgroundImagePath: _backgroundImageController.text.trim(),
-      themeColor: themeColor.toARGB32(),
+      themeColor: themeColor.value,
       darkMode: false,
       languageCode: '',
       textScaleFactor: 2,
       notificationsEnabled: true,
       fullScreenMode: false,
       readerMode: false,
-      scanInterval: 1,
+      scanInterval: sliderScanIntervalValue,
     );
 
     // ignore: use_build_context_synchronously

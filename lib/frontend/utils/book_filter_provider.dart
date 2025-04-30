@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 class BookFilterProvider with ChangeNotifier {
-  List<String> _selectedAuthors = [];
-  List<String> _selectedPublishers = [];
+  final List<String> _selectedAuthors = [];
+  final List<String> _selectedPublishers = [];
+  final List<String> _selectedTags = [];
+  List<String> availableTags = [];
   List<String> availableAuthors = [];
   List<String> availablePublishers = [];
   bool _isFilterMenuVisible = false;
@@ -18,6 +20,7 @@ class BookFilterProvider with ChangeNotifier {
   // Getters
   List<String> get selectedAuthors => _selectedAuthors;
   List<String> get selectedPublishers => _selectedPublishers;
+  List<String> get selectedTags => _selectedTags;
   bool get isFilterMenuVisible => _isFilterMenuVisible;
 
   void fillAuthors(authors) {
@@ -27,6 +30,11 @@ class BookFilterProvider with ChangeNotifier {
 
   void fillPublishers(publishers) {
     availablePublishers = publishers;
+    notifyListeners();
+  }
+
+  void fillTags(List<String> tags) {
+    availableTags = tags;
     notifyListeners();
   }
 
@@ -78,6 +86,29 @@ class BookFilterProvider with ChangeNotifier {
     }
   }
 
+  void toggleTag(String tag) {
+    if (_selectedTags.contains(tag)) {
+      _selectedTags.remove(tag);
+    } else {
+      _selectedTags.add(tag);
+    }
+    notifyListeners();
+  }
+
+  void addTag(String tag) {
+    if (!_selectedTags.contains(tag)) {
+      _selectedTags.add(tag);
+      notifyListeners();
+    }
+  }
+
+  void removeTag(String tag) {
+    if (_selectedTags.contains(tag)) {
+      _selectedTags.remove(tag);
+      notifyListeners();
+    }
+  }
+
   // Métodos para controlar la visibilidad del menú
   void showFilterMenu() {
     if (!_isFilterMenuVisible) {
@@ -102,6 +133,7 @@ class BookFilterProvider with ChangeNotifier {
   void resetFilters() {
     _selectedAuthors.clear();
     _selectedPublishers.clear();
+    _selectedTags.clear(); // <- nuevo
     notifyListeners();
   }
 }

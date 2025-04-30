@@ -83,6 +83,19 @@ class _BooksGridState extends State<BooksGrid> {
             ..sort();
 
       filters.fillPublishers(publishers);
+
+      // Tags únicos (con manejo de nulos)
+      final tags =
+          books
+              .where((b) => b.tags != null && b.tags!.isNotEmpty)
+              .expand((b) => b.tags!.split(','))
+              .map((tag) => tag.trim())
+              .where((tag) => tag.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+
+      filters.fillTags(tags);
     } catch (e) {
       debugPrint('Error loading books: $e');
       // Opcional: mostrar snackbar con el error
@@ -124,8 +137,8 @@ class _BooksGridState extends State<BooksGrid> {
                   Radio<ViewMode>(
                     value: ViewMode.simple,
                     groupValue: _selectedViewMode,
-                    onChanged:
-                        (value) => setState(() => _selectedViewMode = value!),
+                    onChanged: (value) =>
+                        setState(() => _selectedViewMode = value!),
                   ),
                   Text(
                     "Simple",
@@ -134,8 +147,8 @@ class _BooksGridState extends State<BooksGrid> {
                   Radio<ViewMode>(
                     value: ViewMode.threeD,
                     groupValue: _selectedViewMode,
-                    onChanged:
-                        (value) => setState(() => _selectedViewMode = value!),
+                    onChanged: (value) =>
+                        setState(() => _selectedViewMode = value!),
                   ),
                   Text(
                     "3D",
@@ -144,8 +157,8 @@ class _BooksGridState extends State<BooksGrid> {
                   Radio<ViewMode>(
                     value: ViewMode.librarian,
                     groupValue: _selectedViewMode,
-                    onChanged:
-                        (value) => setState(() => _selectedViewMode = value!),
+                    onChanged: (value) =>
+                        setState(() => _selectedViewMode = value!),
                   ),
                   Text(
                     "Bibliotecario",
@@ -175,7 +188,8 @@ class _BooksGridState extends State<BooksGrid> {
               }
 
               if (filterProvider.selectedAuthors.isEmpty &&
-                  filterProvider.selectedPublishers.isEmpty) {
+                  filterProvider.selectedPublishers.isEmpty &&
+                  filterProvider.selectedTags.isEmpty) {
                 return SizedBox(); // No mostrar nada si no hay filtros activos
               }
 
@@ -209,6 +223,17 @@ class _BooksGridState extends State<BooksGrid> {
                         },
                       );
                     }),
+                    // Mostrar chips de publishers seleccionados
+                    ...filterProvider.selectedTags.map((tag) {
+                      return Chip(
+                        label: Text("Etiqueta: $tag"),
+                        deleteIcon: Icon(Icons.clear),
+                        onDeleted: () {
+                          // Eliminar publisher del provider
+                          filterProvider.removeTag(tag);
+                        },
+                      );
+                    }),
                   ],
                 ),
               );
@@ -231,10 +256,9 @@ class _BooksGridState extends State<BooksGrid> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 double maxHeight = constraints.maxHeight;
-                double itemHeight =
-                    CommonServices.calculateMainAxisExtent(
-                      _crossAxisCount,
-                    ).toDouble();
+                double itemHeight = CommonServices.calculateMainAxisExtent(
+                  _crossAxisCount,
+                ).toDouble();
 
                 // Si el itemHeight es mayor que el espacio disponible, limitarlo
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
@@ -285,9 +309,8 @@ class _BooksGridState extends State<BooksGrid> {
                       return ListView.builder(
                         padding: const EdgeInsets.all(8),
                         itemCount: filteredBooks.length,
-                        itemBuilder:
-                            (context, index) =>
-                                BookListItem(book: filteredBooks[index]),
+                        itemBuilder: (context, index) =>
+                            BookListItem(book: filteredBooks[index]),
                       );
                     }
                   },
@@ -304,7 +327,8 @@ class _BooksGridState extends State<BooksGrid> {
     final filters = Provider.of<BookFilterProvider>(context);
     final hasActiveFilters =
         filters.selectedAuthors.isNotEmpty ||
-        filters.selectedPublishers.isNotEmpty;
+        filters.selectedPublishers.isNotEmpty ||
+        filters.selectedTags.isNotEmpty;
 
     return Visibility(
       visible: filters.isFilterMenuVisible,
@@ -342,6 +366,15 @@ class _BooksGridState extends State<BooksGrid> {
                       },
                     );
                   }),
+                  // Chips de tags
+                  ...filters.selectedTags.map((tag) {
+                    return Chip(
+                      label: Text('Etiqueta: $tag'),
+                      onDeleted: () {
+                        filters.removeTag(tag);
+                      },
+                    );
+                  }),
                 ],
               ),
               const SizedBox(height: 20),
@@ -369,13 +402,12 @@ class _BooksGridState extends State<BooksGrid> {
                       DropdownButtonFormField<String>(
                         isExpanded: true,
                         hint: const Text('Selecciona autores'),
-                        items:
-                            filters.availableAuthors.map((author) {
-                              return DropdownMenuItem<String>(
-                                value: author,
-                                child: Text(author),
-                              );
-                            }).toList(),
+                        items: filters.availableAuthors.map((author) {
+                          return DropdownMenuItem<String>(
+                            value: author,
+                            child: Text(author),
+                          );
+                        }).toList(),
                         onChanged: (selectedAuthor) {
                           if (selectedAuthor != null) {
                             filters.toggleAuthor(selectedAuthor);
@@ -406,16 +438,49 @@ class _BooksGridState extends State<BooksGrid> {
                       DropdownButtonFormField<String>(
                         isExpanded: true,
                         hint: const Text('Selecciona editoriales'),
-                        items:
-                            filters.availablePublishers.map((publisher) {
-                              return DropdownMenuItem<String>(
-                                value: publisher,
-                                child: Text(publisher),
-                              );
-                            }).toList(),
+                        items: filters.availablePublishers.map((publisher) {
+                          return DropdownMenuItem<String>(
+                            value: publisher,
+                            child: Text(publisher),
+                          );
+                        }).toList(),
                         onChanged: (selectedPublisher) {
                           if (selectedPublisher != null) {
                             filters.togglePublisher(selectedPublisher);
+                          }
+                        },
+                        value: null,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 32),
+                // Columna de etiquetas
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Etiqueta',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona etiquetas'),
+                        items: filters.availableTags.map((tag) {
+                          return DropdownMenuItem<String>(
+                            value: tag,
+                            child: Text(tag),
+                          );
+                        }).toList(),
+                        onChanged: (selectedTag) {
+                          if (selectedTag != null) {
+                            filters.toggleTag(selectedTag);
                           }
                         },
                         value: null,
@@ -444,7 +509,15 @@ class _BooksGridState extends State<BooksGrid> {
           filters.selectedPublishers.isEmpty ||
           filters.selectedPublishers.contains(book.publisher?.trim() ?? '');
 
-      return matchesAuthor && matchesPublisher;
+      final matchesTag =
+          filters.selectedTags.isEmpty ||
+          (book.tags != null &&
+              book.tags!
+                  .split(',')
+                  .map((tag) => tag.trim())
+                  .any((tag) => filters.selectedTags.contains(tag)));
+
+      return matchesAuthor && matchesPublisher && matchesTag;
     }).toList();
   }
 

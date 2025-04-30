@@ -1,0 +1,66 @@
+import 'package:flutter/material.dart';
+import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/models/user.dart';
+
+class UserServices {
+  // Función para actualizar la contraseña del usuario
+  static Future<Map<String, dynamic>> updatePassword(int userId, String oldPassword, String newPassword) async {
+    try {
+      final response = await ApiService.dio.put(
+        '/api/users/$userId/password',
+        data: {
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+        },
+      );
+      // Verificar que la respuesta sea exitosa
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'Contraseña actualizada correctamente'};
+      } else {
+        return {'success': false, 'message': 'Error al actualizar la contraseña'};
+      }
+    } catch (e) {
+      debugPrint('Error al actualizar la contraseña: $e');
+      return {'success': false, 'message': 'Error al conectar con el servidor'};
+    }
+  }
+
+  // Función para actualizar los otros datos del usuario (nombre, email, etc.)
+  static Future<bool> updateUserData(int userId, String username, String email, String name) async {
+    try {
+      final response = await ApiService.dio.put(
+        '/api/users/$userId',
+        data: {
+          'username': username,
+          'email': email,
+          'name': name,
+        },
+      );
+      // Verificar que la respuesta sea exitosa
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error al actualizar los datos del usuario: $e');
+      return false;
+    }
+  }
+
+  // Función para obtener los datos del usuario (para obtener los detalles antes de actualizar)
+  static Future<User?> getUserDetails(int userId) async {
+    try {
+      final response = await ApiService.dio.get('/api/users/$userId');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        return User.fromJson(data); // Asumiendo que tienes un método `fromJson` en tu clase `User`
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Error al obtener los detalles del usuario: $e');
+      return null;
+    }
+  }
+}

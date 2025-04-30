@@ -155,8 +155,36 @@ class AppRouter {
           // Ruta de perfil de usuario (pantalla completa)
           GoRoute(
             path: '/user-profile',
-            pageBuilder: (context, state) =>
-                MaterialPage(key: state.pageKey, child: UserProfileLoader()),
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: UserProfileLoader(), // Reemplaza con tu widget de perfil
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      final fadeAnimation = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      );
+
+                      final scaleAnimation = Tween<double>(begin: 0.9, end: 1.0)
+                          .animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          );
+
+                      return FadeTransition(
+                        opacity: fadeAnimation,
+                        child: ScaleTransition(
+                          scale: scaleAnimation,
+                          child: child,
+                        ),
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 500),
+              );
+            },
           ),
           GoRoute(
             path: '/calendar',

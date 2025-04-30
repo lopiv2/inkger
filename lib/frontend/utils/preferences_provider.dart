@@ -35,11 +35,10 @@ class PreferencesProvider with ChangeNotifier {
         'fullScreenMode': prefs.getBool('fullScreenMode') ?? false,
         'readerMode': prefs.getBool('readerMode') ?? false,
         'Comicvine Key': prefs.getString('Comicvine Key'),
-        'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,  
+        'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,
         'themeColor': prefs.getInt('themeColor') ?? 4284513675,
         'backgroundImagePath': prefs.getString('backgroundImagePath'),
         'scanInterval': prefs.getDouble('scanInterval') ?? 1.0,
-
       });
     } catch (e) {
       _prefs = AppPreferences.defaults();
@@ -80,21 +79,23 @@ class PreferencesProvider with ChangeNotifier {
   }
 
   // Método para guardar preferencias
-  Future<void> _savePreference<T>(String key, T value) async {
-  final prefs = await SharedPreferences.getInstance();
+  Future<void> _savePreference<T>(String key, T? value) async {
+    final prefs = await SharedPreferences.getInstance();
 
-  if (value is bool) {
-    await prefs.setBool(key, value);
-  } else if (value is String) {
-    await prefs.setString(key, value);
-  } else if (value is double) {
-    await prefs.setDouble(key, value);
-  } else if (value is int) {
-    await prefs.setInt(key, value);
-  } else if (value == null) {
-    await prefs.remove(key);
+    if (value == null) {
+      await prefs.remove(key);
+    } else if (value is bool) {
+      await prefs.setBool(key, value);
+    } else if (value is String) {
+      await prefs.setString(key, value);
+    } else if (value is double) {
+      await prefs.setDouble(key, value);
+    } else if (value is int) {
+      await prefs.setInt(key, value);
+    } else {
+      throw UnsupportedError('Unsupported preference type');
+    }
   }
-}
 
   // Nuevo método para cambiar el modo pantalla completa
   Future<void> toggleFullScreenMode(bool value) async {
@@ -113,12 +114,15 @@ class PreferencesProvider with ChangeNotifier {
   // Método para actualizar las preferencias
   Future<void> updatePreferences(AppPreferences newPrefs) async {
     _prefs = newPrefs;
-    notifyListeners();
 
     final map = newPrefs.toMap();
+    final prefs = await SharedPreferences.getInstance();
+
     for (final entry in map.entries) {
       await _savePreference(entry.key, entry.value);
     }
+
+    notifyListeners(); // Llamar solo una vez después de guardar todo
   }
 
   Future<void> updateLibraryPath(String libraryType, String newPath) async {
@@ -128,14 +132,15 @@ class PreferencesProvider with ChangeNotifier {
 
       // Actualizar el estado según el tipo
       _prefs = _prefs.copyWith(
-        comicAppDirectory:
-            libraryType == 'comics' ? newPath : _prefs.comicAppDirectory,
-        bookAppDirectory:
-            libraryType == 'books' ? newPath : _prefs.bookAppDirectory,
-        audiobookAppDirectory:
-            libraryType == 'audiobooks'
-                ? newPath
-                : _prefs.audiobookAppDirectory,
+        comicAppDirectory: libraryType == 'comics'
+            ? newPath
+            : _prefs.comicAppDirectory,
+        bookAppDirectory: libraryType == 'books'
+            ? newPath
+            : _prefs.bookAppDirectory,
+        audiobookAppDirectory: libraryType == 'audiobooks'
+            ? newPath
+            : _prefs.audiobookAppDirectory,
       );
 
       // Persistir en SharedPreferences

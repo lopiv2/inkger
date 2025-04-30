@@ -18,75 +18,76 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
   @override
   void initState() {
     super.initState();
-    _userFuture = widget.passedUser != null 
+    _userFuture = widget.passedUser != null
         ? Future.value(widget.passedUser)
         : _loadUserFromPrefs();
   }
 
   Future<User?> _loadUserFromPrefs() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    
-    // Verificación de campos requeridos
-    if (!prefs.containsKey('id') || 
-        !prefs.containsKey('username') || 
-        !prefs.containsKey('email')) {
-      debugPrint('Faltan campos requeridos en SharedPreferences');
-      return null;
-    }
-
-    // Campos requeridos
-    final id = prefs.getInt('id');
-    final username = prefs.getString('username');
-    final email = prefs.getString('email');
-
-    // Validación de campos no nulos
-    if (id == null || username == null || email == null) {
-      debugPrint('Campos requeridos son nulos');
-      return null;
-    }
-
-    // Campos opcionales (incluyendo fechas)
-    final name = prefs.getString('name');
-    final avatarUrl = prefs.getString('avatarUrl');
-    final password = prefs.getString('password');
-    final roles = prefs.getStringList('roles') ?? ['USER'];
-    
-    // Manejo seguro de fechas
-    DateTime? createdAt;
-    DateTime? updatedAt;
-    
     try {
-      final createdAtStr = prefs.getString('createdAt');
-      final updatedAtStr = prefs.getString('updatedAt');
-      
-      if (createdAtStr != null) {
-        createdAt = DateTime.parse(createdAtStr);
-      }
-      
-      if (updatedAtStr != null) {
-        updatedAt = DateTime.parse(updatedAtStr);
-      }
-    } catch (e) {
-      debugPrint('Error parseando fechas: $e');
-    }
+      final prefs = await SharedPreferences.getInstance();
 
-    return User(
-      id: id,
-      username: username,
-      password: password ?? '',
-      email: email,
-      name: name,
-      avatarUrl: avatarUrl,
-      roles: roles,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  } catch (e) {
-    debugPrint('Error cargando usuario desde SharedPreferences: $e');
-    return null;
+      // Verificación de campos requeridos
+      if (!prefs.containsKey('id') ||
+          !prefs.containsKey('username') ||
+          !prefs.containsKey('email')) {
+        debugPrint('Faltan campos requeridos en SharedPreferences');
+        return null;
+      }
+
+      // Campos requeridos
+      final id = prefs.getInt('id');
+      final username = prefs.getString('username');
+      final email = prefs.getString('email');
+
+      // Validación de campos no nulos
+      if (id == null || username == null || email == null) {
+        debugPrint('Campos requeridos son nulos');
+        return null;
+      }
+
+      // Campos opcionales (incluyendo fechas)
+      final name = prefs.getString('name');
+      final avatarUrl = prefs.getString('avatarUrl');
+      final password = prefs.getString('password');
+      final rolesString = prefs.getString('role'); // Recupera como String
+      final roles = rolesString != null ? rolesString.split(',') : ['USER'];
+
+      // Manejo seguro de fechas
+      DateTime? createdAt;
+      DateTime? updatedAt;
+
+      try {
+        final createdAtStr = prefs.getString('createdAt');
+        final updatedAtStr = prefs.getString('updatedAt');
+
+        if (createdAtStr != null) {
+          createdAt = DateTime.parse(createdAtStr);
+        }
+
+        if (updatedAtStr != null) {
+          updatedAt = DateTime.parse(updatedAtStr);
+        }
+      } catch (e) {
+        debugPrint('Error parseando fechas: $e');
+      }
+
+      return User(
+        id: id,
+        username: username,
+        password: password ?? '',
+        email: email,
+        name: name,
+        avatarUrl: avatarUrl,
+        roles: roles,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+    } catch (e) {
+      debugPrint('Error cargando usuario desde SharedPreferences: $e');
+      return null;
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

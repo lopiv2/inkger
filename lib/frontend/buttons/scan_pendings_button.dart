@@ -47,7 +47,7 @@ class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
     );
     checkPending();
     timer = Timer.periodic(
-      Duration(minutes: preferencesProvider.preferences.scanInterval),
+      Duration(minutes: preferencesProvider.preferences.scanInterval.round()),
       (_) => checkPending(),
     );
   }

@@ -14,7 +14,7 @@ class AppPreferences {
   final double defaultGridItemSize;
   final int themeColor;
   final String? backgroundImagePath;
-  final int scanInterval;
+  final double scanInterval;
 
   Color get themeColorAsColor => Color(themeColor);
 
@@ -85,7 +85,7 @@ class AppPreferences {
       defaultGridItemSize: map['defaultGridItemSize'] as double,
       themeColor: map['themeColor'] as int,
       backgroundImagePath: map['backgroundImagePath'] as String?,
-      scanInterval: map['scanInterval'] as int,
+      scanInterval: map['scanInterval'] as double,
     );
   }
 
@@ -103,7 +103,7 @@ class AppPreferences {
     double? defaultGridItemSize,
     int? themeColor,
     String? backgroundImagePath,
-    int? scanInterval,
+    double? scanInterval,
   }) {
     return AppPreferences(
       darkMode: darkMode ?? this.darkMode,

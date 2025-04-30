@@ -1,11 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
 
+part 'user.g.dart';
+
 @JsonSerializable()
 class User {
   final int id;
   final String email;
   final String username;
-  final String? password; // Nota: En producción, nunca deberías almacenar la contraseña en el cliente
+  final String?
+  password; // Nota: En producción, nunca deberías almacenar la contraseña en el cliente
   final String? name;
   final String? avatarUrl;
   final DateTime? createdAt;
@@ -48,6 +51,11 @@ class User {
       roles: roles ?? this.roles,
     );
   }
+
+  // Métodos de serialización
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserToJson(this);
 
   @override
   String toString() {
