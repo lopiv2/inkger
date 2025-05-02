@@ -42,7 +42,7 @@ class Sidebar extends StatelessWidget {
               context,
               Icons.list,
               'Listas de lectura',
-              'lists',
+              '/reading-lists',
             ),
             _buildHoverMenuItem(
               context,

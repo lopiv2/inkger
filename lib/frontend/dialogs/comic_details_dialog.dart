@@ -16,6 +16,7 @@ void showComicDetailsDialog(BuildContext context, Comic comic) async {
   final prefs = await SharedPreferences.getInstance();
   final id = prefs.getInt('id');
 
+  // ignore: use_build_context_synchronously
   final provider = Provider.of<ComicsProvider>(context, listen: false);
 
   // Controladores para campos editables
@@ -371,7 +372,7 @@ Widget _buildChipsField(
                           values.remove(value);
                           (controller == null)
                               ? tempController.text = values.join(',')
-                              : controller!.text = values.join(',');
+                              : controller.text = values.join(',');
                         },
                       );
                     }).toList(),
@@ -399,7 +400,7 @@ Widget _buildChipsField(
               tempController.clear();
               (controller == null)
                   ? tempController.text = values.join(',')
-                  : controller!.text = values.join(',');
+                  : controller.text = values.join(',');
             }
           },
         ),

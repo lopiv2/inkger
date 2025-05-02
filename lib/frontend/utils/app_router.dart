@@ -5,9 +5,11 @@ import 'package:inkger/frontend/screens/comic_reader_screen.dart';
 import 'package:inkger/frontend/screens/dashboard_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
+import 'package:inkger/frontend/screens/import_reading_list_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/screens/name_generators_screen.dart';
 import 'package:inkger/frontend/screens/preferences_screen.dart';
+import 'package:inkger/frontend/screens/reading_lists_screen.dart';
 import 'package:inkger/frontend/screens/series_detail_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
@@ -94,6 +96,56 @@ class AppRouter {
                       );
                     },
                 transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/reading-lists',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: ReadingListScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        ),
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 2000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/reading-lists/import-list',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: ImportReadingListScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(
+                        1.0,
+                        0.0,
+                      ); // Comienza fuera de la pantalla a la derecha
+                      const end = Offset.zero; // Termina en su posición normal
+                      const curve = Curves.easeInOut;
+
+                      final tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 2000),
               );
             },
           ),

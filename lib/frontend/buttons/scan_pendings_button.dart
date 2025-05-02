@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -60,7 +59,7 @@ class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
         hasPending = data["hasPending"];
       });
     } catch (e) {
-      print("Error checking pending files: $e");
+      debugPrint("Error checking pending files: $e");
     }
   }
 
