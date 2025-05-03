@@ -27,6 +27,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filesImportedSuccess => 'New files successfully imported';
 
   @override
+  String get listImportedError => 'Error when creating the list';
+
+  @override
+  String get listImportedSuccess => 'List successfully created';
+
+  @override
   String get metadataUpdated => 'Updated metadata';
 
   @override

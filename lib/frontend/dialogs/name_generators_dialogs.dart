@@ -20,7 +20,7 @@ class NameGeneratorsDialog extends StatefulWidget {
 
 class _NameGeneratorsDialogState extends State<NameGeneratorsDialog> {
   late String selectedSection;
-  bool _isHovering = false;
+  //bool _isHovering = false;
 
   @override
   void initState() {

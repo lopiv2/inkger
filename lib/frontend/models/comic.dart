@@ -61,12 +61,14 @@ class Comic {
     this.readingProgress,
   });
 
-  factory Comic.fromMap(Map<String, dynamic> map) {
+  factory Comic.fromJson(Map<String, dynamic> map) {
     return Comic(
       id: map['id'],
       title: map['title'],
       description: map['description'],
-      readingProgress: map['readingProgress'], // Añadido aquí
+      readingProgress: map['readingProgress'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(map['readingProgress'])
+          : {'progress': map['readingProgress']},
       fileSize: map['fileSize'],
       filePath: map['filePath'],
       coverPath: map['coverPath'],
@@ -205,4 +207,6 @@ class Comic {
       return (characters as String).split(',').map((e) => e.trim()).toList();
     return null;
   }
+
+  static empty() {}
 }

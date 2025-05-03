@@ -9,11 +9,6 @@ class ReadingListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener las listas de lectura de un provider o de cualquier fuente de datos
-    final readingListsFuture = context
-        .watch<ReadingListProvider>()
-        .fetchReadingLists();
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -27,7 +22,7 @@ class ReadingListScreen extends StatelessWidget {
               onPressed: () {
                 // Aquí puedes agregar la lógica para crear una nueva lista.
                 // Por ejemplo, navegar a una nueva pantalla para crear una lista.
-                print('Crear nueva lista');
+                debugPrint('Crear nueva lista');
               },
             ),
           ),
@@ -43,7 +38,25 @@ class ReadingListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ReadingListFilterAndGrid(readingListsFuture: readingListsFuture),
+      body: FutureBuilder(
+        future: context.read<ReadingListProvider>().fetchReadingLists(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final readingLists = context.watch<ReadingListProvider>().lists;
+
+            // Validar si la lista es nula o está vacía antes de procesarla.
+            if (readingLists.isEmpty) {
+              return const Center(child: Text('No hay listas de lectura disponibles.'));
+            }
+
+            return ReadingListFilterAndGrid(readingLists: readingLists);
+          }
+        },
+      ),
     );
   }
 }

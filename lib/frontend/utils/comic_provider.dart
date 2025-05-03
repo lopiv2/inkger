@@ -24,7 +24,7 @@ class ComicsProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _comics =
             (response.data as List)
-                .map((comicData) => Comic.fromMap(comicData))
+                .map((comicData) => Comic.fromJson(comicData))
                 .toList();
       } else {
         throw Exception('Error al cargar los comics');

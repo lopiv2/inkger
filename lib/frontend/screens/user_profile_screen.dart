@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/user.dart';
 import 'package:inkger/frontend/services/user_services.dart';
-import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
@@ -26,8 +25,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final _passwordFormKey = GlobalKey<FormState>();
   final _profileFormKey = GlobalKey<FormState>();
-
-  bool _isPasswordChanging = false;
 
   @override
   void initState() {

@@ -6,6 +6,8 @@
   "documentFormats": "Document formats", 
   "edit": "Edit",
   "filesImportedSuccess": "New files successfully imported",
+  "listImportedError": "Error when creating the list",
+  "listImportedSuccess": "List successfully created",
   "metadataUpdated": "Updated metadata",
   "noSerie": "No serie",
   "preferencesSaved": "Preferences saved",

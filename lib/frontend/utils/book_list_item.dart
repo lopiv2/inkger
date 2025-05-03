@@ -24,12 +24,12 @@ class BookListItem extends StatelessWidget {
   }
 
 
-  Widget _buildPlaceholder() {
+  /*Widget _buildPlaceholder() {
     return Container(
       color: Colors.grey[200],
       child: const Center(
         child: Icon(Icons.book, size: 24, color: Colors.grey),
       ),
     );
-  }
+  }*/
 }

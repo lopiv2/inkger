@@ -13,6 +13,7 @@ import 'package:inkger/frontend/screens/reading_lists_screen.dart';
 import 'package:inkger/frontend/screens/series_detail_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
 import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
+import 'package:inkger/frontend/screens/reading_list_detail_screen.dart';
 import 'package:inkger/frontend/utils/user_profile_loader.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
@@ -118,6 +119,24 @@ class AppRouter {
                 transitionDuration: const Duration(milliseconds: 2000),
               );
             },
+            routes: [
+              GoRoute(
+                path: ':listId', // Usamos el título como ID
+                pageBuilder: (context, state) {
+                  final listId = state.pathParameters['listId']!;
+                  final extraData = state.extra as Map<String, dynamic>; // Extraemos todos los datos
+                  return NoTransitionPage(
+                    key: state.pageKey,
+                    child: ReadingListDetailScreen(
+                      title: extraData['title'], // Título de la lista
+                      coverUrl: extraData['coverUrl'], // URL de la portada
+                      items: extraData['items'], // Elementos de la lista
+                      count: extraData['count'], // Cantidad de elementos
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: '/reading-lists/import-list',

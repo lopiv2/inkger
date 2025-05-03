@@ -3,6 +3,7 @@ import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 
 class HoverableGridItem extends StatefulWidget {
   final dynamic item;
@@ -80,15 +81,8 @@ class HoverableGridItemState extends State<HoverableGridItem> {
                         bottomLeft: Radius.circular(16.0),
                         bottomRight: Radius.circular(16.0),
                       ),
-                      child: LinearProgressIndicator(
-                        value:
-                            widget.item.readingProgress!['readingProgress'] /
-                            100,
-                        minHeight: 10,
-                        backgroundColor: Colors.green[200],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Theme.of(context).primaryColor,
-                        ),
+                      child: ReadingProgressBarIndicator(
+                        value: widget.item.readingProgress?['progress'] ?? 0,
                       ),
                     ),
                   ],

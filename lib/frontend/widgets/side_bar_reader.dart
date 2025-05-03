@@ -50,7 +50,6 @@ class Sidebar extends StatelessWidget {
               'Series',
               '/series',
             ),
-            _buildHoverMenuItem(context, Icons.book, 'Estanterías', 'shelves'),
             _buildHoverMenuItem(
               context,
               Icons.calendar_month,

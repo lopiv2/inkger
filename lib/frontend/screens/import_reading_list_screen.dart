@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/reading_list.dart';
 import 'package:inkger/frontend/dialogs/selection_dialog.dart';
 import 'package:inkger/frontend/models/reading_list_item.dart';
+import 'package:inkger/frontend/utils/reading_list_provider.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import '../services/reading_list_services.dart';
 
 class ImportReadingListScreen extends StatefulWidget {
@@ -17,14 +21,17 @@ class ImportReadingListScreen extends StatefulWidget {
 class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
   PlatformFile? selectedFile;
   List<Map<String, dynamic>> importedItems = [];
-  late TextEditingController listTitleController; // Usar late para inicializar después
+  late TextEditingController
+  listTitleController; // Usar late para inicializar después
   Map<int, String> selectedSeries = {};
   Map<int, String> selectedTitle = {};
   Map<int, String> selectedId = {};
   Map<int, String> selectedType = {};
+  Map<int, String> selectedCoverUrl = {};
 
   _ImportReadingListScreenState() {
-    listTitleController = TextEditingController(); // Inicializar en el constructor
+    listTitleController =
+        TextEditingController(); // Inicializar en el constructor
   }
 
   @override
@@ -45,9 +52,9 @@ class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
             .map(
               (entry) => {
                 'index': entry.key + 1,
-                'series': entry.value.series,
-                'number': entry.value.number,
-                'year': entry.value.year,
+                'series': entry.value.series, // Validar datos nulos
+                'number': entry.value.number, // Validar datos nulos
+                'year': entry.value.year, // Validar datos nulos
                 'title': '',
               },
             )
@@ -55,26 +62,32 @@ class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
       });
     } catch (e) {
       print('Excepción al importar el archivo: $e');
+      setState(() {
+        importedItems = []; // Asegurar que la lista esté vacía en caso de error
+      });
     }
   }
 
   void _showSelectionDialog(int index) {
+    if (index < 0 || index >= importedItems.length) {
+      print('Índice fuera de rango: $index');
+      return; // Evitar errores de índice fuera de rango
+    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SelectionDialog(
           title:
-              importedItems[index]['series'] +
-                  " #" +
-                  importedItems[index]['number'].toString() ??
-              'Sin título',
+              '${importedItems[index]['series']} #${importedItems[index]['number'].toString()}',
           onSelected: (selectedSeriesName) {
             setState(() {
               selectedSeries[index] =
-                  '${selectedSeriesName['series']} #${selectedSeriesName['seriesNumber']}'; // Asegurar que sea un String
+                  '${selectedSeriesName['series']} #${selectedSeriesName['seriesNumber']}';
               selectedTitle[index] = '${selectedSeriesName['title']}';
               selectedId[index] = '${selectedSeriesName['id']}';
               selectedType[index] = '${selectedSeriesName['type']}';
+              selectedCoverUrl[index] =
+                  '${selectedSeriesName['coverPath']}'; // Guardar la URL de la portada
             });
           },
         );
@@ -157,21 +170,39 @@ class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
                                 if (listTitleController.text.isNotEmpty &&
                                     selectedSeries.isNotEmpty) {
                                   final readingList = ReadingList(
-                                    title: listTitleController.text, // Usar el título editado
+                                    coverUrl:
+                                        selectedCoverUrl[0] ??
+                                        '', // Usar la URL de la portada seleccionada
+                                    title: listTitleController
+                                        .text, // Usar el título editado
                                     missingTitles:
-                                        importedItems.length - selectedSeries.length,
+                                        importedItems.length -
+                                        selectedSeries.length,
                                     items: selectedSeries.entries.map((entry) {
                                       final index = entry.key;
-                                      final seriesData = entry.value.split(' #');
+                                      final seriesData = entry.value.split(
+                                        ' #',
+                                      );
                                       return ReadingListItem(
-                                        id: selectedId[index] ?? '', // Usar el id seleccionado
-                                        type: selectedType[index] ?? 'comic', // Usar el tipo seleccionado
-                                        series: seriesData[0], // Serie seleccionada
-                                        number: seriesData.length > 1 ? seriesData[1] : '', // Número seleccionado
-                                        volume: '', // Asignar vacío si no está disponible
+                                        id:
+                                            selectedId[index] ??
+                                            '', // Usar el id seleccionado
+                                        type:
+                                            selectedType[index] ??
+                                            'comic', // Usar el tipo seleccionado
+                                        series:
+                                            seriesData[0], // Serie seleccionada
+                                        number: seriesData.length > 1
+                                            ? seriesData[1]
+                                            : '', // Número seleccionado
+                                        volume:
+                                            '', // Asignar vacío si no está disponible
                                         year: '',
                                         orderNumber: index,
-                                        title: selectedTitle[index] ?? '', // Asignar vacío si no está disponible
+                                        title: selectedTitle[index] ?? '',
+                                        itemId: '',
+                                        readingListId:
+                                            '', // Asignar vacío si no está disponible
                                       );
                                     }).toList(),
                                   );
@@ -180,10 +211,35 @@ class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
                                     await ReadingListServices.sendReadingList(
                                       readingList.toJson(),
                                     );
+                                    final readingListProvider =
+                                        Provider.of<ReadingListProvider>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    readingListProvider.addList(readingList);
+                                    CustomSnackBar.show(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      AppLocalizations.of(
+                                        // ignore: use_build_context_synchronously
+                                        context,
+                                      )!.listImportedSuccess,
+                                      Colors.green,
+                                      duration: Duration(seconds: 4),
+                                    );
+                                    // ignore: use_build_context_synchronously
                                     context.pop();
-                                    print('ReadingList enviada exitosamente.');
                                   } catch (e) {
-                                    print('Error al enviar la ReadingList: $e');
+                                    CustomSnackBar.show(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      AppLocalizations.of(
+                                        // ignore: use_build_context_synchronously
+                                        context,
+                                      )!.listImportedError,
+                                      Colors.red,
+                                      duration: Duration(seconds: 4),
+                                    );
                                   }
                                 } else {
                                   print(
@@ -255,21 +311,21 @@ class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    '${item['index']}',
+                                    '${item['index'] ?? 'N/A'}', // Validar índice nulo
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    '${item['series']} (${item['year']})',
+                                    '${item['series'] ?? 'Sin serie'} (${item['year'] ?? 'N/A'})', // Validar datos nulos
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    '${item['number']}',
+                                    '${item['number'] ?? 'N/A'}', // Validar datos nulos
                                     textAlign: TextAlign.center,
                                   ),
                                 ),

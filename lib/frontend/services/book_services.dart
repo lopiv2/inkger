@@ -183,4 +183,22 @@ class BookServices {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  static Future<Book> fetchBookById(int bookId, int userId) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/books/$bookId',
+        queryParameters: {'userId': userId}, // Agrega el userId como parámetro
+        options: Options(validateStatus: (status) => status! < 500),
+      );
+
+      if (response.statusCode == 200) {
+        return Book.fromJson(response.data); // Convierte la respuesta en un objeto Book
+      } else {
+        throw Exception('Error al obtener el libro: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener el libro: $e');
+    }
+  }
 }

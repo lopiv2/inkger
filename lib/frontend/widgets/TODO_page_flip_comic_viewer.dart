@@ -15,7 +15,7 @@ class _PageFlipComicViewerState extends State<PageFlipComicViewer>
     with TickerProviderStateMixin {
   int currentIndex = 0;
   late AnimationController _controller;
-  late Animation<Offset> _dragAnimation;
+  //late Animation<Offset> _dragAnimation;
   late Animation<double> _scaleAnimation;
   Offset dragOffset = Offset.zero;
 

@@ -283,4 +283,22 @@ class ComicServices {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  static Future<Comic> fetchComicById(int comicId, int userId) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/comics/$comicId',
+        queryParameters: {'userId': userId}, // Agrega el userId como parámetro
+        options: Options(validateStatus: (status) => status! < 500),
+      );
+
+      if (response.statusCode == 200) {
+        return Comic.fromJson(response.data); // Convierte la respuesta en un objeto Comic
+      } else {
+        throw Exception('Error al obtener el cómic: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener el cómic: $e');
+    }
+  }
 }

@@ -32,7 +32,7 @@ class _ConvertOptionsDialogState extends State<ConvertOptionsDialog> {
     }
   }
 
-  Future<void> _convertToCBZ() async {
+  /*Future<void> _convertToCBZ() async {
     if (_isConverting || !mounted) return;
 
     setState(() => _isConverting = true);
@@ -48,7 +48,7 @@ class _ConvertOptionsDialogState extends State<ConvertOptionsDialog> {
         setState(() => _isConverting = false);
       }
     }
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/reading_list.dart';
+import 'package:inkger/frontend/models/reading_list_item.dart';
+import 'package:inkger/frontend/services/reading_list_services.dart';
+import 'package:inkger/frontend/widgets/cover_art.dart';
 
 class ReadingListFilterAndGrid extends StatefulWidget {
-  final Future<List<ReadingList>> readingListsFuture;
+  final List<ReadingList> readingLists; // Cambia el tipo a List<ReadingList>.
 
-  const ReadingListFilterAndGrid({Key? key, required this.readingListsFuture})
-      : super(key: key);
+  const ReadingListFilterAndGrid({Key? key, required this.readingLists})
+    : super(key: key);
 
   @override
   _ReadingListFilterAndGridState createState() =>
@@ -16,13 +19,25 @@ class ReadingListFilterAndGrid extends StatefulWidget {
 class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
   String _currentFilter = '#';
   late Set<String> _availableLetters = {};
-  List<ReadingList>? _readingLists;
+  late List<ReadingList> _readingLists;
 
-  // Filtrar las listas de lectura de acuerdo con el filtro alfabético
-  List<ReadingList> _filterReadingLists(List<ReadingList> readingLists, String filter) {
+  @override
+  void initState() {
+    super.initState();
+    _readingLists = widget.readingLists; // Inicializa las listas de lectura.
+    _loadLetters(_readingLists); // Carga las letras disponibles.
+  }
+
+  // Filtrar las listas de lectura de acuerdo con el filtro alfabético.
+  List<ReadingList> _filterReadingLists(
+    List<ReadingList> readingLists,
+    String filter,
+  ) {
     if (filter == '#') {
       return readingLists
-          .where((list) => list.title[0].toLowerCase().contains(RegExp(r'[0-9]')))
+          .where(
+            (list) => list.title[0].contains(RegExp(r'[^a-zA-Z]')),
+          ) // Coincide con cualquier carácter que no sea una letra
           .toList();
     }
     return readingLists
@@ -47,67 +62,48 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<ReadingList>>(
-      future: widget.readingListsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No hay listas de lectura disponibles.'));
-        }
+    final filteredLists = _filterReadingLists(_readingLists, _currentFilter);
 
-        final readingLists = snapshot.data!;
-        _readingLists ??= readingLists; // ← guarda la lista una sola vez
-        _loadLetters(readingLists);
-        final filteredLists = _filterReadingLists(readingLists, _currentFilter);
-
-        return Column(
-          children: [
-            // Filtro alfabético
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildAlphabetFilter('#'),
-                  ...List.generate(26, (index) {
-                    final letter = String.fromCharCode(
-                      'A'.codeUnitAt(0) + index,
-                    );
-                    return _buildAlphabetFilter(letter);
-                  }),
-                ],
+    return Column(
+      children: [
+        // Filtro alfabético
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildAlphabetFilter('#'),
+              ...List.generate(26, (index) {
+                final letter = String.fromCharCode('A'.codeUnitAt(0) + index);
+                return _buildAlphabetFilter(letter);
+              }),
+            ],
+          ),
+        ),
+        // Grid de listas de lectura
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                crossAxisSpacing:2,
+                mainAxisSpacing: 2,
+                childAspectRatio: 0.8,
               ),
+              itemCount: filteredLists.length,
+              itemBuilder: (context, index) {
+                final list = filteredLists[index];
+                return _buildReadingListCard(
+                  list.title,
+                  list.coverUrl!,
+                  list.items.length,
+                  list.items,
+                );
+              },
             ),
-            // Grid de listas de lectura
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 8,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemCount: filteredLists.length,
-                  itemBuilder: (context, index) {
-                    final list = filteredLists[index];
-                    return _buildReadingListCard(
-                      list.title,
-                      list.coverUrl!,
-                      list.items.length,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 
@@ -121,24 +117,22 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color:
-                _currentFilter == letter
-                    ? Theme.of(context).primaryColor
-                    : isEnabled
-                    ? Colors.grey[400]
-                    : Colors.grey[200],
+            color: _currentFilter == letter
+                ? Theme.of(context).primaryColor
+                : isEnabled
+                ? Colors.grey[400]
+                : Colors.grey[200],
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               letter,
               style: TextStyle(
-                color:
-                    _currentFilter == letter
-                        ? Colors.white
-                        : isEnabled
-                        ? Colors.black
-                        : Colors.black54,
+                color: _currentFilter == letter
+                    ? Colors.white
+                    : isEnabled
+                    ? Colors.black
+                    : Colors.black54,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -148,67 +142,105 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
     );
   }
 
-  Widget _buildReadingListCard(String title, String coverUrl, int count) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () {
-          // Navegación con GoRouter
-          context.push(
-            '/readingList/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
-            extra: coverUrl, // Pasamos la ruta de la portada como extra
-          );
-        },
-        hoverColor: Colors.black.withOpacity(0.1),
-        highlightColor: Colors.black.withOpacity(0.2),
-        splashColor: Colors.black.withOpacity(0.3),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.network(coverUrl, fit: BoxFit.cover),
-              ),
+  Widget _buildReadingListCard(
+    String title,
+    String coverUrl,
+    int count,
+    List<ReadingListItem> items,
+  ) {
+    return FutureBuilder<List<String>>(
+      future: ReadingListServices.fetchItemCovers(
+        items,
+      ), // Llamada a la API para obtener las portadas
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          ); // Mostrar un indicador de carga
+        } else if (snapshot.hasError) {
+          return const Center(
+            child: Text('Error al cargar portadas'),
+          ); // Manejar errores
+        } else {
+          final itemCovers = snapshot.data ?? [];
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            Positioned(
-              bottom: 10,
-              left: 10,
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 5,
-                      color: Colors.black,
-                      offset: Offset(0, 3),
+            child: InkWell(
+              onTap: () {
+                // Navegación con GoRouter
+                context.push(
+                  '/reading-lists/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
+                  extra: {
+                    'title': title,
+                    'coverUrl': coverUrl,
+                    'count': count,
+                    'items': items,
+                  }, // Pasamos todos los datos de la lista de lectura como un mapa
+                );
+              },
+              hoverColor: Colors.black.withOpacity(0.1),
+              highlightColor: Colors.black.withOpacity(0.2),
+              splashColor: Colors.black.withOpacity(0.3),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: itemCovers.isNotEmpty
+                          ? buildMultiCover(
+                              itemCovers,
+                            ) // Construir portada con múltiples imágenes
+                          : buildCoverImage(
+                              coverUrl,
+                            ), // Construir portada con una sola imagen
                     ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              right: 10,
-              child: CircleAvatar(
-                backgroundColor: Colors.red,
-                child: Text(
-                  '$count',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    child: Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5,
+                            color: Colors.black,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
+
+  
 }

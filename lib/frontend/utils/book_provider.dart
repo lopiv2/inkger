@@ -24,7 +24,7 @@ class BooksProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _books =
             (response.data as List)
-                .map((bookData) => Book.fromMap(bookData))
+                .map((bookData) => Book.fromJson(bookData))
                 .toList();
       } else {
         throw Exception('Error al cargar los libros');

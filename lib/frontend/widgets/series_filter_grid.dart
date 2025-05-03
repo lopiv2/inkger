@@ -88,9 +88,9 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
                 padding: const EdgeInsets.all(20.0),
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 8,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
+                    crossAxisCount: 7,
+                    crossAxisSpacing: 2,
+                    mainAxisSpacing: 2,
                     childAspectRatio: 0.8,
                   ),
                   itemCount: filteredSeries.length,
@@ -121,24 +121,22 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color:
-                _currentFilter == letter
-                    ? Theme.of(context).primaryColor
-                    : isEnabled
-                    ? Colors.grey[400]
-                    : Colors.grey[200],
+            color: _currentFilter == letter
+                ? Theme.of(context).primaryColor
+                : isEnabled
+                ? Colors.grey[400]
+                : Colors.grey[200],
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               letter,
               style: TextStyle(
-                color:
-                    _currentFilter == letter
-                        ? Colors.white
-                        : isEnabled
-                        ? Colors.black
-                        : Colors.black54,
+                color: _currentFilter == letter
+                    ? Colors.white
+                    : isEnabled
+                    ? Colors.black
+                    : Colors.black54,
                 fontWeight: FontWeight.bold,
               ),
             ),

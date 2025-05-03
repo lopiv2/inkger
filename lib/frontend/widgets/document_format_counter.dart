@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 

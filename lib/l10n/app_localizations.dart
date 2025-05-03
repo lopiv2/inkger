@@ -134,6 +134,18 @@ abstract class AppLocalizations {
   /// **'New files successfully imported'**
   String get filesImportedSuccess;
 
+  /// No description provided for @listImportedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error when creating the list'**
+  String get listImportedError;
+
+  /// No description provided for @listImportedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'List successfully created'**
+  String get listImportedSuccess;
+
   /// No description provided for @metadataUpdated.
   ///
   /// In en, this message translates to:

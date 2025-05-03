@@ -11,6 +11,7 @@ import 'package:inkger/frontend/widgets/book_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
+import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -548,13 +549,8 @@ class _BooksGridState extends State<BooksGrid> {
                       bottomLeft: Radius.circular(16.0),
                       bottomRight: Radius.circular(16.0),
                     ),
-                    child: LinearProgressIndicator(
-                      value: book.readingProgress!['readingProgress'] / 100,
-                      minHeight: 10,
-                      backgroundColor: Colors.green[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).primaryColor,
-                      ),
+                    child: ReadingProgressBarIndicator(
+                      value: book.readingProgress!['readingProgress'],
                     ),
                   ),
                 ),

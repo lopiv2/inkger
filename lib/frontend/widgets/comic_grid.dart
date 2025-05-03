@@ -14,6 +14,7 @@ import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
+import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -192,8 +193,8 @@ class _ComicsGridState extends State<ComicsGrid> {
                   Radio<ViewMode>(
                     value: ViewMode.simple,
                     groupValue: _selectedViewMode,
-                    onChanged:
-                        (value) => setState(() => _selectedViewMode = value!),
+                    onChanged: (value) =>
+                        setState(() => _selectedViewMode = value!),
                   ),
                   Text(
                     "Simple",
@@ -202,8 +203,8 @@ class _ComicsGridState extends State<ComicsGrid> {
                   Radio<ViewMode>(
                     value: ViewMode.threeD,
                     groupValue: _selectedViewMode,
-                    onChanged:
-                        (value) => setState(() => _selectedViewMode = value!),
+                    onChanged: (value) =>
+                        setState(() => _selectedViewMode = value!),
                   ),
                   Text(
                     "3D",
@@ -212,8 +213,8 @@ class _ComicsGridState extends State<ComicsGrid> {
                   Radio<ViewMode>(
                     value: ViewMode.librarian,
                     groupValue: _selectedViewMode,
-                    onChanged:
-                        (value) => setState(() => _selectedViewMode = value!),
+                    onChanged: (value) =>
+                        setState(() => _selectedViewMode = value!),
                   ),
                   Text(
                     "Bibliotecario",
@@ -361,10 +362,9 @@ class _ComicsGridState extends State<ComicsGrid> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 double maxHeight = constraints.maxHeight;
-                double itemHeight =
-                    CommonServices.calculateMainAxisExtent(
-                      _crossAxisCount,
-                    ).toDouble();
+                double itemHeight = CommonServices.calculateMainAxisExtent(
+                  _crossAxisCount,
+                ).toDouble();
 
                 // Si el itemHeight es mayor que el espacio disponible, limitarlo
                 if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
@@ -417,9 +417,8 @@ class _ComicsGridState extends State<ComicsGrid> {
                       return ListView.builder(
                         padding: const EdgeInsets.all(8),
                         itemCount: filteredComics.length,
-                        itemBuilder:
-                            (context, index) =>
-                                ComicListItem(comic: filteredComics[index]),
+                        itemBuilder: (context, index) =>
+                            ComicListItem(comic: filteredComics[index]),
                       );
                     }
                   },
@@ -696,20 +695,18 @@ class _ComicsGridState extends State<ComicsGrid> {
       children: [
         HoverCardComic(
           comic: comic,
-          onConvert:
-              () => showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return ConvertOptionsDialog( comicId: comic.id,);
-                },
-              ),
-          onSearchMetadata:
-              () => showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return ComicMetadataSearchDialog(comic: comic);
-                },
-              ),
+          onConvert: () => showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return ConvertOptionsDialog(comicId: comic.id);
+            },
+          ),
+          onSearchMetadata: () => showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return ComicMetadataSearchDialog(comic: comic);
+            },
+          ),
           onDelete: () => showDeleteConfirmationDialog(context, comic),
           child: Card(
             shape: RoundedRectangleBorder(
@@ -732,13 +729,8 @@ class _ComicsGridState extends State<ComicsGrid> {
                       bottomLeft: Radius.circular(16.0),
                       bottomRight: Radius.circular(16.0),
                     ),
-                    child: LinearProgressIndicator(
-                      value: comic.readingProgress!['readingProgress'] / 100,
-                      minHeight: 10,
-                      backgroundColor: Colors.green[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).primaryColor,
-                      ),
+                    child: ReadingProgressBarIndicator(
+                      value: comic.readingProgress!['readingProgress'],
                     ),
                   ),
                 ),

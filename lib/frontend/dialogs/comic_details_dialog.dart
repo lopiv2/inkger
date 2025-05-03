@@ -335,7 +335,7 @@ Widget _buildEditableField(
 }
 
 // Widget auxiliar para chips (listas de valores)
-Widget _buildChipsField(
+/*Widget _buildChipsField(
   String label,
   List<String> values,
   TextEditingController? controller,
@@ -407,7 +407,7 @@ Widget _buildChipsField(
       ],
     ),
   );
-}
+}*/
 
 Widget _buildDetailRow(String label, String value) {
   return Padding(

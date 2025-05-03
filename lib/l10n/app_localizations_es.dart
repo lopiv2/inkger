@@ -28,6 +28,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Nuevos archivos importados satisfactoriamente';
 
   @override
+  String get listImportedError => 'Error al crear la lista';
+
+  @override
+  String get listImportedSuccess => 'Lista creada con exito';
+
+  @override
   String get metadataUpdated => 'Metadatos actualizados';
 
   @override

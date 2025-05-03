@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/reading_list_services.dart';
-import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart'; // Importar CommonServices
 
 class SelectionDialog extends StatefulWidget {
@@ -98,6 +95,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
                             //print(item);
                             widget.onSelected({
                               'id': item['id'] ?? 'Sin id', // Incluir el id
+                              'coverPath': item['coverPath'] ?? '', // Incluir la ruta de la portada
                               'title': item['title'] ?? 'Sin nombre', // Incluir el título
                               'type': item['type'] ?? 'Sin tipo', // Incluir el tipo
                               'series': item['series'] ?? 'Sin serie',

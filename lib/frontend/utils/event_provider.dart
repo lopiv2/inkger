@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:inkger/frontend/models/event.dart';
 import 'package:inkger/frontend/services/events_services.dart';

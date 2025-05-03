@@ -9,6 +9,7 @@ part of 'reading_list_item.dart';
 ReadingListItem _$ReadingListItemFromJson(Map<String, dynamic> json) =>
     ReadingListItem(
       id: json['id'] as String,
+      readingListId: json['readingListId'] as String,
       type: json['type'] as String,
       series: json['series'] as String,
       number: json['number'] as String,
@@ -16,11 +17,13 @@ ReadingListItem _$ReadingListItemFromJson(Map<String, dynamic> json) =>
       year: json['year'] as String,
       orderNumber: (json['orderNumber'] as num).toInt(),
       title: json['title'] as String,
+      itemId: json['itemId'] as String,
     );
 
 Map<String, dynamic> _$ReadingListItemToJson(ReadingListItem instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'readingListId': instance.readingListId,
       'type': instance.type,
       'series': instance.series,
       'number': instance.number,
@@ -28,4 +31,5 @@ Map<String, dynamic> _$ReadingListItemToJson(ReadingListItem instance) =>
       'year': instance.year,
       'orderNumber': instance.orderNumber,
       'title': instance.title,
+      'itemId': instance.itemId,
     };

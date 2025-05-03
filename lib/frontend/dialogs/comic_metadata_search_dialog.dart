@@ -192,7 +192,7 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                                     aspectRatio: 2 / 3,
                                     child: FutureBuilder<Uint8List>(
                                       future: CommonServices.getProxyImageBytes(
-                                        selectedComic!['image']['small_url'],
+                                        selectedComic['image']['small_url'],
                                       ),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasData) {
@@ -330,6 +330,5 @@ class ComicDataSource extends DataTableSource {
   @override
   int get selectedRowCount => 0;
 
-  @override
   bool get hasMoreRows => false;
 }

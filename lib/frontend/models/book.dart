@@ -37,26 +37,28 @@ class Book {
     this.filePath,
   });
 
-  // Método para convertir un Map en un objeto Book (útil para la base de datos)
-  factory Book.fromMap(Map<String, dynamic> map) {
+  // Método para convertir un JSON en un objeto Book
+  factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
-      id: map['id'],
-      title: map['title'],
-      author: map['author'],
-      publicationDate: DateTime.parse(map['publicationDate']),
-      creationDate: DateTime.parse(map['creationDate']),
-      description: map['description'],
-      publisher: map['publisher'],
-      language: map['language'],
-      coverPath: map['coverPath'],
-      pages: map['pages'],
-      identifiers: map['identifiers'],
-      tags: map['tags'],
-      series: map['series'],
-      seriesNumber: map['seriesNumber'],
-      readingProgress: map['readingProgress'],
-      fileSize: map['fileSize'],
-      filePath: map['filePath'],
+      id: json['id'],
+      title: json['title'],
+      author: json['author'],
+      publicationDate: DateTime.parse(json['publicationDate']),
+      creationDate: DateTime.parse(json['creationDate']),
+      description: json['description'],
+      publisher: json['publisher'],
+      language: json['language'],
+      coverPath: json['coverPath'],
+      pages: json['pages'],
+      identifiers: json['identifiers'],
+      tags: json['tags'],
+      series: json['series'],
+      seriesNumber: json['seriesNumber'],
+      readingProgress: json['readingProgress'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(json['readingProgress'])
+          : {'progress': json['readingProgress']},
+      fileSize: json['fileSize'],
+      filePath: json['filePath'],
     );
   }
 
@@ -82,4 +84,6 @@ class Book {
       'filePath': filePath,
     };
   }
+
+  static empty() {}
 }
