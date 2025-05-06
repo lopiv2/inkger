@@ -15,6 +15,7 @@ class CustomReaderComic extends StatefulWidget {
   final String comicTitle;
   final int initialProgress;
   final int comicId;
+  final String? previousScreen;
 
   const CustomReaderComic({
     Key? key,
@@ -22,6 +23,7 @@ class CustomReaderComic extends StatefulWidget {
     required this.comicTitle,
     required this.initialProgress,
     required this.comicId,
+    this.previousScreen,
   }) : super(key: key);
 
   @override
@@ -102,7 +104,12 @@ class _CustomReaderComicState extends State<CustomReaderComic>
     // Campos requeridos
     final id = prefs.getInt('id');
     await provider.loadcomics(id ?? 0);
-    context.pop();
+    // Notificar el refresco
+    if (widget.previousScreen!.contains('reading-lists')) {
+      context.go('/reading-lists');
+    } else {
+      context.pop();
+    }
   }
 
   Future<void> _loadCbzContent() async {

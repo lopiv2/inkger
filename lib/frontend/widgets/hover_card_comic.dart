@@ -51,7 +51,7 @@ class _HoverCardState extends State<HoverCardComic> {
                           context,
                           widget.comic.id.toString(),
                           widget.comic.title,
-                          widget.comic.readingProgress!['readingProgress'],
+                          widget.comic.readingProgress!['readingProgress'],''
                         );
                       },
                       splashColor: Colors.white,

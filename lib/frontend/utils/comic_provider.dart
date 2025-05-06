@@ -18,7 +18,7 @@ class ComicsProvider extends ChangeNotifier {
   Future<void> loadcomics(int id) async {
     _isLoading = true;
     notifyListeners();
-
+    _comics.clear(); // Limpiar la lista antes de cargar nuevos datos
     try {
       final response = await ComicServices.getAllcomics(id);
       if (response.statusCode == 200) {

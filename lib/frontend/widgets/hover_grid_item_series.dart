@@ -191,7 +191,7 @@ class HoverableGridItemState extends State<HoverableGridItem> {
                       context,
                       widget.item.id.toString(),
                       widget.item.title,
-                      widget.item.readingProgress!['readingProgress'],
+                      widget.item.readingProgress!['readingProgress'],''
                     );
             },
             icon: Icon(widget.isBook ? Icons.menu_book : Icons.photo_library),

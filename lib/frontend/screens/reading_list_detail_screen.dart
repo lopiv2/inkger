@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/models/reading_list_item.dart';
-import 'package:inkger/frontend/services/book_services.dart';
-import 'package:inkger/frontend/services/comic_services.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/hover_grid_item_reading_list.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReadingListDetailScreen extends StatefulWidget {
@@ -27,42 +28,52 @@ class ReadingListDetailScreen extends StatefulWidget {
 }
 
 class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
-  late Future<List<dynamic>> _fetchedItems;
+  Future<List<dynamic>> _fetchedItems = Future.value([]);
 
   @override
   void initState() {
     super.initState();
-    _fetchedItems = _fetchItems(widget.items);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadComics();
+    });
   }
 
-  Future<List<dynamic>> _fetchItems(List<dynamic> items) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('id');
-    List<dynamic> fetchedItems = [];
-    for (var item in items) {
-      try {
-        // Asegúrate de que item tenga las propiedades necesarias
-        if (item is ReadingListItem) {
-          final type = item.type; // Cambia esto según la propiedad real
-          final id = int.tryParse(item.itemId) ?? 0;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Recargar los datos al volver a la página
+    _loadComics();
+  }
 
-          if (type == 'book') {
-            final book = await BookServices.fetchBookById(id, userId!);
-            fetchedItems.add(book);
-          } else if (type == 'comic') {
-            final comic = await ComicServices.fetchComicById(id, userId!);
-            fetchedItems.add(comic);
-          } else {
-            debugPrint('Tipo desconocido: $type');
+  Future<void> _loadComics() async {
+    final provider = Provider.of<ComicsProvider>(context, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+
+    // Campos requeridos
+    final userId = prefs.getInt('id');
+    await provider.loadcomics(userId ?? 0);
+
+    // Obtener los cómics cargados
+    final comics = provider.comics;
+
+    // Filtrar y obtener la información completa de los elementos
+    final matchingItems = widget.items
+        .map((item) {
+          if (item is ReadingListItem && item.type == 'comic') {
+            return comics.firstWhere(
+              (comic) => comic.id.toString() == item.itemId,
+              orElse: () => Comic.empty(),
+            );
           }
-        } else {
-          debugPrint('Error: item no es de tipo ReadingListItem');
-        }
-      } catch (e) {
-        debugPrint('Error procesando el item: $item, Error: $e');
-      }
-    }
-    return fetchedItems;
+          return null;
+        })
+        .where((element) => element != null)
+        .toList();
+
+    // Guardar los elementos coincidentes con toda la información en fetchedItems
+    setState(() {
+      _fetchedItems = Future.value(matchingItems);
+    });
   }
 
   @override

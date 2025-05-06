@@ -20,12 +20,15 @@ import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/widgets/comic_grid.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 class AppRouter {
   final AuthProvider authProvider;
 
   AppRouter(this.authProvider);
 
   late final router = GoRouter(
+    observers: [routeObserver],
     refreshListenable: authProvider,
     redirect: (context, state) {
       final isAuth = authProvider.isAuthenticated;
@@ -124,14 +127,18 @@ class AppRouter {
                 path: ':listId', // Usamos el título como ID
                 pageBuilder: (context, state) {
                   final listId = state.pathParameters['listId']!;
-                  final extraData = state.extra as Map<String, dynamic>; // Extraemos todos los datos
+                  final extraData = state.extra as Map<String, dynamic>? ?? {};
                   return NoTransitionPage(
                     key: state.pageKey,
                     child: ReadingListDetailScreen(
-                      title: extraData['title'], // Título de la lista
-                      coverUrl: extraData['coverUrl'], // URL de la portada
-                      items: extraData['items'], // Elementos de la lista
-                      count: extraData['count'], // Cantidad de elementos
+                      title:
+                          extraData['title'] ??
+                          'Título predeterminado', // Título de la lista
+                      coverUrl:
+                          extraData['coverUrl'] ??
+                          'URL predeterminada', // URL de la portada
+                      items: extraData['items'] ?? [], // Elementos de la lista
+                      count: extraData['count'] ?? 0, // Cantidad de elementos
                     ),
                   );
                 },
@@ -139,7 +146,7 @@ class AppRouter {
             ],
           ),
           GoRoute(
-            path: '/reading-lists/import-list',
+            path: '/import-list',
             pageBuilder: (context, state) {
               return CustomTransitionPage(
                 key: state.pageKey,
@@ -337,14 +344,20 @@ class AppRouter {
               // Extraer datos complejos del objeto 'extra'
               final args = state.extra as Map<String, dynamic>? ?? {};
 
-              return NoTransitionPage(
+              return CustomTransitionPage(
                 key: state.pageKey,
                 child: CustomReaderComic(
                   cbzBytes: args['epubBytes'],
                   comicTitle: args['bookTitle'],
                   initialProgress: args['initialProgress'] ?? 0,
-                  comicId: int.parse(comicId), // Convertir a int
+                  comicId: int.parse(comicId),
+                  previousScreen: args['previousScreen'] ?? 'home',
                 ),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                transitionDuration: const Duration(milliseconds: 300),
               );
             },
           ),

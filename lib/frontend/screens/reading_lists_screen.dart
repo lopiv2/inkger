@@ -32,7 +32,7 @@ class ReadingListScreen extends StatelessWidget {
             child: IconButton(
               icon: const Icon(Icons.import_export),
               onPressed: () {
-                context.push("/reading-lists/import-list");
+                context.push("/import-list",);
               },
             ),
           ),

@@ -34,6 +34,11 @@ class _ImportReadingListScreenState extends State<ImportReadingListScreen> {
         TextEditingController(); // Inicializar en el constructor
   }
 
+  void init() {
+    super.initState();
+    print("hola"); // Inicializar el controlador
+  }
+
   @override
   void dispose() {
     listTitleController.dispose(); // Liberar recursos del controlador

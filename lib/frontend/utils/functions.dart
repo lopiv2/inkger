@@ -182,6 +182,7 @@ Future<void> loadComicFile(
   String comicId,
   String title,
   int progress,
+  String? previousScreen,
 ) async {
   try {
     // Mostrar indicador de carga
@@ -210,6 +211,7 @@ Future<void> loadComicFile(
         'bookTitle': title,
         'initialProgress': progress,
         'bookId': comicId,
+        'previousScreen': previousScreen,
       },
     );
   } catch (e) {

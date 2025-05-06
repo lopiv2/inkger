@@ -8,7 +8,8 @@ import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 class HoverableGridItemReadingList extends StatefulWidget {
   final dynamic item;
 
-  const HoverableGridItemReadingList({required this.item});
+  const HoverableGridItemReadingList({required this.item, Key? key})
+      : super(key: key);
 
   @override
   HoverableGridItemReadingListState createState() =>
@@ -82,7 +83,7 @@ class HoverableGridItemReadingListState
                         bottomRight: Radius.circular(16.0),
                       ),
                       child: ReadingProgressBarIndicator(
-                        value: widget.item.readingProgress?['progress'] ?? 0,
+                        value: widget.item.readingProgress?['readingProgress'] ?? 0,
                       ),
                     ),
                   ],
@@ -112,14 +113,15 @@ class HoverableGridItemReadingListState
                   context,
                   widget.item.id.toString(),
                   widget.item.title,
-                  widget.item.readingProgress!['progress'],
+                  widget.item.readingProgress!['readingProgress'],
                 );
               } else if (widget.item is Comic) {
                 loadComicFile(
                   context,
                   widget.item.id.toString(),
                   widget.item.title,
-                  widget.item.readingProgress!['progress'],
+                  widget.item.readingProgress!['readingProgress'],
+                  '/reading-lists/',
                 );
               }
             },
