@@ -101,11 +101,23 @@ abstract class AppLocalizations {
   /// **'Audiobooks'**
   String get audiobooks;
 
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
   /// No description provided for @books.
   ///
   /// In en, this message translates to:
   /// **'Books'**
   String get books;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
 
   /// No description provided for @dashboard.
   ///
@@ -142,6 +154,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'List successfully created'**
   String get listImportedSuccess;
+
+  /// No description provided for @listRenamedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'List successfully renamed'**
+  String get listRenamedSuccess;
 
   /// No description provided for @metadataUpdated.
   ///

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/reading_list_provider.dart';
 import 'package:inkger/frontend/widgets/reading_list_filter_grid.dart';
 import 'package:provider/provider.dart';
+import 'package:inkger/frontend/dialogs/create_list_dialog.dart';
 
 class ReadingListScreen extends StatelessWidget {
   const ReadingListScreen({Key? key}) : super(key: key);
@@ -20,9 +21,10 @@ class ReadingListScreen extends StatelessWidget {
             child: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                // Aquí puedes agregar la lógica para crear una nueva lista.
-                // Por ejemplo, navegar a una nueva pantalla para crear una lista.
-                debugPrint('Crear nueva lista');
+                showDialog(
+                  context: context,
+                  builder: (context) => const CreateListDialog(),
+                );
               },
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,24 +32,6 @@ class _ConvertOptionsDialogState extends State<ConvertOptionsDialog> {
       }
     }
   }
-
-  /*Future<void> _convertToCBZ() async {
-    if (_isConverting || !mounted) return;
-
-    setState(() => _isConverting = true);
-    final safeContext = context; // Guardamos el contexto ANTES de pop()
-
-    try {
-      Navigator.of(safeContext).pop(); // Cerramos el diálogo
-
-      await ComicServices.convertToCBZ(safeContext, widget.comicId);
-      await _loadComics(safeContext); // Usamos el contexto guardado
-    } finally {
-      if (mounted) {
-        setState(() => _isConverting = false);
-      }
-    }
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +85,7 @@ class _ConvertOptionsDialogState extends State<ConvertOptionsDialog> {
       actions: [
         TextButton(
           onPressed: _isConverting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
       ],
     );

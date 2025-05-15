@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/dialogs/comic_metadata_search_dialog.dart';
 import 'package:inkger/frontend/dialogs/convert_comic_options_dialog.dart';
+import 'package:inkger/frontend/dialogs/add_to_reading_list_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/comic_filter_provider.dart';
 import 'package:inkger/frontend/utils/comic_list_item.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
-import 'package:inkger/frontend/utils/filter_fields.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:inkger/frontend/widgets/comics_filters_layout.dart';
 
 enum ViewMode { simple, threeD, librarian }
 
@@ -29,6 +30,7 @@ class ComicsGrid extends StatefulWidget {
 }
 
 class _ComicsGridState extends State<ComicsGrid> {
+  int? _count;
   double _crossAxisCount = 5;
   final double _minCrossAxisCount = 5;
   final double _maxCrossAxisCount = 10;
@@ -48,10 +50,23 @@ class _ComicsGridState extends State<ComicsGrid> {
   @override
   void initState() {
     super.initState();
-    // Usar WidgetsBinding para posponer la carga después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadComics();
+      _updateComicCount();
+      final prefs = Provider.of<PreferencesProvider>(context, listen: false);
+      setState(() {
+        _crossAxisCount = prefs.preferences.defaultGridItemSize;
+      });
     });
+  }
+
+  Future<void> _updateComicCount() async {
+    final count = await CommonServices.fetchComicCount();
+    if (mounted) {
+      setState(() {
+        _count = count;
+      });
+    }
   }
 
   Future<void> _loadComics() async {
@@ -165,7 +180,6 @@ class _ComicsGridState extends State<ComicsGrid> {
   Widget build(BuildContext context) {
     final filters = Provider.of<ComicFilterProvider>(context);
     final prefs = Provider.of<PreferencesProvider>(context, listen: false);
-    _crossAxisCount = prefs.preferences.defaultGridItemSize;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -229,7 +243,11 @@ class _ComicsGridState extends State<ComicsGrid> {
               max: _maxCrossAxisCount,
               divisions: (_maxCrossAxisCount - _minCrossAxisCount).toInt(),
               label: _crossAxisCount.round().toString(),
-              onChanged: (value) => setState(() => _crossAxisCount = value),
+              onChanged: (value) {
+                setState(() {
+                  _crossAxisCount = value;
+                });
+              },
             ),
           ],
         ),
@@ -238,9 +256,8 @@ class _ComicsGridState extends State<ComicsGrid> {
         children: [
           Consumer<ComicFilterProvider>(
             builder: (context, filterProvider, child) {
-              // Solo mostrar el Wrap si hay autores o publishers seleccionados
-              if (filterProvider.isFilterMenuVisible) {
-                return FiltersLayout(context);
+              if (filters.isFilterMenuVisible) {
+                return const ComicsFiltersLayout();
               }
 
               if (filterProvider.selectedPublishers.isEmpty &&
@@ -352,7 +369,7 @@ class _ComicsGridState extends State<ComicsGrid> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Comics",
+                "Comics - (${_count.toString()})",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
@@ -518,174 +535,6 @@ class _ComicsGridState extends State<ComicsGrid> {
     }).toList();
   }
 
-  Widget FiltersLayout(BuildContext context) {
-    final filters = Provider.of<ComicFilterProvider>(context);
-    final hasActiveFilters =
-        filters.selectedWriters.isNotEmpty ||
-        filters.selectedCharacters.isNotEmpty ||
-        filters.selectedLocations.isNotEmpty ||
-        filters.selectedSeries.isNotEmpty ||
-        filters.selectedStoryArcs.isNotEmpty ||
-        filters.selectedTeams.isNotEmpty ||
-        filters.selectedPublishers.isNotEmpty;
-
-    return Visibility(
-      visible: filters.isFilterMenuVisible,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Fila de filtros activos con chips
-            if (hasActiveFilters) ...[
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text(
-                    'Filtros activos:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  // Chips de autores
-                  ...filters.selectedWriters.map((author) {
-                    return Chip(
-                      label: Text('Autor: $author'),
-                      onDeleted: () {
-                        filters.removeWriter(author);
-                      },
-                    );
-                  }),
-                  // Chips de editoriales
-                  ...filters.selectedPublishers.map((publisher) {
-                    return Chip(
-                      label: Text('Editorial: $publisher'),
-                      onDeleted: () {
-                        filters.removePublisher(publisher);
-                      },
-                    );
-                  }),
-                  // Chips de personajes
-                  ...filters.selectedCharacters.map((character) {
-                    return Chip(
-                      label: Text('Personajes: $character'),
-                      onDeleted: () {
-                        filters.removeCharacter(character);
-                      },
-                    );
-                  }),
-                  // Chips de localizaciones
-                  ...filters.selectedLocations.map((location) {
-                    return Chip(
-                      label: Text('Localizacion: $location'),
-                      onDeleted: () {
-                        filters.removeLocation(location);
-                      },
-                    );
-                  }),
-                  // Chips de equipos
-                  ...filters.selectedTeams.map((team) {
-                    return Chip(
-                      label: Text('Equipos: $team'),
-                      onDeleted: () {
-                        filters.removeTeam(team);
-                      },
-                    );
-                  }),
-                  // Chips de series
-                  ...filters.selectedSeries.map((serie) {
-                    return Chip(
-                      label: Text('Series: $serie'),
-                      onDeleted: () {
-                        filters.removeSeries(serie);
-                      },
-                    );
-                  }),
-                  // Chips de arcos de historia
-                  ...filters.selectedStoryArcs.map((storyArc) {
-                    return Chip(
-                      label: Text('Arco: $storyArc'),
-                      onDeleted: () {
-                        filters.removeStoryArc(storyArc);
-                      },
-                    );
-                  }),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // Filtros desplegables
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Columna de Autores
-                FilterFields(
-                  title: "Autor",
-                  hint: 'Selecciona autores',
-                  availableFilters: filters.availableWriters,
-                  toggle: filters.toggleWriter,
-                ),
-
-                const SizedBox(width: 32),
-
-                // Columna de Editoriales
-                FilterFields(
-                  title: "Editorial",
-                  hint: 'Selecciona Editorial',
-                  availableFilters: filters.availablePublishers,
-                  toggle: filters.togglePublisher,
-                ),
-                const SizedBox(width: 32),
-
-                // Columna de Personajes
-                FilterFields(
-                  title: "Personajes",
-                  hint: 'Selecciona personaje',
-                  availableFilters: filters.availableCharacters,
-                  toggle: filters.toggleCharacter,
-                ),
-                const SizedBox(width: 32),
-                // Columna de equipos
-                FilterFields(
-                  title: "Equipos",
-                  hint: 'Selecciona equipo',
-                  availableFilters: filters.availableTeams,
-                  toggle: filters.toggleTeam,
-                ),
-                const SizedBox(width: 32),
-                // Columna de localizaciones
-                FilterFields(
-                  title: "Localizaciones",
-                  hint: 'Selecciona localizacion',
-                  availableFilters: filters.availableLocations,
-                  toggle: filters.toggleLocation,
-                ),
-                const SizedBox(width: 32),
-                // Columna de series
-                FilterFields(
-                  title: "Series",
-                  hint: 'Selecciona serie',
-                  availableFilters: filters.availableSeries,
-                  toggle: filters.toggleSeries,
-                ),
-                const SizedBox(width: 32),
-                // Columna de Arcos
-                FilterFields(
-                  title: "Arcos",
-                  hint: 'Selecciona arco',
-                  availableFilters: filters.availableStoryArcs,
-                  toggle: filters.toggleStoryArc,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSimpleMode(
     BuildContext context,
     Comic comic,
@@ -695,6 +544,15 @@ class _ComicsGridState extends State<ComicsGrid> {
       children: [
         HoverCardComic(
           comic: comic,
+          onAddToList: () => showDialog(
+            context: context,
+            builder: (BuildContext context) => AddToReadingListDialog(
+              id: comic.id,
+              type: 'comic',
+              series: comic.series,
+              title: comic.title,
+            ),
+          ),
           onConvert: () => showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -927,7 +785,7 @@ class _ComicsGridState extends State<ComicsGrid> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancelar'),
+              child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () {
                 Navigator.of(context).pop(); // Cierra el diálogo
               },

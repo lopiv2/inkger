@@ -7,9 +7,10 @@ import 'package:inkger/frontend/models/reading_list_item.dart';
 
 class ReadingListServices {
   static Future<Response> createReadingList(Map<String, dynamic> data) async {
+
     try {
-      Response response = await ApiService.dio.post(
-        '/api/reading-list',
+      final response = await ApiService.dio.post(
+        '/api/reading-list-empty',
         data: data,
       );
       return response;
@@ -60,6 +61,7 @@ class ReadingListServices {
         // Mapear cada elemento de la lista al modelo ReadingList
         return data.map((json) {
           return ReadingList(
+            id: json['id'].toString(), // Convertir a String
             title: json['title'],
             missingTitles: json['missingItems'],
             coverUrl: json['coverUrl'],
@@ -112,6 +114,22 @@ class ReadingListServices {
       return response;
     } catch (e) {
       print('Error al eliminar la lista de lectura: $e');
+      rethrow;
+    }
+  }
+
+  static Future<void> renameReadingList(String? listId, String newName) async {
+    try {
+      final response = await ApiService.dio.put(
+        '/api/reading-lists/$listId',
+        data: {'name': newName},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al renombrar la lista: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al renombrar la lista: $e');
       rethrow;
     }
   }
@@ -180,6 +198,27 @@ class ReadingListServices {
       return response;
     } catch (e) {
       print('Error al enviar la lista de lectura: $e');
+      rethrow;
+    }
+  }
+
+  static Future<void> addItemToList(int listId, int itemId, String type, String title, String series) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/reading-lists/$listId/items',
+        data: {
+          'itemId': itemId,
+          'type': type,
+          'title': title,
+          'series': series,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al añadir el elemento a la lista: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al añadir el elemento a la lista: $e');
       rethrow;
     }
   }

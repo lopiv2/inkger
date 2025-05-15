@@ -12,7 +12,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audiobooks => 'Audiobooks';
 
   @override
+  String get accept => 'Accept';
+
+  @override
   String get books => 'Books';
+
+  @override
+  String get cancel => 'Cancel';
 
   @override
   String get dashboard => 'Dashboard';
@@ -31,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get listImportedSuccess => 'List successfully created';
+
+  @override
+  String get listRenamedSuccess => 'List successfully renamed';
 
   @override
   String get metadataUpdated => 'Updated metadata';

@@ -8,6 +8,7 @@ class HoverCardComic extends StatefulWidget {
   final VoidCallback? onDelete; // Callback para la eliminación
   final VoidCallback? onSearchMetadata; // Callback para la busqueda de metadatos
   final VoidCallback? onConvert; // Callback para la conversion de archivos
+  final VoidCallback? onAddToList; // Callback para la conversion de archivos
   final Comic comic;
 
   const HoverCardComic({
@@ -16,6 +17,7 @@ class HoverCardComic extends StatefulWidget {
     this.onDelete,
     this.onSearchMetadata,
     this.onConvert,
+    this.onAddToList,
     required this.comic,
   });
 
@@ -92,6 +94,11 @@ class _HoverCardState extends State<HoverCardComic> {
                         value: "convert",
                         child: Text("Convertir a..."),
                         onTap: () => widget.onConvert?.call(),
+                      ),
+                      PopupMenuItem(
+                        value: "add",
+                        child: Text("Añadir a lista..."),
+                        onTap: () => widget.onAddToList?.call(),
                       ),
                       PopupMenuItem(
                         value: "metadata",

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/reading_list_services.dart';
-import 'package:inkger/frontend/widgets/cover_art.dart'; // Importar CommonServices
+import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/l10n/app_localizations.dart'; // Importar CommonServices
 
 class SelectionDialog extends StatefulWidget {
   final String title;
@@ -147,7 +148,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text('Cancelar'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
       ],
     );

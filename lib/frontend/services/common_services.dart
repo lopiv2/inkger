@@ -97,6 +97,23 @@ class CommonServices {
     }
   }
 
+  static Future<int> fetchReadingListCount() async {
+    final response = await ApiService.dio.get(
+      '/api/count-lists',
+      options: Options(
+        responseType: ResponseType.json,
+        validateStatus: (status) => status! < 500,
+      ),
+    );
+    if (response.statusCode == 200) {
+      // Suponiendo que la respuesta de la API es un JSON con un campo "count"
+      return response
+          .data['count']; // Cambia 'count' por el campo correcto en la respuesta
+    } else {
+      throw Exception('Failed to load series count');
+    }
+  }
+
   static Future<int> fetchSeriesCount() async {
     final response = await ApiService.dio.get(
       '/api/count-series',

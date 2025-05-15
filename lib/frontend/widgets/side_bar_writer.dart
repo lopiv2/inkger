@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inkger/frontend/services/book_folders_service.dart';
 
 class SidebarWriter extends StatefulWidget {
   final Function(String) onItemSelected;
@@ -19,6 +20,54 @@ class _SidebarWriterState extends State<SidebarWriter> {
     'templates': false,
     'generators': false,
   };
+
+  List<Map<String, dynamic>> myBooks = [];
+
+  void _addBookFolder(String name, [List<Map<String, dynamic>>? children]) {
+    setState(() {
+      myBooks.add({
+        'name': name,
+        'children': children ?? [],
+      });
+    });
+  }
+
+  void _showAddBookDialog({List<Map<String, dynamic>>? parent}) {
+    final TextEditingController controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Crear nuevo libro/carpeta'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Nombre del libro/carpeta'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (controller.text.trim().isNotEmpty) {
+                  setState(() {
+                    (parent ?? myBooks).add({
+                      'name': controller.text.trim(),
+                      'children': <Map<String, dynamic>>[],
+                    });
+                  });
+                  await BookFoldersService.saveBooksTreeStructure(myBooks);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Crear'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +90,30 @@ class _SidebarWriterState extends State<SidebarWriter> {
                   // Título del proyecto
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'MY NOVEL',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.create_new_folder, color: Colors.grey[400], size: 18),
+                          tooltip: 'Añadir libro/carpeta',
+                          onPressed: () => _showAddBookDialog(),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'MY BOOKS',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  // TreeView de libros/carpeta
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32, top: 4, right: 8),
+                    child: _buildBooksTreeView(myBooks),
                   ),
                   const SizedBox(height: 8),
                   // Divisor
@@ -221,6 +285,79 @@ class _SidebarWriterState extends State<SidebarWriter> {
         selectedTileColor: Colors.grey[800],
         onTap: onTap,
       ),
+    );
+  }
+
+  Widget _buildBooksTreeView(List<Map<String, dynamic>> books) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: books.map((book) {
+        final children = book['children'] as List<Map<String, dynamic>>;
+        final hasChildren = children.isNotEmpty;
+        // Usar un ValueNotifier para el estado expandido
+        final expandedNotifier = ValueNotifier<bool>(book['expanded'] ?? false);
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            hasChildren
+                ? ValueListenableBuilder<bool>(
+                    valueListenable: expandedNotifier,
+                    builder: (context, expanded, _) {
+                      return IconButton(
+                        icon: Icon(
+                          expanded ? Icons.remove : Icons.add,
+                          size: 16,
+                          color: Colors.grey[400],
+                        ),
+                        tooltip: expanded ? 'Colapsar' : 'Expandir',
+                        onPressed: () {
+                          expandedNotifier.value = !expanded;
+                          book['expanded'] = expandedNotifier.value;
+                        },
+                      );
+                    },
+                  )
+                : SizedBox(width: 40),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            book['name'],
+                            style: TextStyle(color: Colors.grey[300], fontSize: 13),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.create_new_folder, size: 16, color: Colors.grey[400]),
+                          tooltip: 'Añadir subcarpeta',
+                          onPressed: () => _showAddBookDialog(parent: children),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: expandedNotifier,
+                    builder: (context, expanded, _) {
+                      if (expanded && hasChildren) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 4), // Reducido aún más
+                          child: _buildBooksTreeView(children),
+                        );
+                      }
+                      return SizedBox.shrink();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }).toList(),
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
+import 'package:inkger/frontend/dialogs/add_to_reading_list_dialog.dart';
+import 'package:inkger/frontend/dialogs/convert_ebook_options_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
@@ -12,7 +14,9 @@ import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:inkger/frontend/widgets/book_filters_layout.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +28,7 @@ class BooksGrid extends StatefulWidget {
 }
 
 class _BooksGridState extends State<BooksGrid> {
+  int? _count;
   double _crossAxisCount = 5;
   final double _minCrossAxisCount = 5;
   final double _maxCrossAxisCount = 10;
@@ -43,10 +48,24 @@ class _BooksGridState extends State<BooksGrid> {
   @override
   void initState() {
     super.initState();
-    // Usar WidgetsBinding para posponer la carga después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadBooks();
+      _updateBookCount();
+      final prefs = Provider.of<PreferencesProvider>(context, listen: false);
+      if (!mounted) return; // ⛔️ Si ya fue desmontado, salimos
+      setState(() {
+        _crossAxisCount = prefs.preferences.defaultGridItemSize;
+      });
     });
+  }
+
+  Future<void> _updateBookCount() async {
+    final count = await CommonServices.fetchBookCount();
+    if (mounted) {
+      setState(() {
+        _count = count;
+      });
+    }
   }
 
   Future<void> _loadBooks() async {
@@ -109,8 +128,7 @@ class _BooksGridState extends State<BooksGrid> {
   @override
   Widget build(BuildContext context) {
     final filters = Provider.of<BookFilterProvider>(context);
-    final prefs = Provider.of<PreferencesProvider>(context, listen: false);
-    _crossAxisCount = prefs.preferences.defaultGridItemSize;
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -183,9 +201,8 @@ class _BooksGridState extends State<BooksGrid> {
         children: [
           Consumer<BookFilterProvider>(
             builder: (context, filterProvider, child) {
-              // Solo mostrar el Wrap si hay autores o publishers seleccionados
               if (filterProvider.isFilterMenuVisible) {
-                return FiltersLayout(context);
+                return const BookFiltersLayout();
               }
 
               if (filterProvider.selectedAuthors.isEmpty &&
@@ -248,7 +265,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Libros",
+                "Libros - (${_count.toString()})",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
@@ -324,179 +341,6 @@ class _BooksGridState extends State<BooksGrid> {
     );
   }
 
-  Widget FiltersLayout(BuildContext context) {
-    final filters = Provider.of<BookFilterProvider>(context);
-    final hasActiveFilters =
-        filters.selectedAuthors.isNotEmpty ||
-        filters.selectedPublishers.isNotEmpty ||
-        filters.selectedTags.isNotEmpty;
-
-    return Visibility(
-      visible: filters.isFilterMenuVisible,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Fila de filtros activos con chips
-            if (hasActiveFilters) ...[
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text(
-                    'Filtros activos:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  // Chips de autores
-                  ...filters.selectedAuthors.map((author) {
-                    return Chip(
-                      label: Text('Autor: $author'),
-                      onDeleted: () {
-                        filters.removeAuthor(author);
-                      },
-                    );
-                  }),
-                  // Chips de editoriales
-                  ...filters.selectedPublishers.map((publisher) {
-                    return Chip(
-                      label: Text('Editorial: $publisher'),
-                      onDeleted: () {
-                        filters.removePublisher(publisher);
-                      },
-                    );
-                  }),
-                  // Chips de tags
-                  ...filters.selectedTags.map((tag) {
-                    return Chip(
-                      label: Text('Etiqueta: $tag'),
-                      onDeleted: () {
-                        filters.removeTag(tag);
-                      },
-                    );
-                  }),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // Filtros desplegables
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Columna de Autores
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Autor',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        hint: const Text('Selecciona autores'),
-                        items: filters.availableAuthors.map((author) {
-                          return DropdownMenuItem<String>(
-                            value: author,
-                            child: Text(author),
-                          );
-                        }).toList(),
-                        onChanged: (selectedAuthor) {
-                          if (selectedAuthor != null) {
-                            filters.toggleAuthor(selectedAuthor);
-                          }
-                        },
-                        value: null,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(width: 32),
-
-                // Columna de Editoriales
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Editorial',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        hint: const Text('Selecciona editoriales'),
-                        items: filters.availablePublishers.map((publisher) {
-                          return DropdownMenuItem<String>(
-                            value: publisher,
-                            child: Text(publisher),
-                          );
-                        }).toList(),
-                        onChanged: (selectedPublisher) {
-                          if (selectedPublisher != null) {
-                            filters.togglePublisher(selectedPublisher);
-                          }
-                        },
-                        value: null,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 32),
-                // Columna de etiquetas
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Etiqueta',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        hint: const Text('Selecciona etiquetas'),
-                        items: filters.availableTags.map((tag) {
-                          return DropdownMenuItem<String>(
-                            value: tag,
-                            child: Text(tag),
-                          );
-                        }).toList(),
-                        onChanged: (selectedTag) {
-                          if (selectedTag != null) {
-                            filters.toggleTag(selectedTag);
-                          }
-                        },
-                        value: null,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // Función para filtrar los libros
   List<Book> _filterBooks(List<Book> books) {
     final filters = Provider.of<BookFilterProvider>(context, listen: false);
@@ -528,6 +372,21 @@ class _BooksGridState extends State<BooksGrid> {
         HoverCardBook(
           book: book,
           onDelete: () => showDeleteConfirmationDialog(context, book),
+          onConvert: () => showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return ConvertEbookOptionsDialog(ebookId: book.id);
+            },
+          ),
+          onAddToList: () => showDialog(
+            context: context,
+            builder: (BuildContext context) => AddToReadingListDialog(
+              id: book.id,
+              type: 'book',
+              series: book.series,
+              title: book.title,
+            ),
+          ),
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0),
@@ -636,6 +495,15 @@ class _BooksGridState extends State<BooksGrid> {
           ),
           child: HoverCardBook(
             book: book,
+            onAddToList: () => showDialog(
+              context: context,
+              builder: (BuildContext context) => AddToReadingListDialog(
+                id: book.id,
+                type: 'book',
+                series: book.series,
+                title: book.title,
+              ),
+            ),
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
@@ -747,7 +615,7 @@ class _BooksGridState extends State<BooksGrid> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancelar'),
+              child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () {
                 Navigator.of(context).pop(); // Cierra el diálogo
               },

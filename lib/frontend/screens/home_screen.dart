@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? errorMessage;
 
   void toggleSidebar() {
+    if (!mounted) return;
     setState(() {
       isSidebarVisible = !isSidebarVisible;
     });
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> loadPreferences() async {
     // ignore: unused_local_variable
     final response = await CommonServices.loadSettingsToSharedPrefs();
+    if (!mounted) return;
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -182,7 +184,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text("Version 1.0", style: TextStyle(color: Colors.white),),
+                            TextButton(onPressed: () {
+                                context.go('/versions');
+                              }, child: const Text(
+                                "Version 1.0",
+                                style: TextStyle(color: Colors.white),
+                              ),)
                           ],
                         )
                   ),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/event.dart';
 import 'package:inkger/frontend/utils/event_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -36,6 +37,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
+    _selectedDay ??= _focusedDay;
     return Scaffold(
       appBar: AppBar(title: const Text('Calendario de Eventos')),
       body: Column(
@@ -190,7 +192,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                     ),
                     ElevatedButton(
                       onPressed: () {

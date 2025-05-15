@@ -51,6 +51,12 @@ class DashboardScreen extends StatelessWidget {
                       color: Colors.orange,
                       icon: Icons.collections_bookmark,
                     ),
+                    CounterWidget(
+                      title: 'Listas de lectura',
+                      fetchCount: CommonServices.fetchReadingListCount,
+                      color: Colors.red,
+                      icon: Icons.list,
+                    ),
                   ],
                 ),
                 SizedBox(height: 46),

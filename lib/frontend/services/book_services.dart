@@ -11,6 +11,22 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BookServices {
+  static Future<void> convertToFormat(int ebookId, String format) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/books/$ebookId/convert',
+        data: {'format': format},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al convertir el ebook a $format: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al convertir el ebook a $format: $e');
+      rethrow;
+    }
+  }
+
   static Future<void> deleteBook(BuildContext context, Book book) async {
     try {
       final booksProvider = Provider.of<BooksProvider>(context, listen: false);
@@ -43,7 +59,6 @@ class BookServices {
       throw Exception('Error al obtener los libros: $e');
     }
   }
-  
 
   static Future<Uint8List> getBookFile(String bookId) async {
     try {
@@ -131,7 +146,7 @@ class BookServices {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancelar'),
+              child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () {
                 Navigator.of(context).pop(); // Cierra el diálogo
               },
@@ -168,7 +183,6 @@ class BookServices {
     );
   }
 
-
   static Future<void> updateBook(Book book) async {
     try {
       final response = await ApiService.dio.put(
@@ -193,7 +207,9 @@ class BookServices {
       );
 
       if (response.statusCode == 200) {
-        return Book.fromJson(response.data); // Convierte la respuesta en un objeto Book
+        return Book.fromJson(
+          response.data,
+        ); // Convierte la respuesta en un objeto Book
       } else {
         throw Exception('Error al obtener el libro: ${response.statusCode}');
       }

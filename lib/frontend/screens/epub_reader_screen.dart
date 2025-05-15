@@ -340,7 +340,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
 
   String _resolveImagePath(String src) {
     if (src.startsWith('OEBPS/')) return src;
-    if (src.startsWith('Images/')) return 'OEBPS/$src';
+    if (src.startsWith('Images/') || src.startsWith('images/')) return src;
     if (src.startsWith('../')) return 'OEBPS/${src.substring(3)}';
     return 'OEBPS/Images/$src';
   }

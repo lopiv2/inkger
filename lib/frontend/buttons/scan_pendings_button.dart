@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
@@ -35,6 +36,7 @@ class ScanPendingFilesButton extends StatefulWidget {
 class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
   bool _isHovering = false;
   bool hasPending = false;
+  bool _isImporting = false;
   Timer? timer;
 
   @override
@@ -84,33 +86,60 @@ class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
               padding: widget.padding,
               color: widget.iconColor,
               hoverColor: widget.hoverColor ?? Colors.blue.withOpacity(0.1),
-              icon: Icon(
-                Icons.document_scanner,
-                color: _isHovering
-                    ? Theme.of(context).primaryColor
-                    : widget.iconColor,
-              ),
-              onPressed: () async {
-                await CommonServices.scanPendingFolder();
-                final prefs = await SharedPreferences.getInstance();
-                final id = prefs.getInt('id');
-                if (!mounted) return;
-                final provider = Provider.of<ComicsProvider>(
-                  context,
-                  listen: false,
-                );
-                setState(() {
-                  hasPending = false;
-                });
-                context.go('/comics');
-                await provider.loadcomics(id ?? 0); // Espera a que se completen
-                CustomSnackBar.show(
-                  context,
-                  AppLocalizations.of(context)!.filesImportedSuccess,
-                  Colors.green,
-                  duration: Duration(seconds: 4),
-                );
-              },
+              icon: _isImporting
+                  ? SizedBox(
+                      width: widget.iconSize,
+                      height: widget.iconSize,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.document_scanner,
+                      color: _isHovering
+                          ? Theme.of(context).primaryColor
+                          : widget.iconColor,
+                    ),
+              onPressed: _isImporting
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isImporting = true;
+                      });
+                      final start = DateTime.now();
+                      await CommonServices.scanPendingFolder();
+                      final prefs = await SharedPreferences.getInstance();
+                      final id = prefs.getInt('id');
+                      if (!mounted) return;
+                      final provider = Provider.of<ComicsProvider>(
+                        context,
+                        listen: false,
+                      );
+                      final providerBooks = Provider.of<BooksProvider>(
+                        context,
+                        listen: false,
+                      );
+                      setState(() {
+                        hasPending = false;
+                      });
+                      CustomSnackBar.show(
+                        context,
+                        AppLocalizations.of(context)!.filesImportedSuccess,
+                        Colors.green,
+                        duration: Duration(seconds: 4),
+                      );
+                      context.go('/comics');
+                      await provider.loadcomics(id ?? 0);
+                      await providerBooks.loadBooks(id ?? 0);
+                      final elapsed = DateTime.now().difference(start);
+                      final remaining = Duration(seconds: 5) - elapsed;
+                      if (remaining > Duration.zero) {
+                        await Future.delayed(remaining);
+                      }
+                      if (mounted) {
+                        setState(() {
+                          _isImporting = false;
+                        });
+                      }
+                    },
             ),
             if (hasPending)
               Positioned(

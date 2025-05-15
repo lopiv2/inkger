@@ -6,6 +6,7 @@ import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -179,7 +180,7 @@ class _FileImportDialogState extends State<FileImportDialog> {
       actions: [
         TextButton(
           onPressed: uploading ? null : () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: uploading ? null : _uploadFile,

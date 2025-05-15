@@ -94,8 +94,9 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
               itemBuilder: (context, index) {
                 final list = filteredLists[index];
                 return _buildReadingListCard(
+                  list.id,
                   list.title,
-                  list.coverUrl!,
+                  list.coverUrl ?? '',
                   list.items.length,
                   list.items,
                 );
@@ -143,6 +144,7 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
   }
 
   Widget _buildReadingListCard(
+    String? id,
     String title,
     String coverUrl,
     int count,
@@ -165,6 +167,7 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
           final itemCovers = snapshot.data ?? [];
           return Card(
             elevation: 4,
+            margin: const EdgeInsets.all(8), // Asegurar que la propiedad margin esté definida
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -174,6 +177,7 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
                 context.push(
                   '/reading-lists/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
                   extra: {
+                    'id': id,
                     'title': title,
                     'coverUrl': coverUrl,
                     'count': count,

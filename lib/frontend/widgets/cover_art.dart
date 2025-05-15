@@ -5,13 +5,18 @@ import 'package:inkger/frontend/services/common_services.dart';
 
 Widget buildCoverImage(String? coverPath, {bool calculateColor = false}) {
   return FutureBuilder<Uint8List?>(
-    future: coverPath != null ? CommonServices.getCover(coverPath) : null,
+    future: coverPath != null && coverPath.isNotEmpty 
+        ? CommonServices.getCover(coverPath) 
+        : Future.value(null),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return Center(child: CircularProgressIndicator());
       }
       if (snapshot.hasError || !snapshot.hasData) {
-        return Center(child: Icon(Icons.broken_image, size: 50));
+        return FittedBox(
+          fit: BoxFit.contain,
+          child: Image.asset('assets/images/noImage.png', fit: BoxFit.contain),
+        );
       }
 
       return FittedBox(

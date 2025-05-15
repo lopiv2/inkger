@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/comic.dart';
+import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/models/reading_list_item.dart';
+import 'package:inkger/frontend/services/reading_list_services.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_grid_item_reading_list.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// ignore: must_be_immutable
 class ReadingListDetailScreen extends StatefulWidget {
-  final String title;
+  String? id;
+  String title;
   final String? coverUrl;
   final List<dynamic> items; // Lista de IDs de los elementos
   final int count; // Cantidad de elementos
 
-  const ReadingListDetailScreen({
+  ReadingListDetailScreen({
     Key? key,
+    this.id,
     required this.title,
     this.coverUrl,
     required this.items,
@@ -34,7 +42,7 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadComics();
+      _loadComicsAndBooks();
     });
   }
 
@@ -42,28 +50,38 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Recargar los datos al volver a la página
-    _loadComics();
+    _loadComicsAndBooks();
   }
 
-  Future<void> _loadComics() async {
-    final provider = Provider.of<ComicsProvider>(context, listen: false);
+  Future<void> _loadComicsAndBooks() async {
+    final comicProvider = Provider.of<ComicsProvider>(context, listen: false);
+    final bookProvider = Provider.of<BooksProvider>(context, listen: false);
     final prefs = await SharedPreferences.getInstance();
 
     // Campos requeridos
     final userId = prefs.getInt('id');
-    await provider.loadcomics(userId ?? 0);
+    await comicProvider.loadcomics(userId ?? 0);
+    await bookProvider.loadBooks(userId ?? 0);
 
-    // Obtener los cómics cargados
-    final comics = provider.comics;
+    // Obtener los cómics y libros cargados
+    final comics = comicProvider.comics;
+    final books = bookProvider.books;
 
     // Filtrar y obtener la información completa de los elementos
     final matchingItems = widget.items
         .map((item) {
-          if (item is ReadingListItem && item.type == 'comic') {
-            return comics.firstWhere(
-              (comic) => comic.id.toString() == item.itemId,
-              orElse: () => Comic.empty(),
-            );
+          if (item is ReadingListItem) {
+            if (item.type == 'comic') {
+              return comics.firstWhere(
+                (comic) => comic.id.toString() == item.itemId,
+                orElse: () => Comic.empty(),
+              );
+            } else if (item.type == 'book') {
+              return books.firstWhere(
+                (book) => book.id.toString() == item.itemId,
+                orElse: () => Book.empty(),
+              );
+            }
           }
           return null;
         })
@@ -154,24 +172,83 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
           Positioned(
             bottom: 20,
             left: 20,
-            child: Text(
-              widget.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(
-                    blurRadius: 10,
-                    color: Colors.black,
-                    offset: Offset(0, 2),
+            child: Row(
+              children: [
+                Text(
+                  widget.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 10,
+                        color: Colors.black,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.white),
+                  onPressed: () {
+                    // Lógica para editar el nombre de la lista
+                    _editListTitle();
+                  },
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _editListTitle() {
+    // Implementar la lógica para editar el título de la lista
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController controller = TextEditingController(text: widget.title);
+        return AlertDialog(
+          title: const Text('Editar título de la lista'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Nuevo título'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                ReadingListServices.renameReadingList(
+                  widget.id,
+                  controller.text,
+                ).then((_) {
+                  // Actualizar el título en la interfaz
+                  setState(() {
+                    widget.title = controller.text;
+                  });
+                  CustomSnackBar.show(
+                  context,
+                  AppLocalizations.of(context)!.listRenamedSuccess,
+                  Colors.green,
+                  duration: Duration(seconds: 4),
+                );
+                }).catchError((error) {
+                  // Manejar errores si es necesario
+                  print('Error al renombrar la lista: $error');
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
     );
   }
 

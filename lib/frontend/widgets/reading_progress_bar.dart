@@ -19,13 +19,20 @@ class ReadingProgressBarIndicator extends StatelessWidget {
             Theme.of(context).primaryColor,
           ),
         ),
+        value>=50 ?
         Text(
+          '${value.toStringAsFixed(1)}%', // Mostrar el progreso con un decimal
+          style: TextStyle(
+            color: Theme.of(context).secondaryHeaderColor, // Cambiar el color según el diseño
+            fontWeight: FontWeight.bold,
+          ),
+        ) : Text(
           '${value.toStringAsFixed(1)}%', // Mostrar el progreso con un decimal
           style: TextStyle(
             color: Theme.of(context).primaryColor, // Cambiar el color según el diseño
             fontWeight: FontWeight.bold,
           ),
-        ),
+        )
       ],
     );
   }

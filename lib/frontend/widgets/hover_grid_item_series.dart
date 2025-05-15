@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
+import 'package:inkger/frontend/dialogs/comic_details_dialog.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
@@ -82,7 +83,9 @@ class HoverableGridItemState extends State<HoverableGridItem> {
                         bottomRight: Radius.circular(16.0),
                       ),
                       child: ReadingProgressBarIndicator(
-                        value: widget.item.readingProgress?['progress'] ?? 0,
+                        value:
+                            widget.item.readingProgress?['readingProgress'] ??
+                            0,
                       ),
                     ),
                   ],
@@ -191,7 +194,8 @@ class HoverableGridItemState extends State<HoverableGridItem> {
                       context,
                       widget.item.id.toString(),
                       widget.item.title,
-                      widget.item.readingProgress!['readingProgress'],''
+                      widget.item.readingProgress!['readingProgress'],
+                      '',
                     );
             },
             icon: Icon(widget.isBook ? Icons.menu_book : Icons.photo_library),
@@ -229,6 +233,10 @@ class HoverableGridItemState extends State<HoverableGridItem> {
   }
 
   void _editItem() {
-    showBookDetailsDialog(context, widget.item);
+    if (widget.isBook) {
+      showBookDetailsDialog(context, widget.item);
+    } else {
+      showComicDetailsDialog(context, widget.item);
+    }
   }
 }

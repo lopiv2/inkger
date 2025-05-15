@@ -19,6 +19,7 @@ import 'package:inkger/frontend/widgets/book_grid.dart';
 import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/widgets/comic_grid.dart';
+import 'package:inkger/frontend/screens/versions_screen.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
@@ -131,6 +132,7 @@ class AppRouter {
                   return NoTransitionPage(
                     key: state.pageKey,
                     child: ReadingListDetailScreen(
+                      id: extraData['id'] ?? '', // Título de la lista
                       title:
                           extraData['title'] ??
                           'Título predeterminado', // Título de la lista
@@ -144,6 +146,36 @@ class AppRouter {
                 },
               ),
             ],
+          ),
+          GoRoute(
+            path: '/versions',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: VersionsScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(
+                        1.0,
+                        0.0,
+                      ); // Comienza fuera de la pantalla a la derecha
+                      const end = Offset.zero; // Llega al centro de la pantalla
+                      const curve = Curves.easeInOut;
+
+                      var tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      var offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
           ),
           GoRoute(
             path: '/import-list',

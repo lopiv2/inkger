@@ -21,11 +21,7 @@ class _ImportFileState extends State<ImportFile> {
     if (mounted) {
       showDialog(
         context: context,
-        builder:
-            (context) => FileImportDialog(
-              initType: fileType,
-              file: file,
-            ),
+        builder: (context) => FileImportDialog(initType: fileType, file: file),
       );
     }
   }
@@ -53,7 +49,7 @@ class _ImportFileState extends State<ImportFile> {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: ['epub', 'cbz', 'cbr', 'mp3', 'm4a', 'pdf'],
+      allowedExtensions: ['mobi', 'epub', 'cbz', 'cbr', 'mp3', 'm4a', 'pdf'],
     );
 
     if (result != null) {
@@ -84,7 +80,7 @@ class _ImportFileState extends State<ImportFile> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             Text(
-              '(Formatos soportados: EPUB, CBZ, CBR, MP3, M4A, PDF)',
+              '(Formatos soportados: EPUB, MOBI, AZW3, CBZ, CBR, MP3, M4A, PDF)',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
