@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/book_folders_service.dart';
+import 'package:animated_tree_view/animated_tree_view.dart';
+import 'dart:html' as html;
+import 'package:inkger/frontend/widgets/folder_tree_node.dart';
 
 class SidebarWriter extends StatefulWidget {
   final Function(String) onItemSelected;
@@ -23,13 +26,27 @@ class _SidebarWriterState extends State<SidebarWriter> {
 
   List<Map<String, dynamic>> myBooks = [];
 
-  void _addBookFolder(String name, [List<Map<String, dynamic>>? children]) {
-    setState(() {
-      myBooks.add({
-        'name': name,
-        'children': children ?? [],
+  @override
+  void initState() {
+    super.initState();
+    _loadBooksTree();
+    // Prevenir el menú contextual nativo en web solo si estamos en web
+    // ignore: undefined_prefixed_name
+    if (identical(0, 0.0)) {
+      // Solo se ejecuta en web
+      html.document.onContextMenu.listen((event) => event.preventDefault());
+    }
+  }
+
+  Future<void> _loadBooksTree() async {
+    try {
+      final tree = await BookFoldersService.fetchBooksTreeStructure();
+      setState(() {
+        myBooks = tree;
       });
-    });
+    } catch (e) {
+      // Puedes mostrar un error si lo deseas
+    }
   }
 
   void _showAddBookDialog({List<Map<String, dynamic>>? parent}) {
@@ -51,13 +68,15 @@ class _SidebarWriterState extends State<SidebarWriter> {
             TextButton(
               onPressed: () async {
                 if (controller.text.trim().isNotEmpty) {
+                  final newNode = {
+                    'name': controller.text.trim(),
+                    'children': <Map<String, dynamic>>[],
+                    'icon': 'book',
+                  };
                   setState(() {
-                    (parent ?? myBooks).add({
-                      'name': controller.text.trim(),
-                      'children': <Map<String, dynamic>>[],
-                    });
+                    (parent ?? myBooks).add(newNode);
                   });
-                  await BookFoldersService.saveBooksTreeStructure(myBooks);
+                  await BookFoldersService.saveBooksFolderNode(newNode);
                   Navigator.of(context).pop();
                 }
               },
@@ -113,7 +132,10 @@ class _SidebarWriterState extends State<SidebarWriter> {
                   // TreeView de libros/carpeta
                   Padding(
                     padding: const EdgeInsets.only(left: 32, top: 4, right: 8),
-                    child: _buildBooksTreeView(myBooks),
+                    child: SizedBox(
+                      height: 300, // O usa Expanded si quieres que ocupe todo el espacio disponible
+                      child: _buildBooksTreeView(myBooks),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   // Divisor
@@ -289,75 +311,67 @@ class _SidebarWriterState extends State<SidebarWriter> {
   }
 
   Widget _buildBooksTreeView(List<Map<String, dynamic>> books) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: books.map((book) {
-        final children = book['children'] as List<Map<String, dynamic>>;
-        final hasChildren = children.isNotEmpty;
-        // Usar un ValueNotifier para el estado expandido
-        final expandedNotifier = ValueNotifier<bool>(book['expanded'] ?? false);
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            hasChildren
-                ? ValueListenableBuilder<bool>(
-                    valueListenable: expandedNotifier,
-                    builder: (context, expanded, _) {
-                      return IconButton(
-                        icon: Icon(
-                          expanded ? Icons.remove : Icons.add,
-                          size: 16,
-                          color: Colors.grey[400],
-                        ),
-                        tooltip: expanded ? 'Colapsar' : 'Expandir',
-                        onPressed: () {
-                          expandedNotifier.value = !expanded;
-                          book['expanded'] = expandedNotifier.value;
-                        },
-                      );
-                    },
-                  )
-                : SizedBox(width: 40),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            book['name'],
-                            style: TextStyle(color: Colors.grey[300], fontSize: 13),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.create_new_folder, size: 16, color: Colors.grey[400]),
-                          tooltip: 'Añadir subcarpeta',
-                          onPressed: () => _showAddBookDialog(parent: children),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: expandedNotifier,
-                    builder: (context, expanded, _) {
-                      if (expanded && hasChildren) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 4), // Reducido aún más
-                          child: _buildBooksTreeView(children),
-                        );
-                      }
-                      return SizedBox.shrink();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      }).toList(),
+    final root = TreeNode.root();
+    for (final book in books) {
+      root.add(_mapToTreeNode(book));
+    }
+    return TreeView.simple(
+      tree: root,
+      showRootNode: false,
+      expansionIndicatorBuilder: (context, node) =>
+          ChevronIndicator.rightDown(
+            tree: node,
+            color: Colors.blue[700],
+            padding: const EdgeInsets.all(8),
+          ),
+      indentation: const Indentation(style: IndentStyle.roundJoint, width: 8),
+      onItemTap: (item) {
+        // Aquí puedes manejar la selección del nodo si lo deseas
+      },
+      builder: (context, node) => FolderTreeNode(
+        node: node,
+        root: root,
+        onNodeChanged: () async {
+          setState(() {
+            myBooks = _treeNodeToList(root);
+          });
+          // Guardar solo el nodo recién creado si es nuevo
+          if (node.data['isNew'] == true) {
+            await BookFoldersService.saveBooksFolderNode({
+              'name': node.data['name'],
+              'icon': node.data['icon'] ?? 'folder',
+              'children': [],
+            }, parentId: (node.parent is TreeNode) ? (node.parent as TreeNode).data['id'] : null);
+            node.data.remove('isNew'); // Elimina la marca de nuevo
+          }
+          // Si quieres guardar el árbol completo, descomenta la siguiente línea:
+          // await BookFoldersService.saveBooksTreeStructure(myBooks);
+        },
+      ),
     );
+  }
+
+  TreeNode _mapToTreeNode(Map<String, dynamic> book) {
+    final node = TreeNode(
+      key: UniqueKey().toString(),
+      data: {'name': book['name'], 'icon': book['icon'] ?? 'folder'},
+    );
+    if (book['children'] != null && book['children'] is List) {
+      for (final child in book['children']) {
+        node.add(_mapToTreeNode(child));
+      }
+    }
+    return node;
+  }
+
+  List<Map<String, dynamic>> _treeNodeToList(TreeNode node) {
+    return node.children.values.map<Map<String, dynamic>>((child) {
+      final treeNode = child as TreeNode;
+      return {
+        'name': treeNode.data['name'],
+        'icon': treeNode.data['icon'] ?? 'folder',
+        'children': _treeNodeToList(treeNode),
+      };
+    }).toList();
   }
 }
