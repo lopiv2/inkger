@@ -42,10 +42,11 @@ class _SidebarWriterState extends State<SidebarWriter> {
     try {
       final tree = await BookFoldersService.fetchBooksTreeStructure();
       setState(() {
-        myBooks = tree;
+        myBooks = tree; // Actualiza la estructura de datos
       });
-    } catch (e) {
-      // Puedes mostrar un error si lo deseas
+        } catch (e) {
+      print('Error al cargar la estructura de libros: $e');
+      // Opcional: Mostrar un mensaje de error al usuario
     }
   }
 
@@ -58,7 +59,9 @@ class _SidebarWriterState extends State<SidebarWriter> {
           title: const Text('Crear nuevo libro/carpeta'),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(hintText: 'Nombre del libro/carpeta'),
+            decoration: const InputDecoration(
+              hintText: 'Nombre del libro/carpeta',
+            ),
           ),
           actions: [
             TextButton(
@@ -68,15 +71,23 @@ class _SidebarWriterState extends State<SidebarWriter> {
             TextButton(
               onPressed: () async {
                 if (controller.text.trim().isNotEmpty) {
+                  final generatedId =
+                      'book_${DateTime.now().millisecondsSinceEpoch}'; // Generar ID único
                   final newNode = {
+                    'key': generatedId, // Usar el ID generado
                     'name': controller.text.trim(),
                     'children': <Map<String, dynamic>>[],
                     'icon': 'book',
                   };
+
+                  // Añadir el nuevo nodo al árbol en memoria
                   setState(() {
                     (parent ?? myBooks).add(newNode);
                   });
-                  await BookFoldersService.saveBooksFolderNode(newNode);
+
+                  // Guardar la estructura completa del árbol
+                  await BookFoldersService.saveBooksTreeStructure(myBooks);
+
                   Navigator.of(context).pop();
                 }
               },
@@ -112,7 +123,11 @@ class _SidebarWriterState extends State<SidebarWriter> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.create_new_folder, color: Colors.grey[400], size: 18),
+                          icon: Icon(
+                            Icons.create_new_folder,
+                            color: Colors.grey[400],
+                            size: 18,
+                          ),
                           tooltip: 'Añadir libro/carpeta',
                           onPressed: () => _showAddBookDialog(),
                         ),
@@ -133,86 +148,13 @@ class _SidebarWriterState extends State<SidebarWriter> {
                   Padding(
                     padding: const EdgeInsets.only(left: 32, top: 4, right: 8),
                     child: SizedBox(
-                      height: 300, // O usa Expanded si quieres que ocupe todo el espacio disponible
+                      height:
+                          300, // O usa Expanded si quieres que ocupe todo el espacio disponible
                       child: _buildBooksTreeView(myBooks),
                     ),
                   ),
                   const SizedBox(height: 8),
                   // Divisor
-                  Container(height: 1, color: Colors.grey[700]),
-                  const SizedBox(height: 8),
-                  // Sección: DRAFTS (Ejemplo)
-                  _buildTreeSection(
-                    title: 'DRAFTS',
-                    icon: Icons.description,
-                    sectionKey: 'drafts',
-                    children: [
-                      _buildTreeItem(
-                        title: 'Manuscript',
-                        level: 1,
-                        isSelected: true,
-                        onTap: () => widget.onItemSelected('manuscript'),
-                      ),
-                      _buildTreeItem(
-                        title: 'Chapter 1',
-                        level: 2,
-                        onTap: () => widget.onItemSelected('chapter1'),
-                      ),
-                      _buildTreeItem(
-                        title: 'Chapter 2',
-                        level: 2,
-                        onTap: () => widget.onItemSelected('chapter2'),
-                      ),
-                      _buildTreeItem(
-                        title: 'Outline',
-                        level: 1,
-                        onTap: () => widget.onItemSelected('outline'),
-                      ),
-                      _buildTreeItem(
-                        title: 'Character Sketches',
-                        level: 1,
-                        onTap: () => widget.onItemSelected('characters'),
-                      ),
-                    ],
-                  ),
-                  // Sección: RESEARCH
-                  _buildTreeSection(
-                    title: 'RESEARCH',
-                    icon: Icons.search,
-                    sectionKey: 'research',
-                    children: [
-                      _buildTreeItem(
-                        title: 'World Building',
-                        level: 1,
-                        onTap: () => widget.onItemSelected('worldbuilding'),
-                      ),
-                      _buildTreeItem(
-                        title: 'Historical Notes',
-                        level: 1,
-                        onTap: () => widget.onItemSelected('history'),
-                      ),
-                    ],
-                  ),
-                  // Sección: TEMPLATES
-                  _buildTreeSection(
-                    title: 'TEMPLATES',
-                    icon: Icons.copy,
-                    sectionKey: 'templates',
-                    children: [
-                      _buildTreeItem(
-                        title: 'Chapter Template',
-                        level: 1,
-                        onTap: () => widget.onItemSelected('chapter_template'),
-                      ),
-                      _buildTreeItem(
-                        title: 'Scene Template',
-                        level: 1,
-                        onTap: () => widget.onItemSelected('scene_template'),
-                      ),
-                    ],
-                  ),
-                  // Espaciado para evitar que el contenido se solape con la zona fija
-                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -313,54 +255,63 @@ class _SidebarWriterState extends State<SidebarWriter> {
   Widget _buildBooksTreeView(List<Map<String, dynamic>> books) {
     final root = TreeNode.root();
     for (final book in books) {
-      root.add(_mapToTreeNode(book));
+      root.add(_mapToTreeNode(book)); // Convierte cada elemento en un nodo
     }
     return TreeView.simple(
       tree: root,
       showRootNode: false,
-      expansionIndicatorBuilder: (context, node) =>
-          ChevronIndicator.rightDown(
-            tree: node,
-            color: Colors.blue[700],
-            padding: const EdgeInsets.all(8),
-          ),
+      expansionIndicatorBuilder: (context, node) => ChevronIndicator.rightDown(
+        tree: node,
+        color: Colors.blue[700],
+        padding: const EdgeInsets.all(8),
+      ),
       indentation: const Indentation(style: IndentStyle.roundJoint, width: 8),
       onItemTap: (item) {
-        // Aquí puedes manejar la selección del nodo si lo deseas
+        print(item.data); // Imprimir los datos del nodo seleccionado
       },
       builder: (context, node) => FolderTreeNode(
         node: node,
         root: root,
         onNodeChanged: () async {
           setState(() {
-            myBooks = _treeNodeToList(root);
+            myBooks = _treeNodeToList(root); // Reconstruir la estructura
           });
-          // Guardar solo el nodo recién creado si es nuevo
-          if (node.data['isNew'] == true) {
-            await BookFoldersService.saveBooksFolderNode({
-              'name': node.data['name'],
-              'icon': node.data['icon'] ?? 'folder',
-              'children': [],
-            }, parentId: (node.parent is TreeNode) ? (node.parent as TreeNode).data['id'] : null);
-            node.data.remove('isNew'); // Elimina la marca de nuevo
-          }
-          // Si quieres guardar el árbol completo, descomenta la siguiente línea:
-          // await BookFoldersService.saveBooksTreeStructure(myBooks);
+          await BookFoldersService.saveBooksTreeStructure(myBooks);
+        },
+        onNodeDeleted: () async {
+          final nodeToDelete = node;
+          setState(() {
+            root.remove(nodeToDelete); // Eliminar el nodo del árbol
+            myBooks = _treeNodeToList(root); // Reconstruir la estructura
+          });
+          await BookFoldersService.saveBooksTreeStructure(myBooks);
         },
       ),
     );
   }
 
   TreeNode _mapToTreeNode(Map<String, dynamic> book) {
+    // Verifica que el nodo tenga las claves necesarias
+    if (!book.containsKey('key') || !book.containsKey('name')) {
+      throw Exception('Faltan claves necesarias en el nodo: $book');
+    }
+
     final node = TreeNode(
       key: UniqueKey().toString(),
-      data: {'name': book['name'], 'icon': book['icon'] ?? 'folder'},
+      data: {
+        'key': book['key'], // Asegurarse de incluir el ID
+        'name': book['name'],
+        'icon': book['icon'] ?? 'folder',
+      },
     );
+
+    // Procesa los hijos recursivamente si existen
     if (book['children'] != null && book['children'] is List) {
       for (final child in book['children']) {
         node.add(_mapToTreeNode(child));
       }
     }
+
     return node;
   }
 
@@ -368,6 +319,7 @@ class _SidebarWriterState extends State<SidebarWriter> {
     return node.children.values.map<Map<String, dynamic>>((child) {
       final treeNode = child as TreeNode;
       return {
+        'key': treeNode.data['key'], // Asegurarse de incluir el ID
         'name': treeNode.data['name'],
         'icon': treeNode.data['icon'] ?? 'folder',
         'children': _treeNodeToList(treeNode),

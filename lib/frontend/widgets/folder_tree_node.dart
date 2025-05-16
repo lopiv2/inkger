@@ -6,13 +6,74 @@ class FolderTreeNode extends StatelessWidget {
   final TreeNode node;
   final TreeNode root;
   final Future<void> Function() onNodeChanged;
+  final Future<void> Function() onNodeDeleted;
 
   const FolderTreeNode({
     Key? key,
     required this.node,
     required this.root,
     required this.onNodeChanged,
+    required this.onNodeDeleted,
   }) : super(key: key);
+
+  Future<void> _addNode({
+    required BuildContext context,
+    required String title,
+    required String idPrefix,
+    required String icon,
+  }) async {
+    final TextEditingController controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(hintText: 'Nombre de $title'.toLowerCase()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (controller.text.trim().isNotEmpty) {
+                  Navigator.of(context).pop(controller.text.trim());
+                }
+              },
+              child: const Text('Crear'),
+            ),
+          ],
+        );
+      },
+    );
+    if (result != null && result.isNotEmpty) {
+      final generatedId = '${idPrefix}_${DateTime.now().millisecondsSinceEpoch}'; // Generar ID único
+      final newNode = TreeNode(key: generatedId, data: {
+        'key': generatedId,
+        'name': result,
+        'icon': icon,
+        'parentId': node.data['key'], // Usar el key del nodo padre
+        'children': []
+      });
+      node.add(newNode);
+      await onNodeChanged();
+      await BookFoldersService.saveBooksTreeStructure(
+        root.children.values.map((child) {
+          final treeNode = child as TreeNode;
+          return {
+            'key': treeNode.data['key'],
+            'name': treeNode.data['name'],
+            'icon': treeNode.data['icon'] ?? 'folder',
+            'children': _treeNodeToList(treeNode),
+          };
+        }).toList(),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,119 +111,19 @@ class FolderTreeNode extends StatelessWidget {
           ],
         );
         if (selected == 'add_folder') {
-          final TextEditingController controller = TextEditingController();
-          final result = await showDialog<String>(
+          await _addNode(
             context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Nombre de la nueva carpeta'),
-                content: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(hintText: 'Nombre de la carpeta'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      if (controller.text.trim().isNotEmpty) {
-                        Navigator.of(context).pop(controller.text.trim());
-                      }
-                    },
-                    child: const Text('Crear'),
-                  ),
-                ],
-              );
-            },
+            title: 'Nueva Carpeta',
+            idPrefix: 'item',
+            icon: 'folder',
           );
-          if (result != null && result.isNotEmpty) {
-            // Guardar el nodo en la base de datos y obtener el id real
-            final saved = await BookFoldersService.saveBooksFolderNode({
-              'name': result,
-              'icon': 'folder',
-              'children': [],
-            }, parentId: node.data['id']);
-            final newNodeId = saved?['data']?['id'];
-            // Añadir el nuevo nodo al árbol en memoria con el id real
-            final newNode = TreeNode(key: UniqueKey().toString(), data: {
-              'id': newNodeId,
-              'name': result,
-              'icon': 'folder',
-              'children': []
-            });
-            node.add(newNode);
-            await onNodeChanged();
-            await BookFoldersService.saveBooksTreeStructure(
-              root.children.values.map((child) {
-                final treeNode = child as TreeNode;
-                return {
-                  'name': treeNode.data['name'],
-                  'icon': treeNode.data['icon'] ?? 'folder',
-                  'children': _treeNodeToList(treeNode),
-                };
-              }).toList(),
-            );
-          }
         } else if (selected == 'add_doc') {
-          final TextEditingController controller = TextEditingController();
-          final result = await showDialog<String>(
+          await _addNode(
             context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Nombre del nuevo documento'),
-                content: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(hintText: 'Nombre del documento'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      if (controller.text.trim().isNotEmpty) {
-                        Navigator.of(context).pop(controller.text.trim());
-                      }
-                    },
-                    child: const Text('Crear'),
-                  ),
-                ],
-              );
-            },
+            title: 'Nuevo Documento',
+            idPrefix: 'doc',
+            icon: 'doc',
           );
-          if (result != null && result.isNotEmpty) {
-            // Guardar el nodo en la base de datos y obtener el id real
-            final saved = await BookFoldersService.saveBooksFolderNode({
-              'name': result,
-              'icon': 'doc',
-              'children': [],
-            }, parentId: node.data['id']);
-            final newNodeId = saved?['data']?['id'];
-            // Añadir el nuevo nodo al árbol en memoria con el id real
-            final newNode = TreeNode(key: UniqueKey().toString(), data: {
-              'id': newNodeId,
-              'name': result,
-              'icon': 'doc',
-              'children': []
-            });
-            node.add(newNode);
-            await onNodeChanged();
-            await BookFoldersService.saveBooksTreeStructure(
-              root.children.values.map((child) {
-                final treeNode = child as TreeNode;
-                return {
-                  'name': treeNode.data['name'],
-                  'icon': treeNode.data['icon'] ?? 'folder',
-                  'children': _treeNodeToList(treeNode),
-                };
-              }).toList(),
-            );
-          }
         } else if (selected == 'rename') {
           final TextEditingController controller = TextEditingController(text: node.data['name'] ?? '');
           final result = await showDialog<String>(
@@ -198,37 +159,11 @@ class FolderTreeNode extends StatelessWidget {
           }
         } else if (selected == 'delete') {
           if (node.parent != null) {
-            // Eliminar en la base de datos antes de quitar del árbol
-            if (node.data['id'] == null) {
-              // Buscar el id real tras guardar el árbol (si no está en memoria)
-              await BookFoldersService.saveBooksTreeStructure(
-                root.children.values.map((child) {
-                  final treeNode = child as TreeNode;
-                  return {
-                    'name': treeNode.data['name'],
-                    'icon': treeNode.data['icon'] ?? 'folder',
-                    'children': _treeNodeToList(treeNode),
-                  };
-                }).toList(),
-              );
-              // Aquí podrías recargar el árbol y buscar el nodo por nombre/icono para obtener el id real
-              // Pero lo ideal es que el id se asigne al crear el nodo
-            }
-            if (node.data['id'] != null) {
-              await BookFoldersService.deleteBooksFolderNode(node.data['id']);
+            if (node.data['key'] != null) {
+              await BookFoldersService.deleteBooksFolderNode(node.data['key']);
             }
             node.parent!.remove(node);
-            await onNodeChanged();
-            await BookFoldersService.saveBooksTreeStructure(
-              root.children.values.map((child) {
-                final treeNode = child as TreeNode;
-                return {
-                  'name': treeNode.data['name'],
-                  'icon': treeNode.data['icon'] ?? 'folder',
-                  'children': _treeNodeToList(treeNode),
-                };
-              }).toList(),
-            );
+            await onNodeDeleted();
           }
         } else if (selected == 'icon') {
           final icons = [
@@ -300,9 +235,10 @@ class FolderTreeNode extends StatelessWidget {
     return node.children.values.map<Map<String, dynamic>>((child) {
       final treeNode = child as TreeNode;
       return {
+        'key': treeNode.data['key'], // Asegúrate de incluir el key aquí
         'name': treeNode.data['name'],
         'icon': treeNode.data['icon'] ?? 'folder',
-        'children': _treeNodeToList(treeNode),
+        'children': _treeNodeToList(treeNode), // Recursivamente incluir los hijos
       };
     }).toList();
   }

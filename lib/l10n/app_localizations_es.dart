@@ -30,7 +30,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get edit => 'Editar';
 
   @override
-  String get filesImportedSuccess => 'Nuevos archivos importados satisfactoriamente';
+  String get filesImportedSuccess =>
+      'Nuevos archivos importados satisfactoriamente';
 
   @override
   String get listImportedError => 'Error al crear la lista';
