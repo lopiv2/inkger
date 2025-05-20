@@ -265,7 +265,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Libros - (${_count.toString()})",
+                "${AppLocalizations.of(context)!.books} - (${_count.toString()})",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
@@ -378,6 +378,19 @@ class _BooksGridState extends State<BooksGrid> {
               return ConvertEbookOptionsDialog(ebookId: book.id);
             },
           ),
+          onDownload: () async {
+            final filePath = book.filePath;
+            String extension = '';
+            if (filePath != null && filePath.contains('.')) {
+              extension = filePath.substring(filePath.lastIndexOf('.'));
+            }
+            await CommonServices.downloadFile(
+              book.id,
+              book.title,
+              extension,
+              "book",
+            );
+          },
           onAddToList: () => showDialog(
             context: context,
             builder: (BuildContext context) => AddToReadingListDialog(

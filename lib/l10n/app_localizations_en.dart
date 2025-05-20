@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audiobooks => 'Audiobooks';
 
   @override
+  String get author => 'Author';
+
+  @override
   String get accept => 'Accept';
 
   @override
@@ -21,7 +24,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get calendar => 'Calendar';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
   String get dashboard => 'Dashboard';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get document => 'Document';
 
   @override
   String get documentFormats => 'Document formats';
@@ -30,7 +45,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'Edit';
 
   @override
+  String get feeds => 'Feeds';
+
+  @override
+  String get feed => 'Feed';
+
+  @override
+  String get file => 'File';
+
+  @override
   String get filesImportedSuccess => 'New files successfully imported';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get library => 'Library';
+
+  @override
+  String get libraries => 'Libraries';
 
   @override
   String get listImportedError => 'Error when creating the list';
@@ -57,10 +96,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSavedError => 'Error updating profile';
 
   @override
+  String get publisher => 'Publisher';
+
+  @override
+  String get readingLists => 'Reading Lists';
+
+  @override
+  String get readingListsEmpty => 'No reading lists';
+
+  @override
   String get savedProgress => 'Progress saved';
 
   @override
   String get scan => 'Scan';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get searching => 'Searching';
+
+  @override
+  String get searchingError => 'Error searching';
+
+  @override
+  String get selectFile => 'Select file';
+
+  @override
+  String get tag => 'Tag';
+
+  @override
+  String get tags => 'Tags';
+
+  @override
+  String get title => 'Title';
 
   @override
   String get updateMetadata => 'Update metadata';

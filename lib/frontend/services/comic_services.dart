@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:html' as html;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/backend/services/api_service.dart';
@@ -71,6 +72,29 @@ class ComicServices {
       }
     } catch (e) {
       debugPrint("Error eliminando el comic: $e");
+    }
+  }
+
+  static Future<void> downloadComic(dynamic comicId, String title, String extension) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/comics/download/$comicId',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final bytes = response.data;
+      String? fileName;
+      fileName ??= '$title.$extension'; // Valor por defecto si no hay cabecera
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', fileName)
+        ..style.display = 'none';
+      html.document.body!.append(anchor);
+      anchor.click();
+      html.document.body!.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
+    } catch (e) {
+      print('Error al descargar el cómic: $e');
     }
   }
 
@@ -293,7 +317,9 @@ class ComicServices {
       );
 
       if (response.statusCode == 200) {
-        return Comic.fromJson(response.data); // Convierte la respuesta en un objeto Comic
+        return Comic.fromJson(
+          response.data,
+        ); // Convierte la respuesta en un objeto Comic
       } else {
         throw Exception('Error al obtener el cómic: ${response.statusCode}');
       }

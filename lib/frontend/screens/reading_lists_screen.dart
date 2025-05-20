@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/reading_list_provider.dart';
 import 'package:inkger/frontend/widgets/reading_list_filter_grid.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:inkger/frontend/dialogs/create_list_dialog.dart';
 
@@ -13,7 +14,7 @@ class ReadingListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Listas de Lectura'),
+        title:  Text(AppLocalizations.of(context)!.readingLists),
         actions: [
           // Botón para crear una nueva lista
           Tooltip(

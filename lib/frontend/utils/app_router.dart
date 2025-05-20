@@ -20,6 +20,8 @@ import 'package:inkger/frontend/widgets/central_content.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/widgets/comic_grid.dart';
 import 'package:inkger/frontend/screens/versions_screen.dart';
+import 'package:inkger/frontend/screens/feeds_screen.dart';
+import 'package:inkger/frontend/screens/edit_feeds_screen.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
@@ -443,6 +445,46 @@ class AppRouter {
                       );
                     },
                 transitionDuration: const Duration(milliseconds: 2000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/feeds',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: FeedsScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        ),
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 800),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/feeds/edit',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: EditFeedsScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        ),
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 800),
               );
             },
           ),

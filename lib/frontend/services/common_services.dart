@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
+import 'dart:html' as html;
 import 'package:dio/dio.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonServices {
-
   static Future<Response> checkIfPendingFiles() async {
     final response = await ApiService.dio.get(
       '/api/library/pending',
@@ -20,6 +19,34 @@ class CommonServices {
       return response;
     } else {
       throw Exception('Failed to retrieve new files');
+    }
+  }
+
+  static Future<void> downloadFile(
+    dynamic fileId,
+    String title,
+    String extension,
+    String type,
+  ) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/download/$type/$fileId',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final bytes = response.data;
+      String? fileName;
+      fileName ??= '$title.$extension'; // Valor por defecto si no hay cabecera
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', fileName)
+        ..style.display = 'none';
+      html.document.body!.append(anchor);
+      anchor.click();
+      html.document.body!.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
+    } catch (e) {
+      print('Error al descargar el cómic: $e');
     }
   }
 

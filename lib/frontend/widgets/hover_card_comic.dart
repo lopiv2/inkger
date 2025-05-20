@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/comic_details_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCardComic extends StatefulWidget {
   final Widget child;
   final VoidCallback? onDelete; // Callback para la eliminación
-  final VoidCallback? onSearchMetadata; // Callback para la busqueda de metadatos
+  final VoidCallback?
+  onSearchMetadata; // Callback para la busqueda de metadatos
   final VoidCallback? onConvert; // Callback para la conversion de archivos
   final VoidCallback? onAddToList; // Callback para la conversion de archivos
+  final VoidCallback? onDownload; // Callback para la conversion de archivos
   final Comic comic;
 
   const HoverCardComic({
     super.key,
     required this.child,
     this.onDelete,
+    this.onDownload,
     this.onSearchMetadata,
     this.onConvert,
     this.onAddToList,
@@ -53,7 +57,8 @@ class _HoverCardState extends State<HoverCardComic> {
                           context,
                           widget.comic.id.toString(),
                           widget.comic.title,
-                          widget.comic.readingProgress!['readingProgress'],''
+                          widget.comic.readingProgress!['readingProgress'],
+                          '',
                         );
                       },
                       splashColor: Colors.white,
@@ -88,29 +93,33 @@ class _HoverCardState extends State<HoverCardComic> {
               right: 8,
               child: PopupMenuButton<String>(
                 onSelected: (value) => debugPrint("Seleccionado: $value"),
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: "convert",
-                        child: Text("Convertir a..."),
-                        onTap: () => widget.onConvert?.call(),
-                      ),
-                      PopupMenuItem(
-                        value: "add",
-                        child: Text("Añadir a lista..."),
-                        onTap: () => widget.onAddToList?.call(),
-                      ),
-                      PopupMenuItem(
-                        value: "metadata",
-                        child: Text("Obtener metadatos"),
-                        onTap: () => widget.onSearchMetadata?.call(),
-                      ),
-                      PopupMenuItem(
-                        value: "delete",
-                        child: Text("Eliminar"),
-                        onTap: () => widget.onDelete?.call(),
-                      ),
-                    ],
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: "convert",
+                    child: Text("Convertir a..."),
+                    onTap: () => widget.onConvert?.call(),
+                  ),
+                  PopupMenuItem(
+                    value: "add",
+                    child: Text("Añadir a lista..."),
+                    onTap: () => widget.onAddToList?.call(),
+                  ),
+                  PopupMenuItem(
+                    value: "metadata",
+                    child: Text("Obtener metadatos"),
+                    onTap: () => widget.onSearchMetadata?.call(),
+                  ),
+                  PopupMenuItem(
+                    value: "delete",
+                    child: Text("Eliminar"),
+                    onTap: () => widget.onDelete?.call(),
+                  ),
+                  PopupMenuItem(
+                    value: "download",
+                    child: Text("Descargar archivo"),
+                    onTap: ()=> widget.onDownload?.call(),
+                  ),
+                ],
                 child: Container(
                   padding: EdgeInsets.all(6),
                   decoration: BoxDecoration(

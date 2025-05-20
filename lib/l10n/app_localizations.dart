@@ -62,8 +62,7 @@ import 'app_localizations_es.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('es'),
+    Locale('es')
   ];
 
   /// No description provided for @audiobooks.
@@ -103,6 +100,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Audiobooks'**
   String get audiobooks;
+
+  /// No description provided for @author.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get author;
 
   /// No description provided for @accept.
   ///
@@ -122,11 +125,35 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
   /// No description provided for @dashboard.
   ///
   /// In en, this message translates to:
   /// **'Dashboard'**
   String get dashboard;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @document.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get document;
 
   /// No description provided for @documentFormats.
   ///
@@ -140,11 +167,59 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// No description provided for @feeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeds'**
+  String get feeds;
+
+  /// No description provided for @feed.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed'**
+  String get feed;
+
+  /// No description provided for @file.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get file;
+
   /// No description provided for @filesImportedSuccess.
   ///
   /// In en, this message translates to:
   /// **'New files successfully imported'**
   String get filesImportedSuccess;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get import;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @library.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get library;
+
+  /// No description provided for @libraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries'**
+  String get libraries;
 
   /// No description provided for @listImportedError.
   ///
@@ -194,6 +269,24 @@ abstract class AppLocalizations {
   /// **'Error updating profile'**
   String get profileSavedError;
 
+  /// No description provided for @publisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Publisher'**
+  String get publisher;
+
+  /// No description provided for @readingLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading Lists'**
+  String get readingLists;
+
+  /// No description provided for @readingListsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reading lists'**
+  String get readingListsEmpty;
+
   /// No description provided for @savedProgress.
   ///
   /// In en, this message translates to:
@@ -206,6 +299,48 @@ abstract class AppLocalizations {
   /// **'Scan'**
   String get scan;
 
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @searching.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching'**
+  String get searching;
+
+  /// No description provided for @searchingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error searching'**
+  String get searchingError;
+
+  /// No description provided for @selectFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Select file'**
+  String get selectFile;
+
+  /// No description provided for @tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get tag;
+
+  /// No description provided for @tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get tags;
+
+  /// No description provided for @title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
+
   /// No description provided for @updateMetadata.
   ///
   /// In en, this message translates to:
@@ -213,8 +348,7 @@ abstract class AppLocalizations {
   String get updateMetadata;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -223,26 +357,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'es'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'es':
-      return AppLocalizationsEs();
+    case 'en': return AppLocalizationsEn();
+    case 'es': return AppLocalizationsEs();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

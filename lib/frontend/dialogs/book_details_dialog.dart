@@ -62,20 +62,20 @@ void showBookDetailsDialog(BuildContext context, Book book) async {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildEditableField('Título:', titleController),
+                    _buildEditableField('${AppLocalizations.of(context)!.title}:', titleController),
                     _buildEditableField(
-                      'Descripción:',
+                      '${AppLocalizations.of(context)!.description}:',
                       descriptionController,
                       maxLines: 3,
                     ),
-                    _buildEditableField('Autor:', authorController),
-                    _buildEditableField('Editorial:', publisherController),
-                    _buildEditableField('Idioma:', languageController),
+                    _buildEditableField('${AppLocalizations.of(context)!.author}:', authorController),
+                    _buildEditableField('${AppLocalizations.of(context)!.publisher}:', publisherController),
+                    _buildEditableField('${AppLocalizations.of(context)!.language}:', languageController),
                     _buildEditableField('Serie:', seriesController),
                     _buildEditableField('Nº en serie:', seriesNumberController),
 
                     ChipsField(
-                      label: 'Etiquetas:',
+                      label: '${AppLocalizations.of(context)!.tags}:',
                       values: tagsList,
                       //controller: tagsController,
                       onChanged: (newValues) {
@@ -97,6 +97,10 @@ void showBookDetailsDialog(BuildContext context, Book book) async {
                     _buildDetailRow(
                       'Añadido:',
                       dateFormat.format(book.creationDate),
+                    ),
+                    _buildDetailRow(
+                      '${AppLocalizations.of(context)!.file}:',
+                      book.filePath ?? '',
                     ),
                   ],
                 ),

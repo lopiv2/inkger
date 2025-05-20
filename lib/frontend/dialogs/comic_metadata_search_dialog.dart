@@ -4,6 +4,7 @@ import 'package:inkger/frontend/dialogs/volume_issues_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ComicMetadataSearchDialog extends StatefulWidget {
@@ -89,7 +90,7 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                               color: Colors.white,
                             ),
                           )
-                        : Text('Buscar'),
+                        : Text('${AppLocalizations.of(context)!.search}'),
                   ),
                 ],
               ),

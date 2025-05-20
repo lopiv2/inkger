@@ -12,6 +12,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get audiobooks => 'Audiolibros';
 
   @override
+  String get author => 'Autor';
+
+  @override
   String get accept => 'Aceptar';
 
   @override
@@ -21,7 +24,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cancel => 'Cancelar';
 
   @override
+  String get calendar => 'Calendario';
+
+  @override
+  String get categories => 'Categorias';
+
+  @override
   String get dashboard => 'Panel de control';
+
+  @override
+  String get description => 'Descripción';
+
+  @override
+  String get document => 'Documento';
 
   @override
   String get documentFormats => 'Formatos de documentos';
@@ -30,8 +45,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get edit => 'Editar';
 
   @override
-  String get filesImportedSuccess =>
-      'Nuevos archivos importados satisfactoriamente';
+  String get feeds => 'Fuentes';
+
+  @override
+  String get feed => 'Fuente';
+
+  @override
+  String get file => 'Archivo';
+
+  @override
+  String get filesImportedSuccess => 'Nuevos archivos importados satisfactoriamente';
+
+  @override
+  String get home => 'Inicio';
+
+  @override
+  String get import => 'Importar';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get library => 'Biblioteca';
+
+  @override
+  String get libraries => 'Bibliotecas';
 
   @override
   String get listImportedError => 'Error al crear la lista';
@@ -58,10 +96,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileSavedError => 'Error al actualizar perfil';
 
   @override
+  String get publisher => 'Editorial';
+
+  @override
+  String get readingLists => 'Listas de lectura';
+
+  @override
+  String get readingListsEmpty => 'No hay listas de lectura';
+
+  @override
   String get savedProgress => 'Progreso guardado';
 
   @override
   String get scan => 'Escanear';
+
+  @override
+  String get search => 'Buscar';
+
+  @override
+  String get searching => 'Buscando';
+
+  @override
+  String get searchingError => 'Error al buscar';
+
+  @override
+  String get selectFile => 'Seleccionar archivo';
+
+  @override
+  String get tag => 'Etiqueta';
+
+  @override
+  String get tags => 'Etiquetas';
+
+  @override
+  String get title => 'Titulo';
 
   @override
   String get updateMetadata => 'Actualizar metadatos';

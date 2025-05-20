@@ -9,6 +9,7 @@ import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_filter_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/event_provider.dart';
+import 'package:inkger/frontend/utils/feeds_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/utils/reading_list_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
@@ -36,6 +37,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ComicsProvider()),
         ChangeNotifierProvider(create: (context) => BookFilterProvider()),
         ChangeNotifierProvider(create: (context) => ComicFilterProvider()),
+        ChangeNotifierProvider(create: (context) => FeedsProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => ReadingListProvider()),
       ],
@@ -73,6 +75,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     ApiService.initialize(context);
+    final locale = context.watch<PreferencesProvider>().locale;
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Inkger - Visor y gestor de Libros y Comics',
@@ -86,6 +89,7 @@ class _MyAppState extends State<MyApp> {
         const Locale('en'), // English
         const Locale('es'), // Spanish
       ],
+      locale: locale, // <- Aquí se setea el locale dinámicamente
       routerConfig: _appRouter.router,
     );
   }

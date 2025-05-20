@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCardBook extends StatefulWidget {
@@ -8,6 +9,7 @@ class HoverCardBook extends StatefulWidget {
   final VoidCallback? onDelete; // Callback para la eliminación
   final VoidCallback? onConvert; // Callback para la conversion de archivos
   final VoidCallback? onAddToList; // Callback para la conversion de archivos
+  final VoidCallback? onDownload; // Callback para la conversion de archivos
   final Book book;
 
   const HoverCardBook({
@@ -16,6 +18,7 @@ class HoverCardBook extends StatefulWidget {
     this.onDelete,
     this.onConvert,
     this.onAddToList,
+    this.onDownload,
     required this.book,
   });
 
@@ -55,7 +58,10 @@ class _HoverCardState extends State<HoverCardBook> {
                     message: "Abrir lector",
                     child: IconButton(
                       onPressed: () {
-                        final extension = widget.book.filePath?.split('.').last.toLowerCase();
+                        final extension = widget.book.filePath
+                            ?.split('.')
+                            .last
+                            .toLowerCase();
                         if (extension == 'epub') {
                           loadBookFile(
                             context,
@@ -68,7 +74,9 @@ class _HoverCardState extends State<HoverCardBook> {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: const Text('Visualización no soportada'),
-                              content: const Text('Solo se pueden visualizar archivos EPUB. Por favor, convierte el archivo antes de visualizarlo.'),
+                              content: const Text(
+                                'Solo se pueden visualizar archivos EPUB. Por favor, convierte el archivo antes de visualizarlo.',
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
@@ -120,6 +128,9 @@ class _HoverCardState extends State<HoverCardBook> {
                   } else if (value == "delete") {
                     widget.onDelete?.call();
                   }
+                  else if (value == "download") {
+                    widget.onDownload?.call();
+                  }
                 },
                 onCanceled: () {
                   setState(() => _menuOpen = false);
@@ -132,13 +143,11 @@ class _HoverCardState extends State<HoverCardBook> {
                     value: "convert",
                     child: Text("Convertir a..."),
                   ),
+                  PopupMenuItem(value: "add", child: Text("Añadir a lista...")),
+                  PopupMenuItem(value: "delete", child: Text("Eliminar")),
                   PopupMenuItem(
-                    value: "add",
-                    child: Text("Añadir a lista..."),
-                  ),
-                  PopupMenuItem(
-                    value: "delete",
-                    child: Text("Eliminar"),
+                    value: "download",
+                    child: Text("Descargar archivo"),
                   ),
                 ],
                 child: Container(

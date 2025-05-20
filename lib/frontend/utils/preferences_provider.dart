@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:inkger/backend/services/preferences_service.dart';
 import 'package:inkger/frontend/models/app_preferences.dart';
@@ -11,8 +13,16 @@ class PreferencesProvider with ChangeNotifier {
   AppPreferences get preferences => _prefs;
   bool get isLoading => _isLoading;
 
+  Locale _locale = const Locale('es');
+  Locale get locale => _locale;
+
   PreferencesProvider() {
     _loadPreferences();
+  }
+
+    void setLocale(String languageCode) {
+    _locale = Locale(languageCode);
+    notifyListeners();
   }
 
   // Método para cargar las preferencias

@@ -52,7 +52,7 @@ class DashboardScreen extends StatelessWidget {
                       icon: Icons.collections_bookmark,
                     ),
                     CounterWidget(
-                      title: 'Listas de lectura',
+                      title: AppLocalizations.of(context)!.readingLists,
                       fetchCount: CommonServices.fetchReadingListCount,
                       color: Colors.red,
                       icon: Icons.list,

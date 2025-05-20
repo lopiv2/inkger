@@ -5,6 +5,7 @@ import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/hover_grid_item_series.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class SeriesDetailScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildCounterBadge(context, 'Libros', seriesBooks.length),
+                _buildCounterBadge(context, AppLocalizations.of(context)!.books, seriesBooks.length),
                 _buildCounterBadge(context, 'Cómics', seriesComics.length),
                 _buildCounterBadge(context, 'Total', allItems.length),
               ],

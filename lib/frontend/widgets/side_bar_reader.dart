@@ -1,15 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/dialogs/edit_library_dialog.dart';
+import 'package:inkger/frontend/utils/feeds_provider.dart';
 import 'package:inkger/frontend/utils/constants.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
-class Sidebar extends StatelessWidget {
+class Sidebar extends StatefulWidget {
   final Function(String) onItemSelected;
 
   const Sidebar({Key? key, required this.onItemSelected}) : super(key: key);
+
+  @override
+  State<Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends State<Sidebar> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFeeds();
+    });
+  }
+
+  Future<void> _loadFeeds() async {
+    final feedsProvider = Provider.of<FeedsProvider>(context, listen: false);
+    await feedsProvider.loadFeeds();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +50,23 @@ class Sidebar extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            _buildHoverMenuItem(context, Icons.home, 'Inicio', '/home'),
+            _buildHoverMenuItem(
+              context,
+              Icons.home,
+              AppLocalizations.of(context)!.home,
+              '/home',
+            ),
             _buildHoverLibraryMenu(context),
             _buildHoverMenuItem(
               context,
               Icons.category,
-              'Categorías',
+              AppLocalizations.of(context)!.categories,
               'categories',
             ),
             _buildHoverMenuItem(
               context,
               Icons.list,
-              'Listas de lectura',
+              AppLocalizations.of(context)!.readingLists,
               '/reading-lists',
             ),
             _buildHoverMenuItem(
@@ -53,8 +78,12 @@ class Sidebar extends StatelessWidget {
             _buildHoverMenuItem(
               context,
               Icons.calendar_month,
-              'Calendarios',
+              AppLocalizations.of(context)!.calendar,
               '/calendar',
+            ),
+            _buildHoverFeedsMenu(
+              context,
+              feedsCount: context.watch<FeedsProvider>().totalFeeds,
             ),
             _buildHoverMenuItem(context, Icons.help_center, 'Tests', 'Tests'),
           ],
@@ -71,7 +100,10 @@ class Sidebar extends StatelessWidget {
       ),
       child: ExpansionTile(
         leading: const Icon(Icons.library_books, color: Colors.white),
-        title: const Text('Bibliotecas', style: TextStyle(color: Colors.white)),
+        title: Text(
+          AppLocalizations.of(context)!.libraries,
+          style: TextStyle(color: Colors.white),
+        ),
         children: [
           _buildHoverNestedMenuItem(context, 'Comics', 'comics'),
           _buildHoverNestedMenuItem(
@@ -83,6 +115,80 @@ class Sidebar extends StatelessWidget {
             context,
             AppLocalizations.of(context)!.audiobooks,
             'audiobooks',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHoverFeedsMenu(BuildContext context, {int feedsCount = 0}) {
+    final isLoading = context.watch<FeedsProvider>().feeds.isEmpty;
+    return Theme(
+      data: Theme.of(context).copyWith(
+        hoverColor: Colors.blueGrey[700],
+        splashColor: Colors.transparent,
+      ),
+      child: ExpansionTile(
+        leading: const Icon(Icons.rss_feed, color: Colors.white),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.feeds,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            if (!isLoading && feedsCount > 0)
+              Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$feedsCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: ListTile(
+              leading: const Icon(
+                Icons.visibility,
+                color: Colors.white,
+                size: 20,
+              ),
+              title: Text(
+                'Ver Feeds',
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              contentPadding: const EdgeInsets.only(left: 30, right: 10),
+              minLeadingWidth: 30,
+              hoverColor: Colors.blueGrey[700],
+              onTap: () => context.go('/feeds'),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: ListTile(
+              leading: const Icon(Icons.edit, color: Colors.white, size: 20),
+              title: Text(
+                'Editar Feeds',
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              contentPadding: const EdgeInsets.only(left: 30, right: 10),
+              minLeadingWidth: 30,
+              hoverColor: Colors.blueGrey[700],
+              onTap: () => context.go('/feeds/edit'),
+            ),
           ),
         ],
       ),

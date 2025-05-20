@@ -553,6 +553,19 @@ class _ComicsGridState extends State<ComicsGrid> {
               title: comic.title,
             ),
           ),
+          onDownload: () async {
+            final filePath = comic.filePath;
+            String extension = '';
+            if (filePath != null && filePath.contains('.')) {
+              extension = filePath.substring(filePath.lastIndexOf('.'));
+            }
+            await CommonServices.downloadFile(
+              comic.id,
+              comic.title,
+              extension,
+              "comic",
+            );
+          },
           onConvert: () => showDialog(
             context: context,
             builder: (BuildContext context) {

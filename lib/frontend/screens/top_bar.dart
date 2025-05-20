@@ -5,6 +5,7 @@ import 'package:inkger/frontend/buttons/import_button.dart';
 import 'package:inkger/frontend/buttons/scan_pendings_button.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -58,9 +59,9 @@ class _TopBarState extends State<TopBar> {
                   ),
                 ],
               ),
-              child: const TextField(
+              child:  TextField(
                 decoration: InputDecoration(
-                  hintText: 'Buscar...',
+                  hintText: '${AppLocalizations.of(context)!.search}...',
                   border: InputBorder.none,
                   filled: true,
                   fillColor: Colors.white,

@@ -25,6 +25,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   double sliderScanIntervalValue = 1;
   Color themeColor = Colors.blue; // 🎨 Nuevo campo para color
   String hexColor = "#000000";
+  String languageCode = "es";
 
   @override
   void initState() {
@@ -76,6 +77,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       _backgroundImageController.text =
           prefs.getString("backgroundImagePath") ?? '';
       themeColor = Color(colorIntTheme);
+      languageCode = prefs.getString("languageCode") ?? "es";
     });
   }
 
@@ -109,6 +111,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         'key': 'scanInterval',
         'value': sliderScanIntervalValue.toString(),
       },
+      {
+        'userId': userId,
+        'key': 'languageCode',
+        'value': languageCode.toString(),
+      },
     ];
 
     final res = await CommonServices.saveMultipleSettingsToSharedPrefs(
@@ -122,7 +129,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       backgroundImagePath: _backgroundImageController.text.trim(),
       themeColor: themeColor.value,
       darkMode: false,
-      languageCode: '',
+      languageCode: languageCode,
       textScaleFactor: 2,
       notificationsEnabled: true,
       fullScreenMode: false,
@@ -259,6 +266,40 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                             });
                           },
                           child: const Text("Color por defecto"),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text("Idioma: "),
+                        DropdownButton<String>(
+                          value: languageCode,
+                          items: const [
+                            DropdownMenuItem(
+                              value: "es",
+                              child: Text("Español"),
+                            ),
+                            DropdownMenuItem(
+                              value: "en",
+                              child: Text("English"),
+                            ),
+                            DropdownMenuItem(
+                              value: "fr",
+                              child: Text("Français"),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                languageCode = value;
+                              });
+                              // Cambia el locale en el provider
+                              context.read<PreferencesProvider>().setLocale(
+                                value,
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),

@@ -103,13 +103,8 @@ void showComicDetailsDialog(BuildContext context, Comic comic) async {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Información básica (campos editables)
-                    _buildEditableField('Título:', titleController),
-                    EditableHtmlField(label: 'Descripción:', controller: descriptionController,),
-                    /*_buildEditableField(
-                      'Descripción:',
-                      descriptionController,
-                      maxLines: 3,
-                    ),*/
+                    _buildEditableField('${AppLocalizations.of(context)!.title}:', titleController),
+                    EditableHtmlField(label: '${AppLocalizations.of(context)!.description}:', controller: descriptionController,),
                     _buildEditableField('Escritor:', writerController),
                     _buildEditableField('Dibujante:', pencillerController),
                     _buildEditableField('Entintador:', inkerController),
@@ -120,8 +115,8 @@ void showComicDetailsDialog(BuildContext context, Comic comic) async {
                       coverArtistController,
                     ),
                     _buildEditableField('Editor:', editorController),
-                    _buildEditableField('Editorial:', publisherController),
-                    _buildEditableField('Idioma:', languageController),
+                    _buildEditableField('${AppLocalizations.of(context)!.publisher}:', publisherController),
+                    _buildEditableField('${AppLocalizations.of(context)!.language}:', languageController),
                     _buildEditableField('Web:', webController),
                     _buildEditableField('Serie:', seriesController),
                     _buildEditableField('Nº en serie:', seriesNumberController),
@@ -129,7 +124,7 @@ void showComicDetailsDialog(BuildContext context, Comic comic) async {
 
                     // Campos de listas (tags, personajes, equipos, etc.)
                     ChipsField(
-                      label: 'Etiquetas:',
+                      label: '${AppLocalizations.of(context)!.tags}:',
                       values: tagsList,
                       //controller: tagsController,
                       onChanged: (newValues) {
@@ -204,6 +199,10 @@ void showComicDetailsDialog(BuildContext context, Comic comic) async {
                     _buildDetailRow(
                       'Añadido:',
                       dateFormat.format(comic.creationDate),
+                    ),
+                    _buildDetailRow(
+                      '${AppLocalizations.of(context)!.file}:',
+                      comic.filePath ?? '',
                     ),
                   ],
                 ),
@@ -333,81 +332,6 @@ Widget _buildEditableField(
     ),
   );
 }
-
-// Widget auxiliar para chips (listas de valores)
-/*Widget _buildChipsField(
-  String label,
-  List<String> values,
-  TextEditingController? controller,
-) {
-  TextEditingController tempController = controller ?? TextEditingController();
-
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Label
-            Container(
-              width: 100,
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            // Chips
-            Expanded(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children:
-                    values.map((value) {
-                      return Chip(
-                        label: Text(value),
-                        onDeleted: () {
-                          values.remove(value);
-                          (controller == null)
-                              ? tempController.text = values.join(',')
-                              : controller.text = values.join(',');
-                        },
-                      );
-                    }).toList(),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: tempController,
-          decoration: const InputDecoration(
-            labelText: 'Añadir nuevo',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (text) {
-            final newTags =
-                text
-                    .split(',')
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty && !values.contains(e))
-                    .toList();
-
-            if (newTags.isNotEmpty) {
-              values.addAll(newTags);
-              tempController.clear();
-              (controller == null)
-                  ? tempController.text = values.join(',')
-                  : controller.text = values.join(',');
-            }
-          },
-        ),
-      ],
-    ),
-  );
-}*/
 
 Widget _buildDetailRow(String label, String value) {
   return Padding(
