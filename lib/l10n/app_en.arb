@@ -5,6 +5,7 @@
   "accept": "Accept",
   "books": "Books",
   "cancel": "Cancel",
+  "cantOpenLink": "Unable to open link",
   "calendar": "Calendar",
   "categories": "Categories",
   "dashboard": "Dashboard",
@@ -12,8 +13,13 @@
   "document": "Document",
   "documentFormats": "Document formats", 
   "edit": "Edit",
-   "feeds": "Feeds",
+  "editFeeds": "Edit feeds",
+  "feeds": "Feeds",
   "feed": "Feed",
+  "feedAdded": "Feed successfully added",
+  "feedAddedError": "Error adding feed",
+  "feedUpdated": "Feed successfully updated",
+  "feedUpdatedError": "Error updating feed",
   "file": "File",
   "filesImportedSuccess": "New files successfully imported",
   "home": "Home",
@@ -41,5 +47,6 @@
   "tag": "Tag",
   "tags": "Tags",
   "title": "Title",
-  "updateMetadata": "Update metadata"
+  "updateMetadata": "Update metadata",
+  "watchFeeds": "Watch feeds"
 }

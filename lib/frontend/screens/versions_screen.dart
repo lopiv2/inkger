@@ -34,7 +34,8 @@ class VersionsScreen extends StatelessWidget {
                   : "Estás utilizando la última versión.",
               style: TextStyle(
                 fontSize: 16,
-                color: hasNewVersion ? Colors.green : Colors.grey,
+                // ignore: dead_code
+                color: hasNewVersion ? Colors.green : Colors.red,
               ),
             ),
             const SizedBox(height: 16),

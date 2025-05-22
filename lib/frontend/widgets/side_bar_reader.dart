@@ -17,7 +17,6 @@ class Sidebar extends StatefulWidget {
 }
 
 class _SidebarState extends State<Sidebar> {
-
   @override
   void initState() {
     super.initState();
@@ -28,7 +27,7 @@ class _SidebarState extends State<Sidebar> {
 
   Future<void> _loadFeeds() async {
     final feedsProvider = Provider.of<FeedsProvider>(context, listen: false);
-    await feedsProvider.loadFeeds();
+    await feedsProvider.loadAllFeedsFromSources();
   }
 
   @override
@@ -167,7 +166,7 @@ class _SidebarState extends State<Sidebar> {
                 size: 20,
               ),
               title: Text(
-                'Ver Feeds',
+                AppLocalizations.of(context)!.watchFeeds,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               contentPadding: const EdgeInsets.only(left: 30, right: 10),
@@ -181,7 +180,7 @@ class _SidebarState extends State<Sidebar> {
             child: ListTile(
               leading: const Icon(Icons.edit, color: Colors.white, size: 20),
               title: Text(
-                'Editar Feeds',
+                AppLocalizations.of(context)!.editFeeds,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               contentPadding: const EdgeInsets.only(left: 30, right: 10),

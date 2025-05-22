@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/models/series.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/hover_card_generic.dart';
 
 class SeriesFilterAndGrid extends StatefulWidget {
   final Future<List<Series>> seriesFuture;
@@ -87,19 +87,25 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: GridView.builder(
+                  padding: EdgeInsets.all(8),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 7,
                     crossAxisSpacing: 2,
                     mainAxisSpacing: 2,
-                    childAspectRatio: 0.8,
+                    childAspectRatio: 0.5,
                   ),
                   itemCount: filteredSeries.length,
                   itemBuilder: (context, index) {
                     final series = filteredSeries[index];
-                    return _buildSeriesCard(
-                      series.title,
-                      series.coverPath,
-                      series.itemCount,
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        return _buildSeriesCard(
+                          series.title,
+                          series.coverPath,
+                          series.itemCount,
+                          maxHeight: constraints.maxHeight,
+                        );
+                      },
                     );
                   },
                 ),
@@ -146,67 +152,58 @@ class _SeriesFilterAndGridState extends State<SeriesFilterAndGrid> {
     );
   }
 
-  Widget _buildSeriesCard(String title, String coverPath, int count) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () {
-          // Navegación con GoRouter
-          context.push(
-            '/series/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
-            extra: coverPath, // Pasamos la ruta de la portada como extra
-          );
-        },
-        hoverColor: Colors.black.withOpacity(0.1),
-        highlightColor: Colors.black.withOpacity(0.2),
-        splashColor: Colors.black.withOpacity(0.3),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: buildCoverImage(coverPath),
-              ),
+  Widget _buildSeriesCard(
+    String title,
+    String coverPath,
+    int count, {
+    double? maxHeight,
+  }) {
+    return Column(
+      children: [
+        HoverCardGeneric(
+          title: title,
+          coverPath: coverPath,
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
             ),
-            Positioned(
-              bottom: 10,
-              left: 10,
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 5,
-                      color: Colors.black,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
+            elevation: 4,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: buildCoverImage(coverPath),
                 ),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              right: 10,
-              child: CircleAvatar(
-                backgroundColor: Colors.red,
-                child: Text(
-                  '$count',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.red,
+                    child: Text(
+                      '$count',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        SizedBox(height: 8),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

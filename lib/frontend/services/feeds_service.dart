@@ -1,5 +1,7 @@
+import 'dart:convert';
 
 import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/models/feed_item.dart';
 
 class FeedsService {
   static final String _baseUrl = '/api/feeds';
@@ -22,5 +24,23 @@ class FeedsService {
 
   static Future<void> deleteFeed(int id) async {
     await ApiService.dio.delete('$_baseUrl/$id');
+  }
+
+  static Future<List<FeedItem>> fetchFeedFromUrl(String url) async {
+    final response = await ApiService.dio.get(
+      '/api/feeds/parse',
+      queryParameters: {'url': url},
+    );
+
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      final data = response.data['data'];
+
+      // Asegurarse de que sea una lista
+      if (data is List) {
+        return data.map((item) => FeedItem.fromMap(item)).toList();
+      }
+    }
+
+    throw Exception('Error al cargar el feed');
   }
 }

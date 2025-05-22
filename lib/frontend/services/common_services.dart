@@ -68,6 +68,32 @@ class CommonServices {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> fetchBookRecommendations() async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/books/recommendations',
+        options: Options(
+          responseType: ResponseType.json,
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        // Esperamos una lista de autores con sus libros
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        } else {
+          throw Exception('Unexpected data format');
+        }
+      } else {
+        throw Exception('Failed to fetch book recommendations');
+      }
+    } catch (e) {
+      throw Exception('Error fetching book recommendations: $e');
+    }
+  }
+
   static Future<int> fetchBookCount() async {
     final response = await ApiService.dio.get(
       '/api/count-books',

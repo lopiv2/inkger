@@ -24,6 +24,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get cantOpenLink => 'Unable to open link';
+
+  @override
   String get calendar => 'Calendar';
 
   @override
@@ -45,10 +48,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'Edit';
 
   @override
+  String get editFeeds => 'Edit feeds';
+
+  @override
   String get feeds => 'Feeds';
 
   @override
   String get feed => 'Feed';
+
+  @override
+  String get feedAdded => 'Feed successfully added';
+
+  @override
+  String get feedAddedError => 'Error adding feed';
+
+  @override
+  String get feedUpdated => 'Feed successfully updated';
+
+  @override
+  String get feedUpdatedError => 'Error updating feed';
 
   @override
   String get file => 'File';
@@ -133,4 +151,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateMetadata => 'Update metadata';
+
+  @override
+  String get watchFeeds => 'Watch feeds';
 }

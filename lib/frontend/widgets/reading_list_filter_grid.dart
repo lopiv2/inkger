@@ -4,6 +4,7 @@ import 'package:inkger/frontend/models/reading_list.dart';
 import 'package:inkger/frontend/models/reading_list_item.dart';
 import 'package:inkger/frontend/services/reading_list_services.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/hover_card_generic.dart';
 
 class ReadingListFilterAndGrid extends StatefulWidget {
   final List<ReadingList> readingLists; // Cambia el tipo a List<ReadingList>.
@@ -86,7 +87,7 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                crossAxisSpacing:2,
+                crossAxisSpacing: 2,
                 mainAxisSpacing: 2,
                 childAspectRatio: 0.8,
               ),
@@ -165,86 +166,102 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
           ); // Manejar errores
         } else {
           final itemCovers = snapshot.data ?? [];
-          return Card(
-            elevation: 4,
-            margin: const EdgeInsets.all(8), // Asegurar que la propiedad margin esté definida
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: InkWell(
-              onTap: () {
-                // Navegación con GoRouter
-                context.push(
-                  '/reading-lists/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
-                  extra: {
-                    'id': id,
-                    'title': title,
-                    'coverUrl': coverUrl,
-                    'count': count,
-                    'items': items,
-                  }, // Pasamos todos los datos de la lista de lectura como un mapa
-                );
-              },
-              hoverColor: Colors.black.withOpacity(0.1),
-              highlightColor: Colors.black.withOpacity(0.2),
-              splashColor: Colors.black.withOpacity(0.3),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: itemCovers.isNotEmpty
-                          ? buildMultiCover(
-                              itemCovers,
-                            ) // Construir portada con múltiples imágenes
-                          : buildCoverImage(
-                              coverUrl,
-                            ), // Construir portada con una sola imagen
-                    ),
+          return Column(
+            children: [
+              Expanded(
+                child: Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.all(
+                    8,
+                  ), // Asegurar que la propiedad margin esté definida
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  Positioned(
-                    bottom: 10,
-                    left: 10,
-                    child: Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 5,
-                            color: Colors.black,
-                            offset: Offset(0, 3),
+                  child: InkWell(
+                    onTap: () {
+                      // Navegación con GoRouter
+                      context.push(
+                        '/reading-lists/${Uri.encodeComponent(title)}', // Codificamos el título para URLs
+                        extra: {
+                          'id': id,
+                          'title': title,
+                          'coverUrl': coverUrl,
+                          'count': count,
+                          'items': items,
+                        }, // Pasamos todos los datos de la lista de lectura como un mapa
+                      );
+                    },
+                    hoverColor: Colors.black.withOpacity(0.1),
+                    highlightColor: Colors.black.withOpacity(0.2),
+                    splashColor: Colors.black.withOpacity(0.3),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: itemCovers.isNotEmpty
+                                ? buildMultiCover(
+                                    itemCovers,
+                                  ) // Construir portada con múltiples imágenes
+                                : buildCoverImage(
+                                    coverUrl,
+                                  ), // Construir portada con una sola imagen
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.red,
-                      child: Text(
-                        '$count',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
+                        /*Positioned(
+                          bottom: 10,
+                          left: 10,
+                          child: Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 5,
+                                  color: Colors.black,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),*/
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.red,
+                            child: Text(
+                              '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+              SizedBox(height: 8),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           );
         }
       },
     );
   }
-
-  
 }

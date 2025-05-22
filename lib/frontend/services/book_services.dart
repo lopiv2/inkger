@@ -19,7 +19,9 @@ class BookServices {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Error al convertir el ebook a $format: ${response.data}');
+        throw Exception(
+          'Error al convertir el ebook a $format: ${response.data}',
+        );
       }
     } catch (e) {
       print('Error al convertir el ebook a $format: $e');
@@ -74,6 +76,36 @@ class BookServices {
       }
     } catch (e) {
       throw Exception('Error al obtener el libro: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>>  getBookMetadata(
+    String query,
+    Book book,
+  ) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/books/search-metadata',
+        data: {
+          'query': query,
+          'book': {
+            'title': book.title,
+            'author': book.author,
+            'publisher': book.publisher,
+            'publishDate': book.publicationDate.toString(),
+            // Añade otros campos si los necesitas
+          },
+        },
+        options: Options(responseType: ResponseType.json),
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Error al buscar libros: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener metadatos: $e');
     }
   }
 

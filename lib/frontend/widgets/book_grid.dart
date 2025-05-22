@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/dialogs/add_to_reading_list_dialog.dart';
+import 'package:inkger/frontend/dialogs/book_metadata_search_dialog.dart';
 import 'package:inkger/frontend/dialogs/convert_ebook_options_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
@@ -376,6 +377,12 @@ class _BooksGridState extends State<BooksGrid> {
             context: context,
             builder: (BuildContext context) {
               return ConvertEbookOptionsDialog(ebookId: book.id);
+            },
+          ),
+          onGetMetadata: () => showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return BookSearchDialog(book: book);
             },
           ),
           onDownload: () async {

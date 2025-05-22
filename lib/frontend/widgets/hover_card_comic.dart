@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/comic_details_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
-import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCardComic extends StatefulWidget {

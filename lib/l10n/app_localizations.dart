@@ -125,6 +125,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @cantOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open link'**
+  String get cantOpenLink;
+
   /// No description provided for @calendar.
   ///
   /// In en, this message translates to:
@@ -167,6 +173,12 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// No description provided for @editFeeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit feeds'**
+  String get editFeeds;
+
   /// No description provided for @feeds.
   ///
   /// In en, this message translates to:
@@ -178,6 +190,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Feed'**
   String get feed;
+
+  /// No description provided for @feedAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed successfully added'**
+  String get feedAdded;
+
+  /// No description provided for @feedAddedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error adding feed'**
+  String get feedAddedError;
+
+  /// No description provided for @feedUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed successfully updated'**
+  String get feedUpdated;
+
+  /// No description provided for @feedUpdatedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating feed'**
+  String get feedUpdatedError;
 
   /// No description provided for @file.
   ///
@@ -346,6 +382,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update metadata'**
   String get updateMetadata;
+
+  /// No description provided for @watchFeeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch feeds'**
+  String get watchFeeds;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

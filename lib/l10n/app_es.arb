@@ -5,6 +5,7 @@
   "accept": "Aceptar",
   "books": "Libros",
   "cancel": "Cancelar",
+  "cantOpenLink": "No se puede abrir el enlace",
   "calendar": "Calendario",
   "categories": "Categorias",
   "dashboard": "Panel de control",
@@ -12,8 +13,13 @@
   "document": "Documento",
   "documentFormats": "Formatos de documentos",
   "edit": "Editar",
+  "editFeeds": "Editar fuentes",
   "feeds": "Fuentes",
   "feed": "Fuente",
+  "feedAdded": "Fuente añadida con exito",
+  "feedAddedError": "Error al añadir la fuente",
+  "feedUpdated": "Fuente actualizada con exito",
+  "feedUpdatedError": "Error al actualizar la fuente",
   "file": "Archivo",
   "filesImportedSuccess": "Nuevos archivos importados satisfactoriamente",
   "home": "Inicio",
@@ -41,5 +47,6 @@
   "tag": "Etiqueta",
   "tags": "Etiquetas",
   "title": "Titulo",
-  "updateMetadata": "Actualizar metadatos"
+  "updateMetadata": "Actualizar metadatos",
+  "watchFeeds": "Ver fuentes"
 }

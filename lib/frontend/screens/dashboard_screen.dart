@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/widgets/document_format_counter.dart';
 import 'package:inkger/frontend/widgets/library_counter.dart';
+import 'package:inkger/frontend/widgets/recommendations_carousel.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -61,6 +62,8 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 46),
                 DocumentFormatCounterWidget(),
+                SizedBox(height: 86),
+                RecommendedBooksCarousel(),
               ],
             ),
           ),

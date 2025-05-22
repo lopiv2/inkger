@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
-import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCardBook extends StatefulWidget {
@@ -10,6 +9,7 @@ class HoverCardBook extends StatefulWidget {
   final VoidCallback? onConvert; // Callback para la conversion de archivos
   final VoidCallback? onAddToList; // Callback para la conversion de archivos
   final VoidCallback? onDownload; // Callback para la conversion de archivos
+  final VoidCallback? onGetMetadata; // Callback para la conversion de archivos
   final Book book;
 
   const HoverCardBook({
@@ -19,6 +19,7 @@ class HoverCardBook extends StatefulWidget {
     this.onConvert,
     this.onAddToList,
     this.onDownload,
+    this.onGetMetadata,
     required this.book,
   });
 
@@ -123,12 +124,13 @@ class _HoverCardState extends State<HoverCardBook> {
                   setState(() => _menuOpen = false);
                   if (value == "convert") {
                     widget.onConvert?.call();
+                  } else if (value == "metadata") {
+                    widget.onGetMetadata?.call();
                   } else if (value == "add") {
                     widget.onAddToList?.call();
                   } else if (value == "delete") {
                     widget.onDelete?.call();
-                  }
-                  else if (value == "download") {
+                  } else if (value == "download") {
                     widget.onDownload?.call();
                   }
                 },
@@ -142,6 +144,10 @@ class _HoverCardState extends State<HoverCardBook> {
                   PopupMenuItem(
                     value: "convert",
                     child: Text("Convertir a..."),
+                  ),
+                  PopupMenuItem(
+                    value: "metadata",
+                    child: Text("Obtener metadatos"),
                   ),
                   PopupMenuItem(value: "add", child: Text("Añadir a lista...")),
                   PopupMenuItem(value: "delete", child: Text("Eliminar")),

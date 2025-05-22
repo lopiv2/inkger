@@ -24,6 +24,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cancel => 'Cancelar';
 
   @override
+  String get cantOpenLink => 'No se puede abrir el enlace';
+
+  @override
   String get calendar => 'Calendario';
 
   @override
@@ -45,10 +48,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get edit => 'Editar';
 
   @override
+  String get editFeeds => 'Editar fuentes';
+
+  @override
   String get feeds => 'Fuentes';
 
   @override
   String get feed => 'Fuente';
+
+  @override
+  String get feedAdded => 'Fuente añadida con exito';
+
+  @override
+  String get feedAddedError => 'Error al añadir la fuente';
+
+  @override
+  String get feedUpdated => 'Fuente actualizada con exito';
+
+  @override
+  String get feedUpdatedError => 'Error al actualizar la fuente';
 
   @override
   String get file => 'Archivo';
@@ -133,4 +151,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get updateMetadata => 'Actualizar metadatos';
+
+  @override
+  String get watchFeeds => 'Ver fuentes';
 }

@@ -1,84 +1,96 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/feed.dart';
+import 'package:inkger/frontend/models/feed_item.dart';
 import 'package:inkger/frontend/services/feeds_service.dart';
 
 class FeedsProvider extends ChangeNotifier {
-  int _totalFeeds = 0;
-  int get totalFeeds => _totalFeeds;
-
   final List<Feed> _feeds = [];
   List<Feed> get feeds => List.unmodifiable(_feeds);
 
-  // Cargar feeds desde el servicio
-  Future<void> loadFeeds() async {
+  final List<FeedItem> _feedsItems = []; // Todos los items cargados
+  List<FeedItem> get feedsItems => List.unmodifiable(_feedsItems);
+
+  int get totalFeeds => _feedsItems.length;
+
+  final List<Map<String, dynamic>> _groupedFeeds = [];
+  List<Map<String, dynamic>> get groupedFeedsBySource => _groupedFeeds;
+
+  // Carga todos los feeds de todas las fuentes
+  // Carga todos los feeds de todas las fuentes
+  Future<void> loadAllFeedsFromSources() async {
+    _feedsItems.clear();
+    _feeds.clear();
+    _groupedFeeds.clear();
+
     try {
-      final loadedFeedsData = await FeedsService.getAllFeeds();
-      final loadedFeeds = loadedFeedsData
-          .map<Feed>((map) => Feed.fromMap(map))
-          .toList();
-      _feeds.clear();
-      _feeds.addAll(loadedFeeds);
-      _totalFeeds = _feeds.length;
+      // 1. Obtener todas las fuentes
+      final sources =
+          await FeedsService.getAllFeeds(); // List<Map<String, dynamic>>
+
+      // 2. Convertirlas a Feed
+      for (var source in sources) {
+        _feeds.add(Feed.fromMap(source));
+      }
+
+      // 3. Por cada fuente, obtener los items del RSS
+      for (var source in _feeds) {
+        try {
+          if(source.active == false) continue; // Si la fuente no está activa, saltar
+          final items = await FeedsService.fetchFeedFromUrl(source.url);
+
+          // Asignar sourceUrl (y opcionalmente sourceName)
+          final itemsWithSource = items
+              .map(
+                (item) => item.copyWith(
+                  sourceUrl: source.url,
+                  sourceName: source.name,
+                ),
+              )
+              .toList();
+
+          _feedsItems.addAll(itemsWithSource);
+        } catch (e) {
+          print('Error cargando items de feed ${source.name}: $e');
+        }
+      }
+
+      // 4. Agrupar por fuente
+      for (var source in _feeds) {
+        final itemsForSource = _feedsItems
+            .where((item) => item.sourceUrl == source.url)
+            .toList();
+
+        _groupedFeeds.add({
+          'name': source.name,
+          'active': source.active,
+          'logo': source.logo,
+          'url': source.url,
+          'new': itemsForSource.length,
+          'feeds': itemsForSource,
+        });
+      }
+
       notifyListeners();
     } catch (e) {
-      debugPrint('Error cargando feeds: $e');
+      print('Error cargando fuentes: $e');
     }
   }
 
-  List<Map<String, dynamic>> get groupedFeedsBySource {
-    // Agrupa feeds por 'sourceName' o 'category' (ajusta según tu modelo)
-    final groups = groupBy(
-      feeds,
-      (Feed f) => f.category,
-    );
-
-    return groups.entries.map((entry) {
-      final sourceName = entry.key;
-      final feedsList = entry.value;
-
-      // Aquí deberías obtener el logo de la fuente (puedes elegir el logo del primer feed o manejarlo aparte)
-      final logo = feedsList.isNotEmpty ? feedsList.first.logo : '';
-
-      // Cuenta feeds nuevos. Supondré que hay un campo 'isNew' booleano en Feed (ajusta según tu modelo)
-      final newCount = feedsList.where((f) => true).length;
-
-      return {
-        'name': sourceName,
-        'logo': logo,
-        'new': newCount,
-        'feeds': feedsList
-            .map((f) => {'title': '', 'desc': ''})
-            .toList(),
-      };
-    }).toList();
+  // Filtrar items por sourceUrl
+  List<FeedItem> feedsBySource(String sourceUrl) {
+    return _feedsItems.where((item) => item.sourceUrl == sourceUrl).toList();
   }
 
-  void setTotalFeeds(int value) {
-    _totalFeeds = value;
-    notifyListeners();
-  }
+  // CRUD para fuentes
 
-  void addFeed(Map<String, dynamic> feedData) {
-    final feed = Feed.fromMap(feedData);
+  void addFeed(Feed feed) {
     _feeds.add(feed);
-    _totalFeeds = _feeds.length;
     notifyListeners();
   }
 
-  void updateFeed(int index, Map<String, dynamic> newFeedData) {
+  void updateFeed(int index, Feed newFeed) {
     if (index >= 0 && index < _feeds.length) {
-      final oldFeed = _feeds[index];
-      final updatedFeed = Feed(
-        id: oldFeed.id, // mantener el id original
-        name: newFeedData['name'] ?? oldFeed.name,
-        logo: newFeedData['logo'] ?? oldFeed.logo,
-        url: newFeedData['url'] ?? oldFeed.url,
-        category: newFeedData['category'] ?? oldFeed.category,
-        active: newFeedData['active'] ?? oldFeed.active,
-      );
-      _feeds[index] = updatedFeed;
-      _totalFeeds = _feeds.length;
+      _feeds[index] = newFeed;
       notifyListeners();
     }
   }
@@ -86,15 +98,14 @@ class FeedsProvider extends ChangeNotifier {
   void deleteFeed(int index) {
     if (index >= 0 && index < _feeds.length) {
       _feeds.removeAt(index);
-      _totalFeeds = _feeds.length;
       notifyListeners();
     }
   }
 
-  void replaceAll(List<Map<String, dynamic>> newFeedsData) {
-    _feeds.clear();
-    _feeds.addAll(newFeedsData.map((map) => Feed.fromMap(map)));
-    _totalFeeds = _feeds.length;
+  void replaceAll(List<Feed> newFeeds) {
+    _feeds
+      ..clear()
+      ..addAll(newFeeds);
     notifyListeners();
   }
 }
