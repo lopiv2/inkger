@@ -100,6 +100,7 @@ class AppPreferences {
     bool? fullScreenMode,
     bool? readerMode,
     String? comicvineApiKey,
+    String? googleBooksApiKey,
     double? defaultGridItemSize,
     int? themeColor,
     String? backgroundImagePath,

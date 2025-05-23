@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/functions.dart';
 
 class BookSearchDialog extends StatefulWidget {
   final Book book;
@@ -16,6 +17,11 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
   List<Map<String, dynamic>> _results = [];
   bool _isLoading = false;
 
+  // Estados de los checkboxes
+  bool openLibrary = true;
+  bool ibdb = true;
+  bool googleBooks = true;
+
   Future<void> _searchBooks(String query) async {
     if (query.isEmpty) return;
 
@@ -27,6 +33,9 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
       final results = await BookServices.getBookMetadata(
         query,
         widget.book,
+        openLibrary,
+        ibdb,
+        googleBooks,
       );
 
       setState(() {
@@ -53,17 +62,14 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width * 0.85; // el ancho de tu AlertDialog
-    const minItemWidth = 160;
-    final crossAxisCount = (screenWidth / minItemWidth).floor().clamp(1, 5); // de 1 a 5 columnas
-
     return AlertDialog(
       title: const Text('Buscar libro'),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.85,
+        width: MediaQuery.of(context).size.width * 0.6,
         height: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
+            //Cuadro de búsqueda
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -76,82 +82,129 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
               onSubmitted: _searchBooks,
             ),
             const SizedBox(height: 16),
+            // Fila con 4 checkboxes
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                FilterChip(
+                  label: const Text('Open Library'),
+                  selected: openLibrary,
+                  onSelected: (value) => setState(() => openLibrary = value),
+                ),
+                FilterChip(
+                  label: const Text('IBDB'),
+                  selected: ibdb,
+                  onSelected: (value) => setState(() => ibdb = value),
+                ),
+                FilterChip(
+                  label: const Text('Google Books'),
+                  selected: googleBooks,
+                  onSelected: (value) => setState(() => googleBooks = value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             _isLoading
                 ? const Expanded(
                     child: Center(child: CircularProgressIndicator()),
                   )
                 : _results.isEmpty
-                    ? const Expanded(
-                        child: Center(child: Text('Sin resultados.')),
-                      )
-                    : Expanded(
-                        child: GridView.builder(
-                          gridDelegate:
-                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,  // 2 columnas
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 0.6, // ajusta para que la tarjeta no quede muy estirada
-                          ),
-                          itemCount: _results.length,
-                          itemBuilder: (context, index) {
-                            final book = _results[index];
-                            return GestureDetector(
-                              onTap: () => _selectBook(book),
-                              child: Card(
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                ? const Expanded(child: Center(child: Text('Sin resultados.')))
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: _results.length,
+                      itemBuilder: (context, index) {
+                        final book = _results[index];
+                        return InkWell(
+                          onTap: () => _selectBook(book),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Imagen del libro
+                                book['cover'] != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Image.network(
+                                          book['cover'],
+                                          width: 80,
+                                          height: 120,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Container(
+                                                  width: 80,
+                                                  height: 120,
+                                                  color: Colors.grey[300],
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                  ),
+                                                );
+                                              },
+                                        ),
+                                      )
+                                    : const Icon(Icons.book, size: 80),
+
+                                const SizedBox(width: 12),
+
+                                // Título, autor y descripción
+                                Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                        child: book['cover'] != null
-                                            ? ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                child: Image.network(
-                                                  book['cover'],
-                                                  width: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.book,
-                                                size: 80,
-                                              ),
-                                      ),
-                                      const SizedBox(height: 8),
                                       Text(
                                         book['title'] ?? 'Sin título',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         book['author'] ?? 'Autor desconocido',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
+                                          fontSize: 14,
                                           color: Colors.grey,
-                                          fontSize: 12,
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        book['description'] ??
+                                            'Sin descripción.',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black87,
+                                        ),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "Fuente: ${book['origin']}",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
           ],
         ),
       ),

@@ -79,11 +79,16 @@ class BookServices {
     }
   }
 
-  static Future<List<Map<String, dynamic>>>  getBookMetadata(
+  static Future<List<Map<String, dynamic>>> getBookMetadata(
     String query,
     Book book,
+    openLibrary,
+    ibdb,
+    googleBooks,
   ) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('id');
       final response = await ApiService.dio.post(
         '/api/books/search-metadata',
         data: {
@@ -94,6 +99,11 @@ class BookServices {
             'publisher': book.publisher,
             'publishDate': book.publicationDate.toString(),
             // Añade otros campos si los necesitas
+          },
+          'sources': {
+            'openLibrary': openLibrary,
+            'ibdb': ibdb,
+            'googleBooks': googleBooks,
           },
         },
         options: Options(responseType: ResponseType.json),

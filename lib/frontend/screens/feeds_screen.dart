@@ -167,6 +167,7 @@ class _FeedsScreenState extends State<FeedsScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
+                              maxLines: 3,
                               feed.description,
                               style: const TextStyle(
                                 fontSize: 13,

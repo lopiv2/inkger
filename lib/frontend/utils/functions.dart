@@ -128,6 +128,16 @@ Future<Color> getDominantColor(Uint8List? imageBytes) async {
   }
 }
 
+String getSecureImageUrl(String? url) {
+  if (url == null) return '';
+  if (url.startsWith('http://')) {
+    print(url.replaceFirst('http://', 'https://'));
+    return url.replaceFirst('http://', 'https://');
+  }
+  
+  return url;
+}
+
 Future<void> loadBookFile(
   BuildContext context,
   String bookId,

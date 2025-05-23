@@ -3,6 +3,30 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 
+Widget buildCoverImageGoogle(String? coverPath, {bool calculateColor = false}) {
+  return FutureBuilder<Uint8List?>(
+    future: coverPath != null && coverPath.isNotEmpty 
+        ? CommonServices.getCover(coverPath) 
+        : Future.value(null),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      }
+      if (snapshot.hasError || !snapshot.hasData) {
+        return FittedBox(
+          fit: BoxFit.contain,
+          child: Image.asset('assets/images/noImage.png', fit: BoxFit.contain),
+        );
+      }
+
+      return FittedBox(
+        fit: BoxFit.contain,
+        child: Image.memory(snapshot.data!, fit: BoxFit.contain),
+      );
+    },
+  );
+}
+
 Widget buildCoverImage(String? coverPath, {bool calculateColor = false}) {
   return FutureBuilder<Uint8List?>(
     future: coverPath != null && coverPath.isNotEmpty 
