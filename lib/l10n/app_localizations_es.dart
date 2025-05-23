@@ -72,7 +72,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get file => 'Archivo';
 
   @override
-  String get filesImportedSuccess => 'Nuevos archivos importados satisfactoriamente';
+  String get filesImportedSuccess =>
+      'Nuevos archivos importados satisfactoriamente';
 
   @override
   String get home => 'Inicio';

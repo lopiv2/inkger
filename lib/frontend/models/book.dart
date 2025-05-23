@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Book {
   final int id;
   final String title;
@@ -86,4 +88,28 @@ class Book {
   }
 
   static empty() {}
+}
+
+extension BookExtensions on Book {
+  Map<String, String> toDisplayMap() {
+    final dateFormat = DateFormat('yyyy-MM-dd'); // o el formato que prefieras
+
+    return {
+      'title': title,
+      'author': author,
+      'publicationDate': dateFormat.format(publicationDate),
+      'creationDate': dateFormat.format(creationDate),
+      'description': description ?? '',
+      'publisher': publisher ?? '',
+      'language': language ?? '',
+      'coverPath': coverPath ?? '',
+      'pages': pages?.toString() ?? '',
+      'identifiers': identifiers?.toString() ?? '',
+      'tags': tags ?? '',
+      'series': series ?? '',
+      'seriesNumber': seriesNumber?.toString() ?? '',
+      'fileSize': fileSize?.toString() ?? '',
+      'filePath': filePath ?? '',
+    };
+  }
 }
