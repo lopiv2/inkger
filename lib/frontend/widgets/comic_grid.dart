@@ -15,6 +15,7 @@ import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
+import 'package:inkger/frontend/widgets/sort_selector.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +36,8 @@ class _ComicsGridState extends State<ComicsGrid> {
   final double _minCrossAxisCount = 5;
   final double _maxCrossAxisCount = 10;
   ViewMode _selectedViewMode = ViewMode.simple;
+  SortCriteria _sortCriteria = SortCriteria.creationDate;
+  bool _sortAscending = true;
   final ValueNotifier<Color> _dominantColorNotifier = ValueNotifier<Color>(
     Colors.grey,
   ); // Color por defecto
@@ -202,7 +205,22 @@ class _ComicsGridState extends State<ComicsGrid> {
                     ),
                   ),
                   ComicViewSwitcher(),
-                  SizedBox(width: MediaQuery.of(context).size.width * 0.3),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                  BooksSortSelector(
+                    selectedCriteria: _sortCriteria,
+                    ascending: _sortAscending,
+                    onCriteriaChanged: (criteria) {
+                      setState(() {
+                        _sortCriteria = criteria;
+                      });
+                    },
+                    onToggleDirection: () {
+                      setState(() {
+                        _sortAscending = !_sortAscending;
+                      });
+                    },
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                   Text("Modo:", style: TextStyle(fontSize: 14)),
                   Radio<ViewMode>(
                     value: ViewMode.simple,
@@ -452,7 +470,7 @@ class _ComicsGridState extends State<ComicsGrid> {
   List<Comic> _filterBooks(List<Comic> books) {
     final filters = Provider.of<ComicFilterProvider>(context, listen: false);
 
-    return books.where((book) {
+    List<Comic> filtered = books.where((book) {
       final writerList =
           book.writer
               ?.split(',')
@@ -533,6 +551,27 @@ class _ComicsGridState extends State<ComicsGrid> {
           matchesStoryArc &&
           matchesTeam;
     }).toList();
+
+    filtered.sort((a, b) {
+      int cmp;
+      switch (_sortCriteria) {
+        case SortCriteria.creationDate:
+          cmp = a.creationDate.compareTo(b.creationDate);
+          break;
+        case SortCriteria.publicationDate:
+          cmp = a.publicationDate!.compareTo(b.publicationDate!);
+          break;
+        case SortCriteria.author:
+          cmp = a.writer!.toLowerCase().compareTo(b.writer!.toLowerCase());
+          break;
+        case SortCriteria.title:
+          cmp = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          break;
+      }
+      return _sortAscending ? cmp : -cmp;
+    });
+
+    return filtered;
   }
 
   Widget _buildSimpleMode(

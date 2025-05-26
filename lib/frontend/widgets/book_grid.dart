@@ -15,6 +15,7 @@ import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
+import 'package:inkger/frontend/widgets/sort_selector.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:inkger/frontend/widgets/book_filters_layout.dart';
@@ -34,6 +35,8 @@ class _BooksGridState extends State<BooksGrid> {
   final double _minCrossAxisCount = 5;
   final double _maxCrossAxisCount = 10;
   ViewMode _selectedViewMode = ViewMode.simple;
+  SortCriteria _sortCriteria = SortCriteria.creationDate;
+  bool _sortAscending = true;
   final ValueNotifier<Color> _dominantColorNotifier = ValueNotifier<Color>(
     Colors.grey,
   ); // Color por defecto
@@ -152,7 +155,22 @@ class _BooksGridState extends State<BooksGrid> {
                     ),
                   ),
                   BookViewSwitcher(),
-                  SizedBox(width: MediaQuery.of(context).size.width * 0.3),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                  BooksSortSelector(
+                    selectedCriteria: _sortCriteria,
+                    ascending: _sortAscending,
+                    onCriteriaChanged: (criteria) {
+                      setState(() {
+                        _sortCriteria = criteria;
+                      });
+                    },
+                    onToggleDirection: () {
+                      setState(() {
+                        _sortAscending = !_sortAscending;
+                      });
+                    },
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                   Text("Modo:", style: TextStyle(fontSize: 14)),
                   Radio<ViewMode>(
                     value: ViewMode.simple,
@@ -346,7 +364,7 @@ class _BooksGridState extends State<BooksGrid> {
   List<Book> _filterBooks(List<Book> books) {
     final filters = Provider.of<BookFilterProvider>(context, listen: false);
 
-    return books.where((book) {
+    List<Book> filtered = books.where((book) {
       final matchesAuthor =
           filters.selectedAuthors.isEmpty ||
           filters.selectedAuthors.contains(book.author.trim());
@@ -365,6 +383,27 @@ class _BooksGridState extends State<BooksGrid> {
 
       return matchesAuthor && matchesPublisher && matchesTag;
     }).toList();
+
+    filtered.sort((a, b) {
+      int cmp;
+      switch (_sortCriteria) {
+        case SortCriteria.creationDate:
+          cmp = a.creationDate!.compareTo(b.creationDate!);
+          break;
+        case SortCriteria.publicationDate:
+          cmp = a.publicationDate.compareTo(b.publicationDate);
+          break;
+        case SortCriteria.author:
+          cmp = a.author.toLowerCase().compareTo(b.author.toLowerCase());
+          break;
+        case SortCriteria.title:
+          cmp = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          break;
+      }
+      return _sortAscending ? cmp : -cmp;
+    });
+
+    return filtered;
   }
 
   Widget _buildSimpleMode(BuildContext context, Book book, String? coverPath) {

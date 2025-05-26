@@ -281,6 +281,11 @@ List<String> parseCommaSeparatedList(dynamic data) {
   return [];
 }
 
+DateTime? parsePublicationDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty) return null;
+  return DateTime.tryParse(dateStr);
+}
+
 String prettifyJson(Map<String, dynamic> jsonMap) {
   const encoder = JsonEncoder.withIndent('  ');
   return encoder.convert(jsonMap);

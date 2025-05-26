@@ -13,22 +13,34 @@ class ItemRecommendation {
     required this.author,
   });
 
-  factory ItemRecommendation.fromJson(Map<String, dynamic> json, String author) {
+  factory ItemRecommendation.fromJson(
+    Map<String, dynamic> json,
+    String author,
+  ) {
+    String description = '';
+    final descData = json['description'];
+    if (descData is String) {
+      description = descData;
+    } else if (descData is Map<String, dynamic>) {
+      description = descData['value'] ?? '';
+    }
+
     return ItemRecommendation(
-      title: json['title'],
-      description: json['description'],
+      title: json['title'] ?? '',
+      description: description,
       cover: json['cover'],
+      link: json['link'],
       author: author,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'title': title,
-        'description': description,
-        'cover': cover,
-        'link': link,
-        'author': author,
-      };
+    'title': title,
+    'description': description,
+    'cover': cover,
+    'link': link,
+    'author': author,
+  };
 }
 
 class AuthorRecommendation {
@@ -43,22 +55,23 @@ class AuthorRecommendation {
   });
 
   factory AuthorRecommendation.fromJson(Map<String, dynamic> json) {
-  final authorName = json['authorName'];
-  final books = (json['books'] as List)
-      .map((bookJson) =>
-          ItemRecommendation.fromJson(bookJson, authorName)) // ← pasa autor
-      .toList();
+    final authorName = json['authorName'] ?? '';
+    final authorId = json['authorId'] ?? '';
+    final booksJson = json['books'] as List? ?? [];
+    final books = booksJson
+        .map((bookJson) => ItemRecommendation.fromJson(bookJson, authorName))
+        .toList();
 
-  return AuthorRecommendation(
-    authorName: authorName,
-    authorId: json['authorId'],
-    books: books,
-  );
-}
+    return AuthorRecommendation(
+      authorName: authorName,
+      authorId: json['authorId'],
+      books: books,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-        'authorName': authorName,
-        'authorId': authorId,
-        'books': books.map((b) => b.toJson()).toList(),
-      };
+    'authorName': authorName,
+    'authorId': authorId,
+    'books': books.map((b) => b.toJson()).toList(),
+  };
 }

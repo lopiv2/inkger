@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accept => 'Accept';
 
   @override
+  String get ascendingOrder => 'Ascending order';
+
+  @override
   String get books => 'Books';
 
   @override
@@ -33,7 +36,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categories => 'Categories';
 
   @override
+  String get creationDate => 'Date of creation';
+
+  @override
   String get dashboard => 'Dashboard';
+
+  @override
+  String get descendingOrder => 'Descending order';
 
   @override
   String get description => 'Description';
@@ -117,6 +126,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publisher => 'Publisher';
 
   @override
+  String get publishingDate => 'Fecha de publicación';
+
+  @override
   String get readingLists => 'Reading Lists';
 
   @override
@@ -151,6 +163,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateMetadata => 'Update metadata';
+
+  @override
+  String get updateMetadataError => 'Error updating metadata';
+
+  @override
+  String get updateMetadataSuccess => 'Metadata successfully updated';
 
   @override
   String get watchFeeds => 'Watch feeds';

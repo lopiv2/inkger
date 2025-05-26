@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/compare_metadata_book_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookSearchDialog extends StatefulWidget {
   final Book book;
@@ -58,7 +61,11 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
   }
 
   void _selectBook(Map<String, dynamic> newBook) async {
-    final result = await showDialog<Map<String, dynamic>>(
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('id');
+
+    final provider = Provider.of<BooksProvider>(context, listen: false);
+    final result = await showDialog<bool>(
       context: context,
       builder: (context) => CompareBookDialog(
         currentBook: widget.book.toDisplayMap(),
@@ -69,7 +76,8 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
     );
 
     if (result != null) {
-      Navigator.of(context).pop(result); // Devolver los datos seleccionados
+      Navigator.pop(context);
+      await provider.loadBooks(id ?? 0); // Devolver los datos seleccionados
     }
   }
 

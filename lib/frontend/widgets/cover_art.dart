@@ -5,8 +5,8 @@ import 'package:inkger/frontend/services/common_services.dart';
 
 Widget buildCoverImageGoogle(String? coverPath, {bool calculateColor = false}) {
   return FutureBuilder<Uint8List?>(
-    future: coverPath != null && coverPath.isNotEmpty 
-        ? CommonServices.getCover(coverPath) 
+    future: coverPath != null && coverPath.isNotEmpty
+        ? CommonServices.getCover(coverPath)
         : Future.value(null),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -27,25 +27,34 @@ Widget buildCoverImageGoogle(String? coverPath, {bool calculateColor = false}) {
   );
 }
 
-Widget buildCoverImage(String? coverPath, {bool calculateColor = false}) {
+Widget buildCoverImage(
+  String? coverPath, {
+  double? width,
+  double? height,
+  bool calculateColor = false,
+}) {
   return FutureBuilder<Uint8List?>(
-    future: coverPath != null && coverPath.isNotEmpty 
-        ? CommonServices.getCover(coverPath) 
+    future: coverPath != null && coverPath.isNotEmpty
+        ? CommonServices.getCover(coverPath)
         : Future.value(null),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return Center(child: CircularProgressIndicator());
       }
       if (snapshot.hasError || !snapshot.hasData) {
-        return FittedBox(
+        return Image.asset(
+          'assets/images/noImage.png',
           fit: BoxFit.contain,
-          child: Image.asset('assets/images/noImage.png', fit: BoxFit.contain),
+          width: width,
+          height: height,
         );
       }
 
-      return FittedBox(
+      return Image.memory(
+        snapshot.data!,
         fit: BoxFit.contain,
-        child: Image.memory(snapshot.data!, fit: BoxFit.contain),
+        width: width,
+        height: height,
       );
     },
   );

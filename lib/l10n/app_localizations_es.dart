@@ -18,6 +18,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accept => 'Aceptar';
 
   @override
+  String get ascendingOrder => 'Orden ascendente';
+
+  @override
   String get books => 'Libros';
 
   @override
@@ -33,7 +36,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categories => 'Categorias';
 
   @override
+  String get creationDate => 'Fecha de creación';
+
+  @override
   String get dashboard => 'Panel de control';
+
+  @override
+  String get descendingOrder => 'Orden descendente';
 
   @override
   String get description => 'Descripción';
@@ -72,8 +81,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get file => 'Archivo';
 
   @override
-  String get filesImportedSuccess =>
-      'Nuevos archivos importados satisfactoriamente';
+  String get filesImportedSuccess => 'Nuevos archivos importados satisfactoriamente';
 
   @override
   String get home => 'Inicio';
@@ -118,6 +126,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get publisher => 'Editorial';
 
   @override
+  String get publishingDate => 'Fecha de publicación';
+
+  @override
   String get readingLists => 'Listas de lectura';
 
   @override
@@ -152,6 +163,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get updateMetadata => 'Actualizar metadatos';
+
+  @override
+  String get updateMetadataError => 'Error al actualizar metadatos';
+
+  @override
+  String get updateMetadataSuccess => 'Metadatos actualizados con exito';
 
   @override
   String get watchFeeds => 'Ver fuentes';

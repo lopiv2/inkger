@@ -5,7 +5,7 @@ class Book {
   final String title;
   final String author;
   final DateTime publicationDate;
-  final DateTime creationDate;
+  final DateTime? creationDate;
   final String? description;
   final String? publisher;
   final String? language;
@@ -71,7 +71,7 @@ class Book {
       'title': title,
       'author': author,
       'publicationDate': publicationDate.toIso8601String(),
-      'creationDate': creationDate.toIso8601String(),
+      'creationDate': creationDate?.toIso8601String(),
       'description': description,
       'publisher': publisher,
       'language': language,
@@ -95,10 +95,11 @@ extension BookExtensions on Book {
     final dateFormat = DateFormat('yyyy-MM-dd'); // o el formato que prefieras
 
     return {
+      'id': id.toString(),
       'title': title,
       'author': author,
       'publicationDate': dateFormat.format(publicationDate),
-      'creationDate': dateFormat.format(creationDate),
+      'creationDate': dateFormat.format(creationDate ?? DateTime.now()),
       'description': description ?? '',
       'publisher': publisher ?? '',
       'language': language ?? '',

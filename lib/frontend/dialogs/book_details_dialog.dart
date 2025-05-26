@@ -96,7 +96,7 @@ void showBookDetailsDialog(BuildContext context, Book book) async {
                     ),
                     _buildDetailRow(
                       'Añadido:',
-                      dateFormat.format(book.creationDate),
+                      dateFormat.format(book.creationDate?.toLocal() ?? DateTime.now()),
                     ),
                     _buildDetailRow(
                       '${AppLocalizations.of(context)!.file}:',
