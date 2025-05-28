@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/reading_list_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/frontend/widgets/reading_list_filter_grid.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -45,7 +46,7 @@ class ReadingListScreen extends StatelessWidget {
         future: context.read<ReadingListProvider>().fetchReadingLists(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CustomLoader(size: 60.0, color: Colors.blue));
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {

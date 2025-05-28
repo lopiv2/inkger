@@ -11,6 +11,7 @@ import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/epub_parser.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -203,7 +204,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
 
   Widget _buildCurrentPage() {
     // Estados de carga y error
-    if (isLoading) return Center(child: CircularProgressIndicator());
+    if (isLoading) return Center(child: CustomLoader(size: 60.0, color: Colors.blue));
     if (errorMessage != null) return Center(child: Text(errorMessage!));
 
     if (flatNavPoints.isEmpty ||
@@ -292,7 +293,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
         return SvgPicture.memory(
           imageData,
           placeholderBuilder: (context) =>
-              const Center(child: CircularProgressIndicator()),
+              const Center(child: CustomLoader(size: 60.0, color: Colors.blue)),
           height: 150,
           fit: BoxFit.contain,
         );
@@ -304,7 +305,7 @@ class _CustomReaderEpubState extends State<CustomReaderEpub>
           errorBuilder: (_, __, ___) => _buildImageError(),
           frameBuilder: (_, child, frame, __) {
             if (frame == null) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CustomLoader(size: 60.0, color: Colors.blue));
             }
             return child;
           },

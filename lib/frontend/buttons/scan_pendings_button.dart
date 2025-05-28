@@ -7,6 +7,7 @@ import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -90,7 +91,7 @@ class _ScanPendingFilesButtonState extends State<ScanPendingFilesButton> {
                   ? SizedBox(
                       width: widget.iconSize,
                       height: widget.iconSize,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CustomLoader(size: 60.0, color: Colors.blue),
                     )
                   : Icon(
                       Icons.document_scanner,

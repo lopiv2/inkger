@@ -8,6 +8,7 @@ import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/frontend/widgets/hover_grid_item_reading_list.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -122,7 +123,7 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
               future: _fetchedItems,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CustomLoader(size: 60.0, color: Colors.blue));
                 } else if (snapshot.hasError) {
                   return const Center(child: Text('Error al cargar los datos'));
                 } else {

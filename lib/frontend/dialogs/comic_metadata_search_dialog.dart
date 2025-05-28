@@ -4,6 +4,7 @@ import 'package:inkger/frontend/dialogs/volume_issues_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -85,10 +86,7 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                         ? SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                            child: CustomLoader(size: 60.0, color: Colors.blue)
                           )
                         : Text('${AppLocalizations.of(context)!.search}'),
                   ),
@@ -205,7 +203,7 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                                           return Icon(Icons.error);
                                         }
                                         return Center(
-                                          child: CircularProgressIndicator(),
+                                          child: CustomLoader(size: 60.0, color: Colors.blue),
                                         );
                                       },
                                     ),

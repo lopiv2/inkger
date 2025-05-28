@@ -4,6 +4,7 @@ import 'package:inkger/frontend/models/app_preferences.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -184,7 +185,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     final prefsProvider = context.watch<PreferencesProvider>();
 
     if (prefsProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CustomLoader(size: 60.0, color: Colors.blue));
     }
     return Scaffold(
       appBar: AppBar(title: const Text('Preferencias')),

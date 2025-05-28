@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/user.dart';
 import 'package:inkger/frontend/services/user_services.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Asegúrate de importar tu modelo de usuario
@@ -137,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildUserInfoSection() {
     if (user == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CustomLoader(size: 60.0, color: Colors.blue));
     }
 
     return Card(

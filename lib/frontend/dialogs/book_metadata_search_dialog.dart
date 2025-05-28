@@ -3,7 +3,7 @@ import 'package:inkger/frontend/dialogs/compare_metadata_book_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
-import 'package:intl/intl.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -128,7 +128,7 @@ class _BookSearchDialogState extends State<BookSearchDialog> {
             const SizedBox(height: 16),
             _isLoading
                 ? const Expanded(
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: CustomLoader(size: 60.0, color: Colors.blue)),
                   )
                 : _results.isEmpty
                 ? const Expanded(child: Center(child: Text('Sin resultados.')))

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/library_services.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 
 class EditLibraryDialog extends StatefulWidget {
   final String libraryTitle;
@@ -52,7 +53,7 @@ class _EditLibraryDialogState extends State<EditLibraryDialog> {
       content:
           _isLoading
               ? Center(
-                child: CircularProgressIndicator(),
+                child: CustomLoader(size: 60.0, color: Colors.blue),
               ) // Mostrar spinner si está cargando
               : SizedBox(
                 width:

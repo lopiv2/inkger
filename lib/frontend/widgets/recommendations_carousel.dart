@@ -3,6 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:inkger/frontend/models/recommendations.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -47,9 +48,11 @@ class _RecommendedBooksCarouselState extends State<RecommendedBooksCarousel> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      //return const Center(child: CustomLoader(size: 60.0, color: Colors.blue)());
+      return const Center(
+        child: CustomLoader(size: 60.0, color: Colors.blue)
+      );
     }
-
 
     // Mostrar todos los libros de todos los autores en un solo carrusel
     final allBooks = _books.expand((author) => author.books).toList();

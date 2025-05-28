@@ -4,7 +4,7 @@ import 'package:inkger/frontend/models/reading_list.dart';
 import 'package:inkger/frontend/models/reading_list_item.dart';
 import 'package:inkger/frontend/services/reading_list_services.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
-import 'package:inkger/frontend/widgets/hover_card_generic.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 
 class ReadingListFilterAndGrid extends StatefulWidget {
   final List<ReadingList> readingLists; // Cambia el tipo a List<ReadingList>.
@@ -158,7 +158,7 @@ class _ReadingListFilterAndGridState extends State<ReadingListFilterAndGrid> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CustomLoader(size: 60.0, color: Colors.blue),
           ); // Mostrar un indicador de carga
         } else if (snapshot.hasError) {
           return const Center(

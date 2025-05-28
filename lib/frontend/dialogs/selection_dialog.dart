@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/reading_list_services.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart'; // Importar CommonServices
 
 class SelectionDialog extends StatefulWidget {
@@ -81,7 +82,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
         ],
       ),
       content: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CustomLoader(size: 60.0, color: Colors.blue))
           : filteredItems.isEmpty
           ? const Text('No hay elementos disponibles en la biblioteca.')
           : SizedBox(

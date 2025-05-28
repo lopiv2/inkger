@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 
 Widget buildCoverImageGoogle(String? coverPath, {bool calculateColor = false}) {
   return FutureBuilder<Uint8List?>(
@@ -10,7 +11,7 @@ Widget buildCoverImageGoogle(String? coverPath, {bool calculateColor = false}) {
         : Future.value(null),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return Center(child: CircularProgressIndicator());
+        return Center(child: CustomLoader(size: 60.0, color: Colors.blue));
       }
       if (snapshot.hasError || !snapshot.hasData) {
         return FittedBox(
@@ -39,7 +40,7 @@ Widget buildCoverImage(
         : Future.value(null),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return Center(child: CircularProgressIndicator());
+        return Center(child: CustomLoader(size: 60.0, color: Colors.blue));
       }
       if (snapshot.hasError || !snapshot.hasData) {
         return Image.asset(

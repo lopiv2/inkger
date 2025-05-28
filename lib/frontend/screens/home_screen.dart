@@ -5,6 +5,7 @@ import 'package:inkger/frontend/screens/top_bar.dart';
 import 'package:inkger/frontend/screens/top_bar_logo.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/frontend/widgets/side_bar_reader.dart';
 import 'package:inkger/frontend/widgets/side_bar_writer.dart';
 import 'package:provider/provider.dart';
@@ -180,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     child: preferences.isLoading
-                        ? const CircularProgressIndicator()
+                        ? const CustomLoader(size: 60.0, color: Colors.blue)
                         : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:provider/provider.dart';
@@ -127,7 +128,7 @@ class _ConvertEbookOptionsDialogState extends State<ConvertEbookOptionsDialog> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CustomLoader(size: 60.0, color: Colors.blue),
                   )
                 : const Icon(Icons.picture_as_pdf),
             label: _isConverting

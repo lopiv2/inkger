@@ -4,6 +4,7 @@ import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/models/series.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/frontend/widgets/series_filter_grid.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +47,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: CustomLoader(size: 60.0, color: Colors.blue)),
       );
     }
 

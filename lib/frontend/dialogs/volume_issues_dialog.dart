@@ -5,6 +5,7 @@ import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -134,7 +135,7 @@ class _VolumeIssuesDialogState extends State<VolumeIssuesDialog> {
                                       return const Icon(Icons.error);
                                     }
                                     return const Center(
-                                      child: CircularProgressIndicator(),
+                                      child: CustomLoader(size: 60.0, color: Colors.blue),
                                     );
                                   },
                                 ),

@@ -6,6 +6,7 @@ import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -186,7 +187,7 @@ class _FileImportDialogState extends State<FileImportDialog> {
           onPressed: uploading ? null : _uploadFile,
           child:
               uploading
-                  ? const CircularProgressIndicator()
+                  ? const CustomLoader(size: 60.0, color: Colors.blue)
                   : const Text('Importar'),
         ),
       ],

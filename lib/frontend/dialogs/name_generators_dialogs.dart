@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:inkger/frontend/models/name_generator.dart';
 import 'package:inkger/frontend/services/writer_services.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 
 class NameGeneratorsDialog extends StatefulWidget {
   final NameGenerator generator;
@@ -141,7 +142,7 @@ class _SectionWithDropdownState extends State<SectionWithDropdown> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
-                    child: CircularProgressIndicator(),
+                    child: CustomLoader(size: 60.0, color: Colors.blue),
                   ); // Muestra un loading mientras esperas la respuesta
                 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 
 class CounterWidget extends StatefulWidget {
   final String title; // Título del widget
@@ -62,7 +63,7 @@ class _CounterWidgetState extends State<CounterWidget> {
                       future: _count,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
+                          return CustomLoader(size: 60.0, color: Colors.blue);
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
                         } else if (snapshot.hasData) {

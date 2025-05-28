@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/models/user.dart';
 import 'package:inkger/frontend/screens/user_profile_screen.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfileLoader extends StatefulWidget {
@@ -102,7 +103,7 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: CustomLoader(size: 60.0, color: Colors.blue)),
           );
         }
 

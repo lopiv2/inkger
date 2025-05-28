@@ -7,6 +7,7 @@ import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -216,7 +217,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
 
   /*Widget _buildImageViewer() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(child: CustomLoader(size: 60.0, color: Colors.blue)());
     }
 
     if (_errorMessage != null) {
@@ -236,7 +237,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
       },
       child:
           _imageData.isEmpty
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: CustomLoader(size: 60.0, color: Colors.blue)())
               : PageFlipComicViewer(pages: _imageData),
     );
   }*/
@@ -253,7 +254,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
 
   Widget _buildImageViewer() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(child: CustomLoader(size: 60.0, color: Colors.blue));
     }
 
     if (_errorMessage != null) {
@@ -315,7 +316,7 @@ class _CustomReaderComicState extends State<CustomReaderComic>
                         errorBuilder: (_, __, ___) => _buildImageError(),
                         frameBuilder: (_, child, frame, __) {
                           if (frame == null) {
-                            return Center(child: CircularProgressIndicator());
+                            return Center(child: CustomLoader(size: 60.0, color: Colors.blue));
                           }
                           return child;
                         },

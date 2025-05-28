@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:universal_html/html.dart' as html;
@@ -149,7 +150,7 @@ Future<void> loadBookFile(
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Center(child: CustomLoader(size: 60.0, color: Colors.blue)),
     );
 
     // Obtener los bytes del EPUB
@@ -199,7 +200,7 @@ Future<void> loadComicFile(
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Center(child: CustomLoader(size: 60.0, color: Colors.blue)),
     );
 
     // Obtener los bytes del EPUB

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/utils/constants.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -57,90 +58,129 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(title: const Text('Login'), centerTitle: true),
-      body: Center(
-        child: Container(
-          width: 300,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: const Offset(0, 5),
+      body: Stack(
+        children: [
+          // Fondo con imagen
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                  "images/login_back.jpg",
+                ), // Cambia por tu imagen
+                fit: BoxFit.cover,
               ),
-            ],
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Iniciar Sesión',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Usuario',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  onFieldSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(_passwordFocusNode);
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su usuario';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _passwordController,
-                  focusNode: _passwordFocusNode,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                  obscureText: true,
-                  textInputAction: TextInputAction.go,
-                  onFieldSubmitted: (_) => _login(),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su contraseña';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 40,
-                          vertical: 15,
-                        ),
-                      ),
-                      child: const Text(
-                        'Iniciar Sesión',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-              ],
             ),
           ),
-        ),
+
+          // Contenido con Card
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 10,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                color: Colors.white.withOpacity(0.95), // Transparente leve
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 40,
+                  ),
+                  child: SizedBox(
+                    width: width > 800 ? 500 : double.infinity,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/images/logo_inkger.png',
+                          height: 200,
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          "Login to your Account",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text("See what is going on with your business"),
+                        const SizedBox(height: 24),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: _usernameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Usuario',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.person),
+                                ),
+                                textInputAction: TextInputAction.next,
+                                onFieldSubmitted: (_) => FocusScope.of(
+                                  context,
+                                ).requestFocus(_passwordFocusNode),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Por favor ingrese su usuario'
+                                    : null,
+                              ),
+                              const SizedBox(height: 20),
+                              TextFormField(
+                                controller: _passwordController,
+                                focusNode: _passwordFocusNode,
+                                decoration: const InputDecoration(
+                                  labelText: 'Contraseña',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.lock),
+                                ),
+                                obscureText: true,
+                                textInputAction: TextInputAction.go,
+                                onFieldSubmitted: (_) => _login(),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Por favor ingrese su contraseña'
+                                    : null,
+                              ),
+                              const SizedBox(height: 30),
+                              _isLoading
+                                  //? const CustomLoader(size: 60.0, color: Colors.blue)()
+                                  ? const CustomLoader(
+                                      size: 60.0,
+                                      color: Colors.blue,
+                                    )
+                                  : ElevatedButton(
+                                      onPressed: _login,
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 40,
+                                          vertical: 15,
+                                        ),
+                                        backgroundColor: Colors.deepPurple,
+                                      ),
+                                      child: const Text(
+                                        'Iniciar Sesión',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

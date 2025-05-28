@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 
 class DocumentFormatCounterWidget extends StatefulWidget {
@@ -51,7 +52,7 @@ class _DocumentFormatCounterWidgetState
                     future: _documentFormatCount,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
+                        return CustomLoader(size: 60.0, color: Colors.blue);
                       } else if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
                       } else if (snapshot.hasData) {

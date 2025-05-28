@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
+import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,7 +73,7 @@ class _ConvertOptionsDialogState extends State<ConvertOptionsDialog> {
                     ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CustomLoader(size: 60.0, color: Colors.blue),
                     )
                     : const Icon(Icons.folder_zip),
             label:
