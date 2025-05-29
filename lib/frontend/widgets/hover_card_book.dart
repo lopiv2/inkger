@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/dialogs/book_details_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
-import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCardBook extends StatefulWidget {
   final Widget child;
@@ -56,44 +56,16 @@ class _HoverCardState extends State<HoverCardBook> {
                 ),
                 child: Center(
                   child: Tooltip(
-                    message: "Abrir lector",
+                    message: "Abrir libro",
                     child: IconButton(
                       onPressed: () {
-                        final extension = widget.book.filePath
-                            ?.split('.')
-                            .last
-                            .toLowerCase();
-                        if (extension == 'epub') {
-                          loadBookFile(
-                            context,
-                            widget.book.id.toString(),
-                            widget.book.title,
-                            widget.book.readingProgress!['readingProgress'],
-                          );
-                        } else if (extension == 'mobi') {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Visualización no soportada'),
-                              content: const Text(
-                                'Solo se pueden visualizar archivos EPUB. Por favor, convierte el archivo antes de visualizarlo.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Cerrar'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                        context.push(
+                          '/item-details/book/${widget.book.id}',
+                          extra: widget.book.toJson(),
+                        );
                       },
                       splashColor: Colors.white,
-                      icon: Icon(
-                        Icons.menu_book,
-                        color: Colors.white,
-                        size: 40,
-                      ),
+                      icon: Icon(Icons.pageview, color: Colors.white, size: 40),
                     ),
                   ),
                 ),
@@ -102,7 +74,7 @@ class _HoverCardState extends State<HoverCardBook> {
           // Botón de edición (abajo izquierda)
           if (_isHovered)
             Positioned(
-              bottom: 20,
+              bottom: 15,
               left: 8,
               child: IconButton(
                 onPressed: () {

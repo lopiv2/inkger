@@ -213,6 +213,49 @@ class ComicServices {
     }
   }
 
+  static Future<void> saveReadState(
+    int bookId,
+    bool read,
+    BuildContext context,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('id');
+    try {
+      final response = await ApiService.dio.post(
+        '/api/comicfile/save-read-state',
+        data: jsonEncode({
+          'user_id': id,
+          'book_id': bookId,
+          'read': read, // Asegura valor entre 1-100
+        }),
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al guardar progreso');
+      }
+      if (context.mounted) {
+        // ✅ Verificar si el widget sigue montado antes de usar el contexto
+        /*CustomSnackBar.show(
+          context,
+          '${AppLocalizations.of(context)!.savedProgress}: $read%',
+          Colors.green,
+          duration: const Duration(seconds: 4),
+        );*/
+      }
+    } catch (e) {
+      if (context.mounted) {
+        // ✅ Verificar antes de mostrar el error
+        CustomSnackBar.show(
+          context,
+          'Error guardando estado lectura: ${e.toString()}',
+          Colors.red,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    }
+  }
+  
   static Future<void> saveReadingProgress(
     int comicId,
     int progress,
@@ -293,6 +336,66 @@ class ComicServices {
     }
   }
 
+  static Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    Comic comic,
+  ) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // El usuario debe tocar un botón para cerrar
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  '¿Estás seguro de que quieres eliminar el libro "${comic.title}"?',
+                ),
+                const SizedBox(height: 8),
+                const Text('Esta acción no se puede deshacer.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.cancel),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Cierra el diálogo primero
+                try {
+                  await ComicServices.deletecomic(context, comic);
+                  // Opcional: Mostrar mensaje de éxito
+                  CustomSnackBar.show(
+                    context,
+                    '"${comic.title}" eliminado correctamente',
+                    Colors.green,
+                    duration: Duration(seconds: 4),
+                  );
+                } catch (e) {
+                  CustomSnackBar.show(
+                    context,
+                    'Error al eliminar: ${e.toString()}',
+                    Colors.red,
+                    duration: Duration(seconds: 4),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
   static Future<void> updateComic(Comic comic) async {
     try {
       final response = await ApiService.dio.put(

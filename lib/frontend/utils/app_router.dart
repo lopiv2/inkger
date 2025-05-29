@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inkger/frontend/models/book.dart';
+import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/screens/calendar_screen.dart';
 import 'package:inkger/frontend/screens/comic_reader_screen.dart';
 import 'package:inkger/frontend/screens/dashboard_screen.dart';
 import 'package:inkger/frontend/screens/epub_reader_screen.dart';
 import 'package:inkger/frontend/screens/home_screen.dart';
 import 'package:inkger/frontend/screens/import_reading_list_screen.dart';
+import 'package:inkger/frontend/screens/item_detail_screen.dart';
 import 'package:inkger/frontend/screens/login_screen.dart';
 import 'package:inkger/frontend/screens/name_generators_screen.dart';
 import 'package:inkger/frontend/screens/preferences_screen.dart';
@@ -365,6 +368,37 @@ class AppRouter {
                       );
                     },
                 transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/item-details/:type/:itemId',
+            name: 'item-details',
+            pageBuilder: (context, state) {
+              final type = state.pathParameters['type']!;
+              final extra = state.extra;
+
+              dynamic item;
+              if (extra is Map<String, dynamic>) {
+                if (extra['publicationDate'] is DateTime) {
+                  extra['publicationDate'] =
+                      (extra['publicationDate'] as DateTime).toIso8601String();
+                }
+                if (type == 'book') {
+                  item = Book.fromJson(extra);
+                } else if (type == 'comic') {
+                  item = Comic.fromJson(extra);
+                }
+              }
+
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: ItemDetailScreen(type: type, item: item),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                transitionDuration: const Duration(milliseconds: 300),
               );
             },
           ),

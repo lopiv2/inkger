@@ -160,8 +160,49 @@ class BookServices {
           duration: const Duration(seconds: 4),
         );
       }
-      // Opcional: Guardar localmente para sincronizar después
-      //await _saveProgressOffline(bookId, progress);
+    }
+  }
+
+  static Future<void> saveReadState(
+    int bookId,
+    bool read,
+    BuildContext context,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('id');
+    try {
+      final response = await ApiService.dio.post(
+        '/api/bookfile/save-read-state',
+        data: jsonEncode({
+          'user_id': id,
+          'book_id': bookId,
+          'read': read, // Asegura valor entre 1-100
+        }),
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al guardar progreso');
+      }
+      if (context.mounted) {
+        // ✅ Verificar si el widget sigue montado antes de usar el contexto
+        /*CustomSnackBar.show(
+          context,
+          '${AppLocalizations.of(context)!.savedProgress}: $read%',
+          Colors.green,
+          duration: const Duration(seconds: 4),
+        );*/
+      }
+    } catch (e) {
+      if (context.mounted) {
+        // ✅ Verificar antes de mostrar el error
+        CustomSnackBar.show(
+          context,
+          'Error guardando estado lectura: ${e.toString()}',
+          Colors.red,
+          duration: const Duration(seconds: 4),
+        );
+      }
     }
   }
 

@@ -34,8 +34,8 @@ class CommonServices {
         options: Options(responseType: ResponseType.bytes),
       );
       final bytes = response.data;
-      String? fileName;
-      fileName ??= '$title.$extension'; // Valor por defecto si no hay cabecera
+
+      final fileName = '$title.$extension';
       final blob = html.Blob([bytes]);
       final url = html.Url.createObjectUrlFromBlob(blob);
       final anchor = html.AnchorElement(href: url)

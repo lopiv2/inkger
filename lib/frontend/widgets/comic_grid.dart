@@ -12,11 +12,9 @@ import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
-import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 import 'package:inkger/frontend/widgets/sort_selector.dart';
-import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:inkger/frontend/widgets/comics_filters_layout.dart';
@@ -596,7 +594,7 @@ class _ComicsGridState extends State<ComicsGrid> {
             final filePath = comic.filePath;
             String extension = '';
             if (filePath != null && filePath.contains('.')) {
-              extension = filePath.substring(filePath.lastIndexOf('.'));
+              extension = filePath.substring(filePath.lastIndexOf('.') + 1);
             }
             await CommonServices.downloadFile(
               comic.id,
@@ -617,7 +615,8 @@ class _ComicsGridState extends State<ComicsGrid> {
               return ComicMetadataSearchDialog(comic: comic);
             },
           ),
-          onDelete: () => showDeleteConfirmationDialog(context, comic),
+          onDelete: () =>
+              ComicServices.showDeleteConfirmationDialog(context, comic),
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0),
@@ -629,6 +628,33 @@ class _ComicsGridState extends State<ComicsGrid> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.0),
                   child: buildCoverImage(coverPath ?? ''),
+                ),
+                Positioned(
+                  top: 15,
+                  right: -25,
+                  child: Transform.rotate(
+                    angle: 0.785398, // 45 grados en radianes
+                    child: Container(
+                      width: 100,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: comic.readingProgress!['read'] == true
+                            ? Colors.green.withOpacity(0.8)
+                            : Colors.red.withOpacity(0.8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        comic.readingProgress!['read'] == true
+                            ? 'Leído'
+                            : 'No leído',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
@@ -811,66 +837,6 @@ class _ComicsGridState extends State<ComicsGrid> {
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> showDeleteConfirmationDialog(
-    BuildContext context,
-    Comic comic,
-  ) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // El usuario debe tocar un botón para cerrar
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmar eliminación'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  '¿Estás seguro de que quieres eliminar el libro "${comic.title}"?',
-                ),
-                const SizedBox(height: 8),
-                const Text('Esta acción no se puede deshacer.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(AppLocalizations.of(context)!.cancel),
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-              },
-            ),
-            TextButton(
-              child: const Text(
-                'Eliminar',
-                style: TextStyle(color: Colors.red),
-              ),
-              onPressed: () async {
-                Navigator.of(context).pop(); // Cierra el diálogo primero
-                try {
-                  await ComicServices.deletecomic(context, comic);
-                  // Opcional: Mostrar mensaje de éxito
-                  CustomSnackBar.show(
-                    context,
-                    '"${comic.title}" eliminado correctamente',
-                    Colors.green,
-                    duration: Duration(seconds: 4),
-                  );
-                } catch (e) {
-                  CustomSnackBar.show(
-                    context,
-                    'Error al eliminar: ${e.toString()}',
-                    Colors.red,
-                    duration: Duration(seconds: 4),
-                  );
-                }
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

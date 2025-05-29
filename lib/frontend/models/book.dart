@@ -58,7 +58,10 @@ class Book {
       seriesNumber: json['seriesNumber'],
       readingProgress: json['readingProgress'] is Map<String, dynamic>
           ? Map<String, dynamic>.from(json['readingProgress'])
-          : {'progress': json['readingProgress']},
+          : {
+              'progress': json['readingProgress'],
+              'read': json['read'],
+            },
       fileSize: json['fileSize'],
       filePath: json['filePath'],
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/dialogs/comic_details_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
-import 'package:inkger/frontend/utils/functions.dart';
 
 class HoverCardComic extends StatefulWidget {
   final Widget child;
@@ -49,23 +49,16 @@ class _HoverCardState extends State<HoverCardComic> {
                 ),
                 child: Center(
                   child: Tooltip(
-                    message: "Abrir lector",
+                    message: "Abrir comic",
                     child: IconButton(
                       onPressed: () {
-                        loadComicFile(
-                          context,
-                          widget.comic.id.toString(),
-                          widget.comic.title,
-                          widget.comic.readingProgress!['readingProgress'],
-                          '',
+                        context.push(
+                          '/item-details/comic/${widget.comic.id}',
+                          extra: widget.comic.toJson(),
                         );
                       },
                       splashColor: Colors.white,
-                      icon: Icon(
-                        Icons.menu_book,
-                        color: Colors.white,
-                        size: 40,
-                      ),
+                      icon: Icon(Icons.pageview, color: Colors.white, size: 40),
                     ),
                   ),
                 ),
@@ -74,7 +67,7 @@ class _HoverCardState extends State<HoverCardComic> {
           // Botón de edición (abajo izquierda)
           if (_isHovered)
             Positioned(
-              bottom: 20,
+              bottom: 15,
               left: 8,
               child: IconButton(
                 onPressed: () {
