@@ -15,7 +15,8 @@ import 'package:inkger/frontend/screens/preferences_screen.dart';
 import 'package:inkger/frontend/screens/reading_lists_screen.dart';
 import 'package:inkger/frontend/screens/series_detail_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
-import 'package:inkger/frontend/screens/writer_welcome_screen.dart';
+import 'package:inkger/frontend/screens/writer/document_editor_screen.dart';
+import 'package:inkger/frontend/screens/writer/writer_welcome_screen.dart';
 import 'package:inkger/frontend/screens/reading_list_detail_screen.dart';
 import 'package:inkger/frontend/utils/user_profile_loader.dart';
 import 'package:inkger/frontend/widgets/book_grid.dart';
@@ -363,6 +364,29 @@ class AppRouter {
                           parent:
                               animation, // Usa el animation proporcionado por GoRouter
                           curve: Curves.bounceInOut,
+                        ),
+                        child: child,
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 1000),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/home-writer/document-editor/:nodeId', // Use root path for the default home
+            pageBuilder: (context, state) {
+              final nodeId = state.pathParameters['nodeId']!;
+              final extra = state.extra;
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: DocumentEditorScreen(documentId: nodeId, documentTitle: '',),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return ScaleTransition(
+                        scale: CurvedAnimation(
+                          parent:
+                              animation, // Usa el animation proporcionado por GoRouter
+                          curve: Curves.fastOutSlowIn,
                         ),
                         child: child,
                       );

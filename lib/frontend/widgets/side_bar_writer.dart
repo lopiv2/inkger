@@ -44,7 +44,7 @@ class _SidebarWriterState extends State<SidebarWriter> {
       setState(() {
         myBooks = tree; // Actualiza la estructura de datos
       });
-        } catch (e) {
+    } catch (e) {
       print('Error al cargar la estructura de libros: $e');
       // Opcional: Mostrar un mensaje de error al usuario
     }
@@ -267,7 +267,10 @@ class _SidebarWriterState extends State<SidebarWriter> {
       ),
       indentation: const Indentation(style: IndentStyle.roundJoint, width: 8),
       onItemTap: (item) {
-        print(item.data); // Imprimir los datos del nodo seleccionado
+        //Si es un documento
+        if (item.data['key'].contains("doc")) {
+          context.push("/home-writer/document-editor/${item.data['key']}");
+        }
       },
       builder: (context, node) => FolderTreeNode(
         node: node,

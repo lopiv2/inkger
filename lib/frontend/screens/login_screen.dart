@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 8),
                               IconButton(
-                                icon: const Icon(Icons.download),
+                                icon: const Icon(Icons.casino),
                                 tooltip: 'Cita aleatoria',
                                 onPressed: () {
                                   _setRandomQuote();

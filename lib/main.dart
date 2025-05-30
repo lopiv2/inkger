@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:inkger/backend/services/api_service.dart';
 import 'package:inkger/frontend/utils/app_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
@@ -84,6 +85,7 @@ class _MyAppState extends State<MyApp> {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
+        FlutterQuillLocalizations.delegate,
       ],
       supportedLocales: [
         const Locale('en'), // English
