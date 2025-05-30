@@ -28,8 +28,9 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Fila de Cards
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: 20, // Espacio horizontal entre elementos
+                  runSpacing: 20, // Espacio vertical entre filas
                   children: [
                     // Card de libros
                     CounterWidget(
@@ -58,10 +59,16 @@ class DashboardScreen extends StatelessWidget {
                       color: Colors.red,
                       icon: Icons.list,
                     ),
+                    CounterWidget(
+                      title: AppLocalizations.of(context)!.readBooks,
+                      fetchCount: CommonServices.fetchReadBooksCount,
+                      color: Colors.brown,
+                      icon: Icons.task,
+                    ),
+                    DocumentFormatCounterWidget(),
                   ],
                 ),
-                SizedBox(height: 46),
-                DocumentFormatCounterWidget(),
+                
                 SizedBox(height: 86),
                 RecommendedBooksCarousel(),
               ],

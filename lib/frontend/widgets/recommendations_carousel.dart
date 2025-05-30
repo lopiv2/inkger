@@ -104,47 +104,50 @@ class _RecommendedBooksCarouselState extends State<RecommendedBooksCarousel> {
                   return Column(
                     children: [
                       Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            final url = book.link;
-                            if (url == null) {
-                              CustomSnackBar.show(
-                                context,
-                                AppLocalizations.of(context)!.cantOpenLink,
-                                Colors.red,
-                                duration: Duration(seconds: 4),
-                              );
-                              return;
-                            }
-                            if (await canLaunchUrl(Uri.parse(url))) {
-                              await launchUrl(
-                                Uri.parse(url),
-                                mode: LaunchMode.externalApplication,
-                              );
-                            } else {
-                              CustomSnackBar.show(
-                                context,
-                                AppLocalizations.of(context)!.cantOpenLink,
-                                Colors.red,
-                                duration: Duration(seconds: 4),
-                              );
-                            }
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: book.cover != null
-                                ? Image.network(
-                                    book.cover!,
-                                    height: 180,
-                                    width: 120,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    height: 180,
-                                    width: 120,
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.book, size: 50),
-                                  ),
+                        child: Tooltip(
+                          message: book.description,
+                          child: InkWell(
+                            onTap: () async {
+                              final url = book.link;
+                              if (url == null) {
+                                CustomSnackBar.show(
+                                  context,
+                                  AppLocalizations.of(context)!.cantOpenLink,
+                                  Colors.red,
+                                  duration: Duration(seconds: 4),
+                                );
+                                return;
+                              }
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                await launchUrl(
+                                  Uri.parse(url),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } else {
+                                CustomSnackBar.show(
+                                  context,
+                                  AppLocalizations.of(context)!.cantOpenLink,
+                                  Colors.red,
+                                  duration: Duration(seconds: 4),
+                                );
+                              }
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: book.cover != null
+                                  ? Image.network(
+                                      book.cover!,
+                                      height: 180,
+                                      width: 120,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      height: 180,
+                                      width: 120,
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.book, size: 50),
+                                    ),
+                            ),
                           ),
                         ),
                       ),
@@ -167,6 +170,8 @@ class _RecommendedBooksCarouselState extends State<RecommendedBooksCarousel> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Colors.black),
                       ),
+                      book.rating!.isNotEmpty ?
+                      Icon(Icons.star, color: Colors.amber,) : Center()
                     ],
                   );
                 },

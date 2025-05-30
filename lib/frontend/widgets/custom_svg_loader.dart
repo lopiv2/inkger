@@ -9,7 +9,7 @@ class CustomLoader extends StatelessWidget {
 
   const CustomLoader({
     super.key,
-    this.size = 48.0,
+    this.size = 40.0,
     this.color,
     this.useSpinKit = true,
     this.spinKitType = SpinKitWaveType.start,

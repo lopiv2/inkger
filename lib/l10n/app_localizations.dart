@@ -62,7 +62,8 @@ import 'app_localizations_es.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,18 +84,259 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('es')
+    Locale('es'),
   ];
+
+  /// No description provided for @quote_1.
+  ///
+  /// In en, this message translates to:
+  /// **'The saddest aspect of life right now is that science gathers knowledge faster than society gathers wisdom. — Isaac Asimov'**
+  String get quote_1;
+
+  /// No description provided for @quote_2.
+  ///
+  /// In en, this message translates to:
+  /// **'It is our choices, Harry, that show what we truly are, far more than our abilities. — J.K. Rowling'**
+  String get quote_2;
+
+  /// No description provided for @quote_3.
+  ///
+  /// In en, this message translates to:
+  /// **'Not all those who wander are lost. — J.R.R. Tolkien'**
+  String get quote_3;
+
+  /// No description provided for @quote_4.
+  ///
+  /// In en, this message translates to:
+  /// **'We are such stuff as dreams are made on. — William Shakespeare'**
+  String get quote_4;
+
+  /// No description provided for @quote_5.
+  ///
+  /// In en, this message translates to:
+  /// **'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. — Jane Austen'**
+  String get quote_5;
+
+  /// No description provided for @quote_6.
+  ///
+  /// In en, this message translates to:
+  /// **'The man who does not read has no advantage over the man who cannot read. — Mark Twain'**
+  String get quote_6;
+
+  /// No description provided for @quote_7.
+  ///
+  /// In en, this message translates to:
+  /// **'So it goes. — Kurt Vonnegut'**
+  String get quote_7;
+
+  /// No description provided for @quote_8.
+  ///
+  /// In en, this message translates to:
+  /// **'Whatever our souls are made of, his and mine are the same. — Emily Brontë'**
+  String get quote_8;
+
+  /// No description provided for @quote_9.
+  ///
+  /// In en, this message translates to:
+  /// **'All animals are equal, but some animals are more equal than others. — George Orwell'**
+  String get quote_9;
+
+  /// No description provided for @quote_10.
+  ///
+  /// In en, this message translates to:
+  /// **'Hell is empty and all the devils are here. — William Shakespeare'**
+  String get quote_10;
+
+  /// No description provided for @quote_11.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not pity the dead, Harry. Pity the living. — J.K. Rowling'**
+  String get quote_11;
+
+  /// No description provided for @quote_12.
+  ///
+  /// In en, this message translates to:
+  /// **'You can’t get a cup of tea big enough or a book long enough to suit me. — C.S. Lewis'**
+  String get quote_12;
+
+  /// No description provided for @quote_13.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no friend as loyal as a book. — Ernest Hemingway'**
+  String get quote_13;
+
+  /// No description provided for @quote_14.
+  ///
+  /// In en, this message translates to:
+  /// **'A room without books is like a body without a soul. — Cicero'**
+  String get quote_14;
+
+  /// No description provided for @quote_15.
+  ///
+  /// In en, this message translates to:
+  /// **'Until I feared I would lose it, I never loved to read. One does not love breathing. — Harper Lee'**
+  String get quote_15;
+
+  /// No description provided for @quote_16.
+  ///
+  /// In en, this message translates to:
+  /// **'Two things are infinite: the universe and human stupidity; and I\'m not sure about the universe. — Albert Einstein'**
+  String get quote_16;
+
+  /// No description provided for @quote_17.
+  ///
+  /// In en, this message translates to:
+  /// **'I have always imagined that Paradise will be a kind of library. — Jorge Luis Borges'**
+  String get quote_17;
+
+  /// No description provided for @quote_18.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading is essential for those who seek to rise above the ordinary. — Jim Rohn'**
+  String get quote_18;
+
+  /// No description provided for @quote_19.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairy tales are more than true... — Neil Gaiman'**
+  String get quote_19;
+
+  /// No description provided for @quote_20.
+  ///
+  /// In en, this message translates to:
+  /// **'Even the darkest night will end and the sun will rise. — Victor Hugo'**
+  String get quote_20;
+
+  /// No description provided for @quote_21.
+  ///
+  /// In en, this message translates to:
+  /// **'The world is indeed full of peril and in it there are many dark places. — J.R.R. Tolkien'**
+  String get quote_21;
+
+  /// No description provided for @quote_22.
+  ///
+  /// In en, this message translates to:
+  /// **'To be, or not to be, that is the question. — William Shakespeare'**
+  String get quote_22;
+
+  /// No description provided for @quote_23.
+  ///
+  /// In en, this message translates to:
+  /// **'Words are, in my not-so-humble opinion, our most inexhaustible source of magic. — J.K. Rowling'**
+  String get quote_23;
+
+  /// No description provided for @quote_24.
+  ///
+  /// In en, this message translates to:
+  /// **'Fear cuts deeper than swords. — George R.R. Martin'**
+  String get quote_24;
+
+  /// No description provided for @quote_25.
+  ///
+  /// In en, this message translates to:
+  /// **'Books are a uniquely portable magic. — Stephen King'**
+  String get quote_25;
+
+  /// No description provided for @quote_26.
+  ///
+  /// In en, this message translates to:
+  /// **'You don’t have to burn books to destroy a culture. Just get people to stop reading them. — Ray Bradbury'**
+  String get quote_26;
+
+  /// No description provided for @quote_27.
+  ///
+  /// In en, this message translates to:
+  /// **'There is some good in this world, and it’s worth fighting for. — J.R.R. Tolkien'**
+  String get quote_27;
+
+  /// No description provided for @quote_28.
+  ///
+  /// In en, this message translates to:
+  /// **'All that is gold does not glitter. — J.R.R. Tolkien'**
+  String get quote_28;
+
+  /// No description provided for @quote_29.
+  ///
+  /// In en, this message translates to:
+  /// **'We read to know we’re not alone. — William Nicholson'**
+  String get quote_29;
+
+  /// No description provided for @quote_30.
+  ///
+  /// In en, this message translates to:
+  /// **'I am no bird; and no net ensnares me. — Charlotte Brontë'**
+  String get quote_30;
+
+  /// No description provided for @quote_31.
+  ///
+  /// In en, this message translates to:
+  /// **'Life is either a daring adventure or nothing. — Helen Keller'**
+  String get quote_31;
+
+  /// No description provided for @quote_32.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing will work unless you do. — Maya Angelou'**
+  String get quote_32;
+
+  /// No description provided for @quote_33.
+  ///
+  /// In en, this message translates to:
+  /// **'You can never get a cup of tea large enough or a book long enough to suit me. — C.S. Lewis'**
+  String get quote_33;
+
+  /// No description provided for @quote_34.
+  ///
+  /// In en, this message translates to:
+  /// **'He that loves reading has everything within his reach. — William Godwin'**
+  String get quote_34;
+
+  /// No description provided for @quote_35.
+  ///
+  /// In en, this message translates to:
+  /// **'Books are mirrors: you only see in them what you already have inside you. — Carlos Ruiz Zafón'**
+  String get quote_35;
+
+  /// No description provided for @quote_36.
+  ///
+  /// In en, this message translates to:
+  /// **'We tell ourselves stories in order to live. — Joan Didion'**
+  String get quote_36;
+
+  /// No description provided for @quote_37.
+  ///
+  /// In en, this message translates to:
+  /// **'I write to discover what I know. — Flannery O’Connor'**
+  String get quote_37;
+
+  /// No description provided for @quote_38.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading gives us someplace to go when we have to stay where we are. — Mason Cooley'**
+  String get quote_38;
+
+  /// No description provided for @quote_39.
+  ///
+  /// In en, this message translates to:
+  /// **'What really knocks me out is a book that, when you\'re all done reading it, you wish the author that wrote it was a terrific friend of yours. — J.D. Salinger'**
+  String get quote_39;
+
+  /// No description provided for @quote_40.
+  ///
+  /// In en, this message translates to:
+  /// **'A reader lives a thousand lives before he dies. — George R.R. Martin'**
+  String get quote_40;
 
   /// No description provided for @audiobooks.
   ///
@@ -293,6 +536,12 @@ abstract class AppLocalizations {
   /// **'List successfully renamed'**
   String get listRenamedSuccess;
 
+  /// No description provided for @loginAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to your account'**
+  String get loginAccount;
+
   /// No description provided for @metadataUpdated.
   ///
   /// In en, this message translates to:
@@ -304,6 +553,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No serie'**
   String get noSerie;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
 
   /// No description provided for @preferencesSaved.
   ///
@@ -332,8 +587,14 @@ abstract class AppLocalizations {
   /// No description provided for @publishingDate.
   ///
   /// In en, this message translates to:
-  /// **'Fecha de publicación'**
+  /// **'Date of publication'**
   String get publishingDate;
+
+  /// No description provided for @readBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Items read'**
+  String get readBooks;
 
   /// No description provided for @readingLists.
   ///
@@ -383,6 +644,12 @@ abstract class AppLocalizations {
   /// **'Select file'**
   String get selectFile;
 
+  /// No description provided for @startSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get startSession;
+
   /// No description provided for @tag.
   ///
   /// In en, this message translates to:
@@ -419,6 +686,12 @@ abstract class AppLocalizations {
   /// **'Metadata successfully updated'**
   String get updateMetadataSuccess;
 
+  /// No description provided for @user.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get user;
+
   /// No description provided for @watchFeeds.
   ///
   /// In en, this message translates to:
@@ -426,7 +699,8 @@ abstract class AppLocalizations {
   String get watchFeeds;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -435,25 +709,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'es'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'es': return AppLocalizationsEs();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

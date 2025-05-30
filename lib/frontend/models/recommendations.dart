@@ -4,6 +4,7 @@ class ItemRecommendation {
   final String? cover;
   final String? link;
   final String author;
+  final String? rating;
 
   ItemRecommendation({
     required this.title,
@@ -11,6 +12,7 @@ class ItemRecommendation {
     this.cover,
     this.link,
     required this.author,
+    this.rating,
   });
 
   factory ItemRecommendation.fromJson(
@@ -31,6 +33,7 @@ class ItemRecommendation {
       cover: json['cover'],
       link: json['link'],
       author: author,
+      rating: json['rating'] ?? ''
     );
   }
 
@@ -40,6 +43,7 @@ class ItemRecommendation {
     'cover': cover,
     'link': link,
     'author': author,
+    'rating': rating,
   };
 }
 

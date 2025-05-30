@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/buttons/import_button.dart';
 import 'package:inkger/frontend/buttons/scan_pendings_button.dart';
+import 'package:inkger/frontend/utils/book_provider.dart';
+import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
@@ -27,6 +29,19 @@ class TopBar extends StatefulWidget {
 }
 
 class _TopBarState extends State<TopBar> {
+  String _searchQuery = '';
+  List<dynamic> _searchResults = [];
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _overlayEntry?.remove();
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final preferences = Provider.of<PreferencesProvider>(context);
@@ -59,13 +74,21 @@ class _TopBarState extends State<TopBar> {
                   ),
                 ],
               ),
-              child:  TextField(
-                decoration: InputDecoration(
-                  hintText: '${AppLocalizations.of(context)!.search}...',
-                  border: InputBorder.none,
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.search, color: Colors.black),
+              child: CompositedTransformTarget(
+                link: _layerLink,
+                child: TextField(
+                  controller: _controller,
+                  onChanged: (query) async {
+                    _searchQuery = query;
+                    await _performSearch(query);
+                  },
+                  decoration: InputDecoration(
+                    hintText: '${AppLocalizations.of(context)!.search}...',
+                    border: InputBorder.none,
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(Icons.search, color: Colors.black),
+                  ),
                 ),
               ),
             ),
@@ -171,5 +194,91 @@ class _TopBarState extends State<TopBar> {
         ],
       ),
     );
+  }
+
+  void _showOverlay() {
+    // Eliminar overlay anterior si existe
+    _overlayEntry?.remove();
+    _overlayEntry =
+        null; // <-- Añadir esta línea para evitar reinserción del viejo overlay
+
+    if (_searchResults.isEmpty) return; // No mostrar si no hay resultados
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: 300,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 50),
+          child: Material(
+            elevation: 4.0,
+            child: ListView(
+              shrinkWrap: true,
+              children: _searchResults.map((item) {
+                final isComic = item.runtimeType.toString().contains('Comic');
+                return ListTile(
+                  title: Text(item.title),
+                  onTap: () async {
+                    final providerBooks = Provider.of<BooksProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final providerComics = Provider.of<ComicsProvider>(
+                      context,
+                      listen: false,
+                    );
+
+                    if (isComic) {
+                      await providerComics.loadcomics(item.id);
+                      context.push(
+                        '/item-details/comic/${item.id}',
+                        extra: item.toJson(),
+                      );
+                    } else {
+                      await providerBooks.loadBooks(item.id);
+                      context.push(
+                        '/item-details/book/${item.id}',
+                        extra: item.toJson(),
+                      );
+                    }
+
+                    _overlayEntry?.remove();
+                    _overlayEntry = null; // <-- También aquí
+                    _controller.clear();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+      return;
+    }
+
+    final providerBooks = Provider.of<BooksProvider>(context, listen: false);
+    final providerComics = Provider.of<ComicsProvider>(context, listen: false);
+
+    final books = providerBooks.books
+        .where((b) => b.title.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    final comics = providerComics.comics
+        .where((c) => c.title.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+
+    setState(() {
+      _searchResults = [...books, ...comics];
+    });
+
+    _showOverlay();
   }
 }
