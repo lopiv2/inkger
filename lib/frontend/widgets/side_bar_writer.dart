@@ -76,9 +76,19 @@ class _SidebarWriterState extends State<SidebarWriter> {
                   final newNode = {
                     'key': generatedId, // Usar el ID generado
                     'name': controller.text.trim(),
-                    'children': <Map<String, dynamic>>[],
+                    'children': <Map<String, dynamic>>[], // Inicializar como lista vacía
                     'icon': 'book',
                   };
+
+                  // Si es un "Book", añadir automáticamente la carpeta "characters"
+                  if (newNode['icon'] == 'book') {
+                    (newNode['children'] as List<Map<String, dynamic>>).add({
+                      'key': 'characters_${DateTime.now().millisecondsSinceEpoch}', // ID único para la carpeta
+                      'name': 'Characters',
+                      'children': <Map<String, dynamic>>[],
+                      'icon': 'groups',
+                    });
+                  }
 
                   // Añadir el nuevo nodo al árbol en memoria
                   setState(() {
@@ -269,7 +279,7 @@ class _SidebarWriterState extends State<SidebarWriter> {
       onItemTap: (item) {
         //Si es un documento
         if (item.data['key'].contains("doc")) {
-          context.push("/home-writer/document-editor/${item.data['key']}");
+          context.push("/home-writer/document-editor/${item.data['key']}/${item.data['name']}");
         }
       },
       builder: (context, node) => FolderTreeNode(

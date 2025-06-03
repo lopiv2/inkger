@@ -53,7 +53,7 @@ Widget buildCoverImage(
 
       return Image.memory(
         snapshot.data!,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         width: width,
         height: height,
       );

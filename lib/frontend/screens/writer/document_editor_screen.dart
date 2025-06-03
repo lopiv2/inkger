@@ -1,6 +1,7 @@
 // document_editor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:inkger/frontend/widgets/writer/custom_quill_toolbar.dart';
 
 class DocumentEditorScreen extends StatefulWidget {
   final String documentId;
@@ -47,51 +48,21 @@ class _DocumentEditorScreenState extends State<DocumentEditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.documentTitle),
+        backgroundColor: Colors.grey[800],
+        automaticallyImplyLeading: false,
+        title: Center(child: Text(widget.documentTitle, style: const TextStyle(color: Colors.white))),
         actions: [
-          IconButton(icon: const Icon(Icons.save), onPressed: _saveDocument),
+          IconButton(icon: const Icon(Icons.save), onPressed: _saveDocument, color: const Color.fromARGB(255, 216, 216, 216),),
         ],
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.red,
-            child: QuillSimpleToolbar(
-              controller: _controller,
-              config: QuillSimpleToolbarConfig(
-                iconTheme: QuillIconTheme(
-                  iconButtonUnselectedData: IconButtonData(
-                    color: Colors.grey[400], // Color iconos no seleccionados
-                    splashColor: Colors.white12,
-                    hoverColor: Colors.white24,
-                    highlightColor: Colors.white30,
-                    disabledColor: Colors.grey[700],
-                  ),
-                  iconButtonSelectedData: IconButtonData(
-                    color: Colors.amber[400], // Color iconos seleccionados
-                    splashColor: Colors.amberAccent,
-                    hoverColor: Colors.amber,
-                    highlightColor: Colors.amber,
-                    disabledColor: Colors.grey,
-                  ),
-                ),
-                multiRowsDisplay: false,
-                showAlignmentButtons: true,
-                showFontFamily: true,
-                showFontSize: true,
-                showColorButton: true,
-                showBackgroundColorButton: true,
-                showCodeBlock: true,
-                showQuote: true,
-                showIndent: true,
-                showListCheck: true,
-              ),
-            ),
+            child: CustomQuillToolbar(controller: _controller),
           ),
-
           Expanded(
             child: Container(
-              color: Colors.grey,
+              color: Colors.black45,
               child: QuillEditor(
                 config: QuillEditorConfig(),
                 controller: _controller,

@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tilt/flutter_tilt.dart';
 import 'package:inkger/frontend/dialogs/add_to_reading_list_dialog.dart';
-import 'package:inkger/frontend/dialogs/book_metadata_search_dialog.dart';
-import 'package:inkger/frontend/dialogs/convert_ebook_options_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
@@ -12,16 +9,14 @@ import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/book_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_book.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 import 'package:inkger/frontend/widgets/sort_selector.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:inkger/frontend/widgets/book_filters_layout.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-
-enum ViewMode { simple, threeD, librarian }
 
 class BooksGrid extends StatefulWidget {
   @override
@@ -29,11 +24,7 @@ class BooksGrid extends StatefulWidget {
 }
 
 class _BooksGridState extends State<BooksGrid> {
-  int? _count;
   double _crossAxisCount = 5;
-  final double _minCrossAxisCount = 5;
-  final double _maxCrossAxisCount = 10;
-  ViewMode _selectedViewMode = ViewMode.simple;
   SortCriteria _sortCriteria = SortCriteria.creationDate;
   bool _sortAscending = true;
   final ValueNotifier<Color> _dominantColorNotifier = ValueNotifier<Color>(
@@ -51,24 +42,10 @@ class _BooksGridState extends State<BooksGrid> {
   @override
   void initState() {
     super.initState();
+    // Usar WidgetsBinding para posponer la carga después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadBooks();
-      _updateBookCount();
-      final prefs = Provider.of<PreferencesProvider>(context, listen: false);
-      if (!mounted) return; // ⛔️ Si ya fue desmontado, salimos
-      setState(() {
-        _crossAxisCount = prefs.preferences.defaultGridItemSize;
-      });
     });
-  }
-
-  Future<void> _updateBookCount() async {
-    final count = await CommonServices.fetchBookCount();
-    if (mounted) {
-      setState(() {
-        _count = count;
-      });
-    }
   }
 
   Future<void> _loadBooks() async {
@@ -131,7 +108,8 @@ class _BooksGridState extends State<BooksGrid> {
   @override
   Widget build(BuildContext context) {
     final filters = Provider.of<BookFilterProvider>(context);
-
+    final prefs = Provider.of<PreferencesProvider>(context, listen: false);
+    //_crossAxisCount = prefs.preferences.defaultGridItemSize;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -169,48 +147,9 @@ class _BooksGridState extends State<BooksGrid> {
                       });
                     },
                   ),
-                  SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                  Text("Modo:", style: TextStyle(fontSize: 14)),
-                  Radio<ViewMode>(
-                    value: ViewMode.simple,
-                    groupValue: _selectedViewMode,
-                    onChanged: (value) =>
-                        setState(() => _selectedViewMode = value!),
-                  ),
-                  Text(
-                    "Simple",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  Radio<ViewMode>(
-                    value: ViewMode.threeD,
-                    groupValue: _selectedViewMode,
-                    onChanged: (value) =>
-                        setState(() => _selectedViewMode = value!),
-                  ),
-                  Text(
-                    "3D",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  Radio<ViewMode>(
-                    value: ViewMode.librarian,
-                    groupValue: _selectedViewMode,
-                    onChanged: (value) =>
-                        setState(() => _selectedViewMode = value!),
-                  ),
-                  Text(
-                    "Bibliotecario",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.3),
                 ],
               ),
-            ),
-            Slider(
-              value: _crossAxisCount,
-              min: _minCrossAxisCount,
-              max: _maxCrossAxisCount,
-              divisions: (_maxCrossAxisCount - _minCrossAxisCount).toInt(),
-              label: _crossAxisCount.round().toString(),
-              onChanged: (value) => setState(() => _crossAxisCount = value),
             ),
           ],
         ),
@@ -219,8 +158,9 @@ class _BooksGridState extends State<BooksGrid> {
         children: [
           Consumer<BookFilterProvider>(
             builder: (context, filterProvider, child) {
+              // Solo mostrar el Wrap si hay autores o publishers seleccionados
               if (filterProvider.isFilterMenuVisible) {
-                return const BookFiltersLayout();
+                return FiltersLayout(context);
               }
 
               if (filterProvider.selectedAuthors.isEmpty &&
@@ -283,7 +223,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "${AppLocalizations.of(context)!.books} - (${_count.toString()})",
+                "Libros",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
@@ -291,55 +231,35 @@ class _BooksGridState extends State<BooksGrid> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                double maxHeight = constraints.maxHeight;
-                double itemHeight = CommonServices.calculateMainAxisExtent(
-                  _crossAxisCount,
-                ).toDouble();
+                final screenWidth = constraints.maxWidth;
+                final itemWidth = 200.0; // Ancho fijo para cada elemento
+                final itemsPerRow = (screenWidth / itemWidth)
+                    .floor(); // Calcular dinámicamente
 
-                // Si el itemHeight es mayor que el espacio disponible, limitarlo
-                if (itemHeight * (_crossAxisCount / 2) > maxHeight) {
-                  itemHeight = maxHeight / (_crossAxisCount / 5);
-                }
                 return Consumer<BooksProvider>(
-                  builder: (context, booksProvider, child) {
+                  builder: (context, booksProvider, _) {
                     final books = booksProvider.books;
-                    // Filtrar libros según los filtros activos
                     final filteredBooks = _filterBooks(books);
 
                     if (books.isEmpty) {
                       return Center(child: Text("No hay libros disponibles"));
                     }
-                    if (filters.isGridView) {
-                      return GridView.builder(
-                        padding: EdgeInsets.all(8),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: _crossAxisCount.round(),
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: CommonServices.calculateAspectRatio(
-                            _crossAxisCount,
-                          ),
-                          mainAxisExtent: itemHeight,
-                        ),
-                        itemCount: filteredBooks.length,
-                        itemBuilder: (context, index) {
-                          final book = filteredBooks[index];
-                          final coverPath = book.coverPath;
 
-                          switch (_selectedViewMode) {
-                            case ViewMode.simple:
-                              return _buildSimpleMode(context, book, coverPath);
-                            case ViewMode.threeD:
-                              return _build3DMode(
-                                context,
-                                book,
-                                coverPath,
-                                itemHeight,
-                              );
-                            case ViewMode.librarian:
-                              return _buildLibrarianMode(book, coverPath);
-                          }
-                        },
+                    if (filters.isGridView) {
+                      return SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 20,
+                          runSpacing: 12,
+                          children: filteredBooks.map((book) {
+                            final coverPath = book.coverPath;
+                            return SizedBox(
+                              width:
+                                  screenWidth / itemsPerRow -
+                                  16, // Ajustar ancho dinámicamente
+                              child: _buildSimpleMode(context, book, coverPath),
+                            );
+                          }).toList(),
+                        ),
                       );
                     } else {
                       return ListView.builder(
@@ -359,11 +279,190 @@ class _BooksGridState extends State<BooksGrid> {
     );
   }
 
+  Widget FiltersLayout(BuildContext context) {
+    final filters = Provider.of<BookFilterProvider>(context);
+    final hasActiveFilters =
+        filters.selectedAuthors.isNotEmpty ||
+        filters.selectedPublishers.isNotEmpty ||
+        filters.selectedTags.isNotEmpty;
+
+    return Visibility(
+      visible: filters.isFilterMenuVisible,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fila de filtros activos con chips
+            if (hasActiveFilters) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text(
+                    'Filtros activos:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  // Chips de autores
+                  ...filters.selectedAuthors.map((author) {
+                    return Chip(
+                      label: Text('Autor: $author'),
+                      onDeleted: () {
+                        filters.removeAuthor(author);
+                      },
+                    );
+                  }),
+                  // Chips de editoriales
+                  ...filters.selectedPublishers.map((publisher) {
+                    return Chip(
+                      label: Text('Editorial: $publisher'),
+                      onDeleted: () {
+                        filters.removePublisher(publisher);
+                      },
+                    );
+                  }),
+                  // Chips de tags
+                  ...filters.selectedTags.map((tag) {
+                    return Chip(
+                      label: Text('Etiqueta: $tag'),
+                      onDeleted: () {
+                        filters.removeTag(tag);
+                      },
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+
+            // Filtros desplegables
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Columna de Autores
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Autor',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona autores'),
+                        items: filters.availableAuthors.map((author) {
+                          return DropdownMenuItem<String>(
+                            value: author,
+                            child: Text(author),
+                          );
+                        }).toList(),
+                        onChanged: (selectedAuthor) {
+                          if (selectedAuthor != null) {
+                            filters.toggleAuthor(selectedAuthor);
+                          }
+                        },
+                        value: null,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 32),
+
+                // Columna de Editoriales
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Editorial',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona editoriales'),
+                        items: filters.availablePublishers.map((publisher) {
+                          return DropdownMenuItem<String>(
+                            value: publisher,
+                            child: Text(publisher),
+                          );
+                        }).toList(),
+                        onChanged: (selectedPublisher) {
+                          if (selectedPublisher != null) {
+                            filters.togglePublisher(selectedPublisher);
+                          }
+                        },
+                        value: null,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 32),
+                // Columna de etiquetas
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Etiqueta',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona etiquetas'),
+                        items: filters.availableTags.map((tag) {
+                          return DropdownMenuItem<String>(
+                            value: tag,
+                            child: Text(tag),
+                          );
+                        }).toList(),
+                        onChanged: (selectedTag) {
+                          if (selectedTag != null) {
+                            filters.toggleTag(selectedTag);
+                          }
+                        },
+                        value: null,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Función para filtrar los libros
   List<Book> _filterBooks(List<Book> books) {
     final filters = Provider.of<BookFilterProvider>(context, listen: false);
 
     List<Book> filtered = books.where((book) {
+      final writerList = book.author
+          .split(',')
+          .map((w) => w.trim())
+          .where((w) => w.isNotEmpty)
+          .toList();
+
       final matchesAuthor =
           filters.selectedAuthors.isEmpty ||
           filters.selectedAuthors.contains(book.author.trim());
@@ -401,7 +500,6 @@ class _BooksGridState extends State<BooksGrid> {
       }
       return _sortAscending ? cmp : -cmp;
     });
-
     return filtered;
   }
 
@@ -410,33 +508,7 @@ class _BooksGridState extends State<BooksGrid> {
       children: [
         HoverCardBook(
           book: book,
-          onDelete: () =>
-              BookServices.showDeleteConfirmationDialog(context, book),
-          onConvert: () => showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return ConvertEbookOptionsDialog(ebookId: book.id);
-            },
-          ),
-          onGetMetadata: () => showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return BookSearchDialog(book: book);
-            },
-          ),
-          onDownload: () async {
-            final filePath = book.filePath;
-            String extension = '';
-            if (filePath != null && filePath.contains('.')) {
-              extension = filePath.substring(filePath.lastIndexOf('.') + 1);
-            }
-            await CommonServices.downloadFile(
-              book.id,
-              book.title,
-              extension,
-              "book",
-            );
-          },
+          onDelete: () => showDeleteConfirmationDialog(context, book),
           onAddToList: () => showDialog(
             context: context,
             builder: (BuildContext context) => AddToReadingListDialog(
@@ -456,9 +528,11 @@ class _BooksGridState extends State<BooksGrid> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.0),
-                  child: buildCoverImage(coverPath ?? ''),
+                  child: buildCoverImage(
+                    coverPath ?? '',
+                    height: MediaQuery.of(context).size.height * 0.3,
+                  ),
                 ),
-                // Banda diagonal arriba derecha
                 Positioned(
                   top: 15,
                   right: -25,
@@ -532,150 +606,63 @@ class _BooksGridState extends State<BooksGrid> {
     );
   }
 
-  Widget _build3DMode(
+  Future<void> showDeleteConfirmationDialog(
     BuildContext context,
     Book book,
-    String? coverPath,
-    double itemHeight,
-  ) {
-    return Column(
-      children: [
-        Tilt(
-          tiltConfig: TiltConfig(
-            angle: 20, // Inclinación máxima
-          ),
-          childLayout: ChildLayout(
-            behind: [
-              Positioned(
-                bottom: -10,
-                top: 00.0,
-                left: 10.0,
-                child: TiltParallax(
-                  size: const Offset(-50, -50),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(),
-                    ),
-                    width: itemHeight / 2.5,
-                  ),
+  ) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // El usuario debe tocar un botón para cerrar
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  '¿Estás seguro de que quieres eliminar el libro "${book.title}"?',
                 ),
-              ),
-              Positioned(
-                bottom: -5,
-                top: 00.0,
-                left: 10.0,
-                child: TiltParallax(
-                  size: const Offset(-25, -25),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(),
-                    ),
-                    width: itemHeight / 2.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          child: HoverCardBook(
-            book: book,
-            onAddToList: () => showDialog(
-              context: context,
-              builder: (BuildContext context) => AddToReadingListDialog(
-                id: book.id,
-                type: 'book',
-                series: book.series,
-                title: book.title,
-              ),
-            ),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-              elevation: 4,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16.0),
-                child: buildCoverImage(coverPath ?? ''),
-              ),
+                const SizedBox(height: 8),
+                const Text('Esta acción no se puede deshacer.'),
+              ],
             ),
           ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          book.title,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: CommonServices.calculateTextSize(_crossAxisCount),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLibrarianMode(Book book, String? coverPath) {
-    return Container(
-      height: CommonServices.calculateItemHeight(_crossAxisCount),
-      child: Card(
-        elevation: 4,
-        color: Colors.grey[200],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                child: buildCoverImage(coverPath ?? ''),
-              ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.cancel),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
             ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      book.title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize:
-                            CommonServices.calculateTextSize(_crossAxisCount) *
-                            0.9,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Autor: ${book.author}",
-                      style: TextStyle(
-                        fontSize:
-                            CommonServices.calculateTextSize(_crossAxisCount) *
-                            0.7,
-                      ),
-                    ),
-                    Text(
-                      "ID: ${book.id}",
-                      style: TextStyle(
-                        fontSize:
-                            CommonServices.calculateTextSize(_crossAxisCount) *
-                            0.6,
-                      ),
-                    ),
-                  ],
-                ),
+            TextButton(
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
               ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Cierra el diálogo primero
+                try {
+                  await BookServices.deleteBook(context, book);
+                  // Opcional: Mostrar mensaje de éxito
+                  CustomSnackBar.show(
+                    context,
+                    '"${book.title}" eliminado correctamente',
+                    Colors.green,
+                    duration: Duration(seconds: 4),
+                  );
+                } catch (e) {
+                  CustomSnackBar.show(
+                    context,
+                    'Error al eliminar: ${e.toString()}',
+                    Colors.red,
+                    duration: Duration(seconds: 4),
+                  );
+                }
+              },
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

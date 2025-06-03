@@ -23,63 +23,65 @@ class _DocumentFormatCounterWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.2,
+        width: isSmallScreen ? screenWidth * 0.8 : screenWidth * 0.2,
         padding: const EdgeInsets.all(16.0),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(Icons.file_copy_sharp, size: 40, color: Colors.blue),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.documentFormats,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // FutureBuilder para obtener los datos y mostrar los contadores
-                  FutureBuilder<Map<String, int>>(
-                    future: _documentFormatCount,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CustomLoader(size: 60.0, color: Colors.blue);
-                      } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else if (snapshot.hasData) {
-                        final data = snapshot.data!;
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: data.entries
-                              .map(
-                                (entry) => Text(
-                                  '${entry.key}: ${entry.value}',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        );
-                      } else {
-                        return Text('No data available');
-                      }
-                    },
-                  ),
-                ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.file_copy_sharp,
+              size: isSmallScreen ? 30 : 40,
+              color: Colors.blue,
+            ),
+            SizedBox(height: isSmallScreen ? 10 : 20),
+            Text(
+              AppLocalizations.of(context)!.documentFormats,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isSmallScreen ? 16 : 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
               ),
-            ],
-          ),
+            ),
+            SizedBox(height: isSmallScreen ? 10 : 20),
+            FutureBuilder<Map<String, int>>(
+              future: _documentFormatCount,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CustomLoader(size: isSmallScreen ? 40.0 : 60.0, color: Colors.blue);
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (snapshot.hasData) {
+                  final data = snapshot.data!;
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: data.entries
+                        .map(
+                          (entry) => Text(
+                            '${entry.key}: ${entry.value}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 14 : 18,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                } else {
+                  return Text('No data available');
+                }
+              },
+            ),
+          ],
         ),
       ),
     );

@@ -373,13 +373,14 @@ class AppRouter {
             },
           ),
           GoRoute(
-            path: '/home-writer/document-editor/:nodeId', // Use root path for the default home
+            path: '/home-writer/document-editor/:nodeId/:name', // Use root path for the default home
             pageBuilder: (context, state) {
               final nodeId = state.pathParameters['nodeId']!;
               final extra = state.extra;
+              final documentTitle = state.pathParameters['name']!;
               return CustomTransitionPage(
                 key: state.pageKey,
-                child: DocumentEditorScreen(documentId: nodeId, documentTitle: '',),
+                child: DocumentEditorScreen(documentId: nodeId, documentTitle: documentTitle,),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                       return ScaleTransition(
