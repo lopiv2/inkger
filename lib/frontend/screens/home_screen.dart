@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:inkger/backend/services/preferences_service.dart';
 import 'package:inkger/frontend/screens/top_bar.dart';
 import 'package:inkger/frontend/screens/top_bar_logo.dart';
-import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/frontend/widgets/side_bar_reader.dart';
@@ -41,9 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //Cargar preferencias en SharedPrefs desde API y BBDD
   Future<void> loadPreferences() async {
-    // ignore: unused_local_variable
-    final response = await CommonServices.loadSettingsToSharedPrefs();
-    if (!mounted) return;
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -55,9 +51,15 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         listen: false,
       );
-      await preferencesProvider.loadFromSharedPrefs();
+
+      // Cargar preferencias desde la API y sincronizar con SharedPreferences
+      await preferencesProvider.loadFromApiAndSync();
+
+      // Refrescar rutas desde la base de datos
       await preferencesProvider.refreshPathsFromDatabase();
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Error al cargar preferencias: $e');
+      print(stackTrace);
       setState(() {
         errorMessage = e.toString();
       });
@@ -71,8 +73,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final preferences = Provider.of<PreferencesProvider>(context);
-    final isFullScreen = preferences.preferences.fullScreenMode;
-    final isReaderMode = preferences.preferences.readerMode;
+    final iswriterMode = preferences.preferences.writerMode;
+
+    // Asegurarse de que el valor de iswriterMode esté sincronizado
+    if (isLoading) {
+      return const Center(
+        child: CustomLoader(),
+      );
+    }
     late Color themeColor = Colors.blueGrey;
     themeColor = Color(preferences.preferences.themeColor);
 
@@ -80,143 +88,112 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Row(
         children: [
           // Sidebar con animación
-          if (!isFullScreen)
+          if (!preferences.preferences.fullScreenMode)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: isSidebarVisible ? 250 : 0,
-              decoration: const BoxDecoration(), // <- solución
-              clipBehavior: Clip.hardEdge, // <-- evita que el contenido sobresalga al encoger
-              child: isSidebarVisible ? Column(
-                children: [
-                  // Logotipo
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SizeTransition(
-                              sizeFactor: animation,
-                              axis: Axis.horizontal,
-                              child: child,
-                            ),
-                          );
-                        },
-                    child: !isReaderMode
-                        ? TopBarLogo(
-                            backGroundColor: themeColor,
-                            borderColor: Colors.black,
-                            imagePath: 'images/logo_inkger.png',
-                          )
-                        : TopBarLogo(
-                            backGroundColor: Colors.grey[850]!,
-                            borderColor: Colors.grey[700]!,
-                            imagePath: 'images/logo_inkger_white.png',
+              decoration: const BoxDecoration(),
+              clipBehavior: Clip.hardEdge,
+              child: isSidebarVisible
+                  ? Column(
+                      children: [
+                        // Logotipo
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: !iswriterMode
+                              ? TopBarLogo(
+                                  backGroundColor: themeColor,
+                                  borderColor: Colors.black,
+                                  imagePath: 'images/logo_inkger.png',
+                                )
+                              : TopBarLogo(
+                                  backGroundColor: Colors.grey[850]!,
+                                  borderColor: Colors.grey[700]!,
+                                  imagePath: 'images/logo_inkger_white.png',
+                                ),
+                        ),
+                        Expanded(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: !iswriterMode
+                                ? Sidebar(
+                                    onItemSelected: (selectedItem) {
+                                      if (selectedItem == 'Tests') {
+                                        context.go('/tests');
+                                      } else if (selectedItem == 'Home') {
+                                        context.go('/home');
+                                      }
+                                    },
+                                  )
+                                : SidebarWriter(
+                                    onItemSelected: (selectedItem) {
+                                      if (selectedItem == 'Tests') {
+                                        context.go('/tests');
+                                      } else if (selectedItem == 'Home') {
+                                        context.go('/home');
+                                      }
+                                    },
+                                  ),
                           ),
-                  ),
-                  Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeInOut,
-                      switchOutCurve: Curves.easeInOut,
-                      transitionBuilder:
-                          (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                axis: Axis.horizontal,
-                                child: child,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: preferences.preferences.writerMode == false
+                                ? themeColor
+                                : Colors.grey[850],
+                            border: Border(
+                              bottom: BorderSide(
+                                color: preferences.preferences.writerMode == false
+                                    ? Colors.black
+                                    : Colors.grey[700]!,
+                                width: 2,
                               ),
-                            );
-                          },
-                      child: !isReaderMode
-                          // Sidebar
-                          ? Sidebar(
-                              onItemSelected: (selectedItem) {
-                                if (selectedItem == 'Tests') {
-                                  context.go('/tests');
-                                } else if (selectedItem == 'Home') {
-                                  context.go('/home');
-                                }
-                              },
-                            )
-                          : SidebarWriter(
-                              onItemSelected: (selectedItem) {
-                                if (selectedItem == 'Tests') {
-                                  context.go('/tests');
-                                } else if (selectedItem == 'Home') {
-                                  context.go('/home');
-                                }
-                              },
+                              right: BorderSide(
+                                color: preferences.preferences.writerMode == false
+                                    ? Colors.black
+                                    : Colors.grey[700]!,
+                                width: 2,
+                              ),
+                              left: BorderSide(
+                                color: preferences.preferences.writerMode == false
+                                    ? Colors.black
+                                    : Colors.grey[700]!,
+                                width: 2,
+                              ),
                             ),
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: preferences.preferences.readerMode == false
-                          ? themeColor
-                          : Colors.grey[850],
-                      border: Border(
-                        bottom: BorderSide(
-                          color: preferences.preferences.readerMode == false
-                              ? Colors.black
-                              : Colors.grey[700]!,
-                          width: 2,
+                          ),
+                          child: preferences.isLoading
+                              ? const CustomLoader(size: 60.0, color: Colors.blue)
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        context.go('/versions');
+                                      },
+                                      child: const Text(
+                                        "Version 1.0",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    )
+                                  ],
+                                ),
                         ),
-                        right: BorderSide(
-                          color: preferences.preferences.readerMode == false
-                              ? Colors.black
-                              : Colors.grey[700]!,
-                          width: 2,
-                        ),
-                        left: BorderSide(
-                          color: preferences.preferences.readerMode == false
-                              ? Colors.black
-                              : Colors.grey[700]!,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    child: preferences.isLoading
-                        ? const CustomLoader(size: 60.0, color: Colors.blue)
-                        : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextButton(onPressed: () {
-                                context.go('/versions');
-                              }, child: const Text(
-                                "Version 1.0",
-                                style: TextStyle(color: Colors.white),
-                              ),)
-                          ],
-                        )
-                  ),
-                ],
-              ) : const SizedBox.shrink(),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
           // Contenido principal
           Expanded(
             child: Column(
               children: [
                 // Barra superior
-                if (!isFullScreen)
+                if (!preferences.preferences.fullScreenMode)
                   AnimatedSwitcher(
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SizeTransition(
-                              sizeFactor: animation,
-                              axis: Axis.horizontal,
-                              child: child,
-                            ),
-                          );
-                        },
-                    duration: Duration(milliseconds: 300),
-                    child: !isReaderMode
+                    duration: const Duration(milliseconds: 300),
+                    child: !iswriterMode
                         ? TopBar(
                             backGroundColor: themeColor,
                             borderColor: Colors.black,

@@ -63,14 +63,25 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
     _appRouter = AppRouter(authProvider);
 
-    // Redirige si ya está autenticado
+    // Redirige según el estado de autenticación y writerMode
     if (widget.isInitiallyLoggedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _appRouter.router.go('/home');
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await preferencesProvider.loadFromSharedPrefs(); // Asegurarse de que las preferencias estén cargadas
+        if (preferencesProvider.preferences.writerMode) {
+          _appRouter.router.go('/home-writer');
+        } else {
+          _appRouter.router.go('/home');
+        }
       });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

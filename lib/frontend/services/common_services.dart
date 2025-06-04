@@ -250,7 +250,23 @@ class CommonServices {
       final List settings = response.data;
       final prefs = await SharedPreferences.getInstance();
       for (var setting in settings) {
-        prefs.setString(setting['key'], setting['value']);
+        final key = setting['key'];
+        var value = setting['value'];
+
+        // Convertir cadenas "true"/"false" a booleanos
+        if (value is String && (value.toLowerCase() == 'true' || value.toLowerCase() == 'false')) {
+          value = value.toLowerCase() == 'true';
+        }
+
+        if (value is String) {
+          await prefs.setString(key, value);
+        } else if (value is int) {
+          await prefs.setInt(key, value);
+        } else if (value is double) {
+          await prefs.setDouble(key, value);
+        } else if (value is bool) {
+          await prefs.setBool(key, value);
+        }
       }
     }
   }
@@ -313,4 +329,25 @@ class CommonServices {
       calculateMainAxisExtent(crossAxisCount) * 0.7;
   static double calculateTextSize(crossAxisCount) =>
       (8 + (2 * (8 - crossAxisCount))).toDouble();
+
+  static Future<void> savewriterMode(bool writerMode, int userId) async {
+    final response = await ApiService.dio.put(
+      '/api/settings/reader-mode',
+      data: jsonEncode({
+        'writerMode': writerMode,
+        'userId': userId,
+      }),
+      options: Options(
+        headers: {'Content-Type': 'application/json'},
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('writerMode', writerMode);
+    } else {
+      throw Exception('Failed to save reader mode');
+    }
+  }
 }

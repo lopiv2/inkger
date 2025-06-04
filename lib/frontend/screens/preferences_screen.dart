@@ -42,18 +42,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      final rawValue = prefs.get("defaultGridItemSize");
       final rawValueScan = prefs.get("scanInterval");
       final rawThemeColor = prefs.get("themeColor");
       int colorIntTheme;
 
-      if (rawValue is double) {
-        sliderItemSizeValue = rawValue;
-      } else if (rawValue is String) {
-        sliderItemSizeValue = double.tryParse(rawValue) ?? 7.0;
-      } else {
-        sliderItemSizeValue = 7.0;
-      }
       if (rawValueScan is double) {
         sliderScanIntervalValue = rawValueScan;
       } else if (rawValueScan is String) {
@@ -94,11 +86,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       },
       {
         'userId': userId,
-        'key': 'defaultGridItemSize',
-        'value': sliderItemSizeValue.toString(),
-      },
-      {
-        'userId': userId,
         'key': 'backgroundImagePath',
         'value': _backgroundImageController.text.trim(),
       },
@@ -126,7 +113,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
     final newPrefs = AppPreferences(
       comicvineApiKey: _apiKeyController.text.trim(),
-      defaultGridItemSize: sliderItemSizeValue,
       backgroundImagePath: _backgroundImageController.text.trim(),
       themeColor: themeColor.value,
       darkMode: false,
@@ -134,7 +120,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       textScaleFactor: 2,
       notificationsEnabled: true,
       fullScreenMode: false,
-      readerMode: false,
+      writerMode: false,
       scanInterval: sliderScanIntervalValue,
     );
 

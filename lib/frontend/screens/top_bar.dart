@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/buttons/import_button.dart';
 import 'package:inkger/frontend/buttons/scan_pendings_button.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: must_be_immutable
 class TopBar extends StatefulWidget {
@@ -29,7 +31,7 @@ class TopBar extends StatefulWidget {
 }
 
 class _TopBarState extends State<TopBar> {
-  String _searchQuery = '';
+  String searchQuery = '';
   List<dynamic> _searchResults = [];
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
@@ -40,6 +42,11 @@ class _TopBarState extends State<TopBar> {
     _overlayEntry?.remove();
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -79,7 +86,7 @@ class _TopBarState extends State<TopBar> {
                 child: TextField(
                   controller: _controller,
                   onChanged: (query) async {
-                    _searchQuery = query;
+                    searchQuery = query;
                     await _performSearch(query);
                   },
                   decoration: InputDecoration(
@@ -107,7 +114,7 @@ class _TopBarState extends State<TopBar> {
           ),
           AnimatedToggleSwitch<bool>.dual(
             animationDuration: Duration(seconds: 1),
-            current: preferences.preferences.readerMode,
+            current: preferences.preferences.writerMode,
             first: false,
             second: true,
             height: 30,
@@ -131,8 +138,13 @@ class _TopBarState extends State<TopBar> {
             textBuilder: (value) => value
                 ? const Center(child: Text('Writer'))
                 : const Center(child: Text('Reader')),
-            onChanged: (b) {
-              preferences.toggleFullReaderMode(b); // ya no necesitas comparar
+            onChanged: (b) async {
+              final prefs = await SharedPreferences.getInstance();
+              final userId = prefs.getInt('id');
+              await preferences.toggleFullwriterMode(
+                b,
+              ); // ya no necesitas comparar
+              await CommonServices.savewriterMode(b, userId!);
               context.go(b ? '/home-writer' : '/home');
             },
           ),

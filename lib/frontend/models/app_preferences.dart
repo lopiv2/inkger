@@ -9,9 +9,8 @@ class AppPreferences {
   final String? bookAppDirectory;
   final String? audiobookAppDirectory;
   final bool fullScreenMode;
-  final bool readerMode;
+  final bool writerMode;
   final String? comicvineApiKey;
-  final double defaultGridItemSize;
   final int themeColor;
   final String? backgroundImagePath;
   final double scanInterval;
@@ -27,9 +26,8 @@ class AppPreferences {
     this.bookAppDirectory,
     this.audiobookAppDirectory,
     required this.fullScreenMode,
-    required this.readerMode,
+    required this.writerMode,
     this.comicvineApiKey,
-    required this.defaultGridItemSize,
     required this.themeColor,
     this.backgroundImagePath,
     required this.scanInterval,
@@ -44,9 +42,8 @@ class AppPreferences {
       bookAppDirectory = null,
       audiobookAppDirectory = null,
       fullScreenMode = false,
-      readerMode = true,
+      writerMode = true,
       comicvineApiKey = null,
-      defaultGridItemSize = 7,
       themeColor = 4284513675, // valor por defecto
       backgroundImagePath = null,
       scanInterval = 5;
@@ -61,9 +58,8 @@ class AppPreferences {
       'bookAppDirectory': bookAppDirectory,
       'audiobookAppDirectory': audiobookAppDirectory,
       'fullScreenMode': fullScreenMode,
-      'readerMode': readerMode,
+      'writerMode': writerMode,
       'Comicvine Key': comicvineApiKey,
-      'defaultGridItemSize': defaultGridItemSize,
       'themeColor': themeColor, // se guarda como int
       'backgroundImagePath': backgroundImagePath,
       'scanInterval': scanInterval,
@@ -80,9 +76,8 @@ class AppPreferences {
       bookAppDirectory: map['bookAppDirectory'] as String?,
       audiobookAppDirectory: map['audiobookAppDirectory'] as String?,
       fullScreenMode: map['fullScreenMode'] as bool,
-      readerMode: map['readerMode'] as bool,
+      writerMode: map['writerMode'] as bool,
       comicvineApiKey: map['Comicvine Key'],
-      defaultGridItemSize: map['defaultGridItemSize'] as double,
       themeColor: map['themeColor'] as int,
       backgroundImagePath: map['backgroundImagePath'] as String?,
       scanInterval: map['scanInterval'] as double,
@@ -98,10 +93,9 @@ class AppPreferences {
     String? bookAppDirectory,
     String? audiobookAppDirectory,
     bool? fullScreenMode,
-    bool? readerMode,
+    bool? writerMode,
     String? comicvineApiKey,
     String? googleBooksApiKey,
-    double? defaultGridItemSize,
     int? themeColor,
     String? backgroundImagePath,
     double? scanInterval,
@@ -116,9 +110,8 @@ class AppPreferences {
       audiobookAppDirectory:
           audiobookAppDirectory ?? this.audiobookAppDirectory,
       fullScreenMode: fullScreenMode ?? this.fullScreenMode,
-      readerMode: readerMode ?? this.readerMode,
+      writerMode: writerMode ?? this.writerMode,
       comicvineApiKey: comicvineApiKey ?? this.comicvineApiKey,
-      defaultGridItemSize: defaultGridItemSize ?? this.defaultGridItemSize,
       themeColor: themeColor ?? this.themeColor,
       backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
       scanInterval:  scanInterval ?? this.scanInterval,

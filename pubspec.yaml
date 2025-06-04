@@ -47,6 +47,7 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_spinkit: ^5.2.1
   flutter_quill: ^11.4.1
+  flutter_iconpicker: ^3.3.3
 
 dev_dependencies:
   flutter_test:

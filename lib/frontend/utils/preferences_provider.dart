@@ -3,10 +3,11 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:inkger/backend/services/preferences_service.dart';
 import 'package:inkger/frontend/models/app_preferences.dart';
+import 'package:inkger/frontend/services/common_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PreferencesProvider with ChangeNotifier {
-  late AppPreferences _prefs =
+  AppPreferences _prefs =
       AppPreferences.defaults(); // Inicialización directa;
   bool _isLoading = true;
 
@@ -43,9 +44,8 @@ class PreferencesProvider with ChangeNotifier {
         'bookAppDirectory': prefs.getString('bookAppDirectory'),
         'audiobookAppDirectory': prefs.getString('audiobookAppDirectory'),
         'fullScreenMode': prefs.getBool('fullScreenMode') ?? false,
-        'readerMode': prefs.getBool('readerMode') ?? false,
+        'writerMode': prefs.getBool('writerMode') ?? false,
         'Comicvine Key': prefs.getString('Comicvine Key'),
-        'defaultGridItemSize': prefs.getDouble('defaultGridItemSize') ?? 7.0,
         'themeColor': prefs.getInt('themeColor') ?? 4284513675,
         'backgroundImagePath': prefs.getString('backgroundImagePath'),
         'scanInterval': prefs.getDouble('scanInterval') ?? 1.0,
@@ -62,7 +62,7 @@ class PreferencesProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     _prefs = _prefs.copyWith(
-      readerMode: prefs.getBool('readerMode') ?? false,
+      writerMode: prefs.getBool('writerMode') ?? false,
       fullScreenMode: prefs.getBool('fullScreenMode') ?? false,
       // ...otros valores que guardas
     );
@@ -115,9 +115,9 @@ class PreferencesProvider with ChangeNotifier {
   }
 
   // Nuevo método para cambiar el modo de lector a escritor
-  Future<void> toggleFullReaderMode(bool value) async {
-    _prefs = _prefs.copyWith(readerMode: value);
-    await _savePreference('readerMode', value);
+  Future<void> toggleFullwriterMode(bool value) async {
+    _prefs = _prefs.copyWith(writerMode: value);
+    await _savePreference('writerMode', value);
     notifyListeners();
   }
 
@@ -183,12 +183,6 @@ class PreferencesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setDefaultGridItemSize(double size) async {
-    _prefs = _prefs.copyWith(defaultGridItemSize: size);
-    await _savePreference('defaultGridItemSize', size);
-    notifyListeners();
-  }
-
   Future<void> setTextScaleFactor(double factor) async {
     _prefs = _prefs.copyWith(textScaleFactor: factor);
     await _savePreference('textScaleFactor', factor);
@@ -206,6 +200,14 @@ class PreferencesProvider with ChangeNotifier {
     _prefs = AppPreferences.defaults();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    notifyListeners();
+  }
+
+  Future<void> loadFromApiAndSync() async {
+    await CommonServices.loadSettingsToSharedPrefs(); // Este método no devuelve un Response
+
+    // Después de sincronizar, cargar las preferencias desde SharedPreferences
+    await loadFromSharedPrefs();
     notifyListeners();
   }
 }

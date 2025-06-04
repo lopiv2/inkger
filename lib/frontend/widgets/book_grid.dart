@@ -24,6 +24,7 @@ class BooksGrid extends StatefulWidget {
 }
 
 class _BooksGridState extends State<BooksGrid> {
+  int? _count;
   double _crossAxisCount = 5;
   SortCriteria _sortCriteria = SortCriteria.creationDate;
   bool _sortAscending = true;
@@ -45,7 +46,17 @@ class _BooksGridState extends State<BooksGrid> {
     // Usar WidgetsBinding para posponer la carga después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadBooks();
+      _updateBookCount();
     });
+  }
+
+  Future<void> _updateBookCount() async {
+    final count = await CommonServices.fetchBookCount();
+    if (mounted) {
+      setState(() {
+        _count = count;
+      });
+    }
   }
 
   Future<void> _loadBooks() async {
@@ -109,7 +120,6 @@ class _BooksGridState extends State<BooksGrid> {
   Widget build(BuildContext context) {
     final filters = Provider.of<BookFilterProvider>(context);
     final prefs = Provider.of<PreferencesProvider>(context, listen: false);
-    //_crossAxisCount = prefs.preferences.defaultGridItemSize;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -223,7 +233,7 @@ class _BooksGridState extends State<BooksGrid> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Libros",
+                "${AppLocalizations.of(context)!.books} - (${_count.toString()})",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),

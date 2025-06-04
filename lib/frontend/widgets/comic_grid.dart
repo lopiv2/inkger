@@ -51,10 +51,6 @@ class _ComicsGridState extends State<ComicsGrid> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadComics();
       _updateComicCount();
-      final prefs = Provider.of<PreferencesProvider>(context, listen: false);
-      setState(() {
-        _crossAxisCount = prefs.preferences.defaultGridItemSize;
-      });
     });
   }
 

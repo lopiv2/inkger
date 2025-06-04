@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/utils/constants.dart';
+import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -35,13 +36,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final auth = Provider.of<AuthProvider>(context, listen: false);
+      final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
+
       await auth.login(
         _usernameController.text.trim(),
         _passwordController.text.trim(),
       );
 
+      await preferencesProvider.loadFromSharedPrefs(); // Asegurarse de que las preferencias estén cargadas
+
       if (mounted) {
-        context.go('/home');
+        if (preferencesProvider.preferences.writerMode) {
+          context.go('/home-writer');
+        } else {
+          context.go('/home');
+        }
       }
     } catch (e) {
       Constants.logger.warning(e.toString());
