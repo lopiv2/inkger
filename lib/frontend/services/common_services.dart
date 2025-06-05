@@ -183,7 +183,7 @@ class CommonServices {
       throw Exception('Failed to load series count');
     }
   }
-  
+
   static Future<int> fetchSeriesCount() async {
     final response = await ApiService.dio.get(
       '/api/count-series',
@@ -254,7 +254,8 @@ class CommonServices {
         var value = setting['value'];
 
         // Convertir cadenas "true"/"false" a booleanos
-        if (value is String && (value.toLowerCase() == 'true' || value.toLowerCase() == 'false')) {
+        if (value is String &&
+            (value.toLowerCase() == 'true' || value.toLowerCase() == 'false')) {
           value = value.toLowerCase() == 'true';
         }
 
@@ -333,10 +334,7 @@ class CommonServices {
   static Future<void> savewriterMode(bool writerMode, int userId) async {
     final response = await ApiService.dio.put(
       '/api/settings/reader-mode',
-      data: jsonEncode({
-        'writerMode': writerMode,
-        'userId': userId,
-      }),
+      data: jsonEncode({'writerMode': writerMode, 'userId': userId}),
       options: Options(
         headers: {'Content-Type': 'application/json'},
         validateStatus: (status) => status != null && status < 500,
@@ -351,15 +349,17 @@ class CommonServices {
     }
   }
 
-  static Future<void> saveDocument(String documentId, String title, String content) async {
+  static Future<void> saveDocument(
+    String documentId,
+    String title,
+    String content,
+  ) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('id');
       final response = await ApiService.dio.post(
         '/api/documents/save',
-        data: {
-          'documentId': documentId,
-          'title': title,
-          'content': content,
-        },
+        data: {'documentId': documentId, 'title': title, 'content': content, 'userId': userId},
         options: Options(
           headers: {'Content-Type': 'application/json'},
           validateStatus: (status) => status != null && status < 500,
@@ -402,10 +402,7 @@ class CommonServices {
     try {
       final response = await ApiService.dio.post(
         '/api/users/create',
-        data: {
-          'username': username,
-          'password': password,
-        },
+        data: {'username': username, 'password': password},
         options: Options(
           headers: {'Content-Type': 'application/json'},
           validateStatus: (status) => status != null && status < 500,
