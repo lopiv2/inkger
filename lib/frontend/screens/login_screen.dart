@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/utils/auth_provider.dart';
 import 'package:inkger/frontend/utils/constants.dart';
-import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:inkger/frontend/dialogs/create_user_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -36,21 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
-
       await auth.login(
         _usernameController.text.trim(),
         _passwordController.text.trim(),
       );
 
-      await preferencesProvider.loadFromSharedPrefs(); // Asegurarse de que las preferencias estén cargadas
-
       if (mounted) {
-        if (preferencesProvider.preferences.writerMode) {
-          context.go('/home-writer');
-        } else {
-          context.go('/home');
-        }
+        context.go('/home');
       }
     } catch (e) {
       Constants.logger.warning(e.toString());
@@ -131,141 +123,174 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: SizedBox(
                   width: width > 800 ? 500 : double.infinity,
-                  child: Row(
-                    children: [
-                      // Columna izquierda: logo + frase
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(120, 20, 20, 300),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset(
-                                'assets/images/logo_inkger.png',
-                                height: 300,
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                _currentQuote,
-                                style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  fontSize: 16,
-                                  color: Colors.black,
+                  child: FocusTraversalGroup(
+                    policy: WidgetOrderTraversalPolicy(),
+                    child: Row(
+                      children: [
+                        // Columna izquierda: logo + frase
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(120, 20, 20, 300),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  'assets/images/logo_inkger.png',
+                                  height: 300,
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              IconButton(
-                                icon: const Icon(Icons.casino),
-                                tooltip: 'Cita aleatoria',
-                                onPressed: () {
-                                  _setRandomQuote();
-                                },
-                              ),
-                            ],
+                                const SizedBox(height: 24),
+                                FocusTraversalOrder(
+                                  order: NumericFocusOrder(3),
+                                  child: Text(
+                                    _currentQuote,
+                                    style: TextStyle(
+                                      fontStyle: FontStyle.italic,
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.casino),
+                                  tooltip: 'Cita aleatoria',
+                                  onPressed: () {
+                                    _setRandomQuote();
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-
-                      const SizedBox(width: 40),
-
-                      // Columna derecha: login
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 80),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                loc.loginAccount,
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                    
+                        const SizedBox(width: 40),
+                    
+                        // Columna derecha: login
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 80),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  loc.loginAccount,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 24),
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  children: [
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        maxWidth: 350,
-                                      ),
-                                      child: TextFormField(
-                                        controller: _usernameController,
-                                        decoration: InputDecoration(
-                                          labelText: loc.user,
-                                          border: OutlineInputBorder(),
-                                          prefixIcon: Icon(Icons.person),
+                                const SizedBox(height: 24),
+                                Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    children: [
+                                      ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: 350,
                                         ),
-                                        textInputAction: TextInputAction.next,
-                                        onFieldSubmitted: (_) => FocusScope.of(
-                                          context,
-                                        ).requestFocus(_passwordFocusNode),
-                                        validator: (value) =>
-                                            value == null || value.isEmpty
-                                            ? 'Por favor ingrese su usuario'
-                                            : null,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        maxWidth: 350,
-                                      ),
-                                      child: TextFormField(
-                                        controller: _passwordController,
-                                        focusNode: _passwordFocusNode,
-                                        decoration: InputDecoration(
-                                          labelText: loc.password,
-                                          border: OutlineInputBorder(),
-                                          prefixIcon: Icon(Icons.lock),
-                                        ),
-                                        obscureText: true,
-                                        textInputAction: TextInputAction.go,
-                                        onFieldSubmitted: (_) => _login(),
-                                        validator: (value) =>
-                                            value == null || value.isEmpty
-                                            ? 'Por favor ingrese su contraseña'
-                                            : null,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 30),
-                                    _isLoading
-                                        ? const CustomLoader(
-                                            size: 60.0,
-                                            color: Colors.blue,
-                                          )
-                                        : ElevatedButton(
-                                            onPressed: _login,
-                                            style: ElevatedButton.styleFrom(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 40,
-                                                    vertical: 15,
-                                                  ),
-                                              backgroundColor:
-                                                  Colors.deepPurple,
+                                        child: FocusTraversalOrder(
+                                          order: NumericFocusOrder(1),
+                                          child: TextFormField(
+                                            controller: _usernameController,
+                                            decoration: InputDecoration(
+                                              labelText: loc.user,
+                                              border: OutlineInputBorder(),
+                                              prefixIcon: Icon(Icons.person),
                                             ),
-                                            child: Text(
-                                              loc.startSession,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.white,
+                                            textInputAction: TextInputAction.next,
+                                            onFieldSubmitted: (_) => FocusScope.of(
+                                              context,
+                                            ).requestFocus(_passwordFocusNode),
+                                            validator: (value) =>
+                                                value == null || value.isEmpty
+                                                ? 'Por favor ingrese su usuario'
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      FocusTraversalOrder(
+                                        order: NumericFocusOrder(2),
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            maxWidth: 350,
+                                          ),
+                                          child: TextFormField(
+                                            controller: _passwordController,
+                                            focusNode: _passwordFocusNode,
+                                            decoration: InputDecoration(
+                                              labelText: loc.password,
+                                              border: OutlineInputBorder(),
+                                              prefixIcon: Icon(Icons.lock),
+                                            ),
+                                            obscureText: true,
+                                            textInputAction: TextInputAction.go,
+                                            onFieldSubmitted: (_) => _login(),
+                                            validator: (value) =>
+                                                value == null || value.isEmpty
+                                                ? 'Por favor ingrese su contraseña'
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 30),
+                                      _isLoading
+                                          ? const CustomLoader(
+                                              size: 60.0,
+                                              color: Colors.blue,
+                                            )
+                                          : ElevatedButton(
+                                              onPressed: _login,
+                                              style: ElevatedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 40,
+                                                      vertical: 15,
+                                                    ),
+                                                backgroundColor:
+                                                    Colors.deepPurple,
+                                              ),
+                                              child: Text(
+                                                loc.startSession,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
+                                      const SizedBox(height: 20),
+                                      ElevatedButton(
+                                        onPressed: () => showDialog(
+                                          context: context,
+                                          builder: (context) => CreateUserDialog(),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 40,
+                                            vertical: 15,
                                           ),
-                                  ],
+                                          backgroundColor: Colors.green,
+                                        ),
+                                        child: Text(
+                                          loc.createUser,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

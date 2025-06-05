@@ -196,6 +196,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creationDate => 'Fecha de creación';
 
   @override
+  String get create => 'Crear';
+
+  @override
+  String get createUser => 'Crear usuario';
+
+  @override
   String get dashboard => 'Panel de control';
 
   @override
@@ -211,10 +217,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get documentFormats => 'Formatos de documentos';
 
   @override
+  String get documentSaved => 'Documento guardado';
+
+  @override
+  String get documentSavedError => 'Error al guardar el documento';
+
+  @override
   String get edit => 'Editar';
 
   @override
   String get editFeeds => 'Editar fuentes';
+
+  @override
+  String get errorLoadingDocument => 'Error al cargar el documento';
 
   @override
   String get feeds => 'Fuentes';
@@ -342,6 +357,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get user => 'Usuario';
+
+  @override
+  String get userCreated => 'Usuario creado con exito';
+
+  @override
+  String get userCreatedError => 'Error al crear usuario';
 
   @override
   String get watchFeeds => 'Ver fuentes';

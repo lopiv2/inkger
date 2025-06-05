@@ -398,6 +398,18 @@ abstract class AppLocalizations {
   /// **'Date of creation'**
   String get creationDate;
 
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @createUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Create user'**
+  String get createUser;
+
   /// No description provided for @dashboard.
   ///
   /// In en, this message translates to:
@@ -428,6 +440,18 @@ abstract class AppLocalizations {
   /// **'Document formats'**
   String get documentFormats;
 
+  /// No description provided for @documentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Document saved'**
+  String get documentSaved;
+
+  /// No description provided for @documentSavedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving document'**
+  String get documentSavedError;
+
   /// No description provided for @edit.
   ///
   /// In en, this message translates to:
@@ -439,6 +463,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit feeds'**
   String get editFeeds;
+
+  /// No description provided for @errorLoadingDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading document'**
+  String get errorLoadingDocument;
 
   /// No description provided for @feeds.
   ///
@@ -691,6 +721,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User'**
   String get user;
+
+  /// No description provided for @userCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'User successfully created'**
+  String get userCreated;
+
+  /// No description provided for @userCreatedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating user'**
+  String get userCreatedError;
 
   /// No description provided for @watchFeeds.
   ///

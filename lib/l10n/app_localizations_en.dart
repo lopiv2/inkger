@@ -190,6 +190,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creationDate => 'Date of creation';
 
   @override
+  String get create => 'Create';
+
+  @override
+  String get createUser => 'Create user';
+
+  @override
   String get dashboard => 'Dashboard';
 
   @override
@@ -205,10 +211,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get documentFormats => 'Document formats';
 
   @override
+  String get documentSaved => 'Document saved';
+
+  @override
+  String get documentSavedError => 'Error saving document';
+
+  @override
   String get edit => 'Edit';
 
   @override
   String get editFeeds => 'Edit feeds';
+
+  @override
+  String get errorLoadingDocument => 'Error loading document';
 
   @override
   String get feeds => 'Feeds';
@@ -335,6 +350,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get user => 'User';
+
+  @override
+  String get userCreated => 'User successfully created';
+
+  @override
+  String get userCreatedError => 'Error creating user';
 
   @override
   String get watchFeeds => 'Watch feeds';

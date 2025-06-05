@@ -350,4 +350,74 @@ class CommonServices {
       throw Exception('Failed to save reader mode');
     }
   }
+
+  static Future<void> saveDocument(String documentId, String title, String content) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/documents/save',
+        data: {
+          'documentId': documentId,
+          'title': title,
+          'content': content,
+        },
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print('Documento guardado exitosamente');
+      } else {
+        throw Exception('Error al guardar el documento: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al guardar el documento: $e');
+      throw Exception('No se pudo guardar el documento');
+    }
+  }
+
+  static Future<String> fetchDocument(String documentId) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/api/documents/$documentId',
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['content'];
+      } else {
+        throw Exception('Error al obtener el documento: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al obtener el documento: $e');
+      throw Exception('No se pudo obtener el documento');
+    }
+  }
+
+  static Future<void> createUser(String username, String password) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/users/create',
+        data: {
+          'username': username,
+          'password': password,
+        },
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('Error al crear el usuario: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al crear el usuario: $e');
+      throw Exception('No se pudo crear el usuario');
+    }
+  }
 }
