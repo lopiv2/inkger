@@ -56,6 +56,8 @@
   "descendingOrder": "Orden descendente",
   "description": "Descripción",
   "document": "Documento",
+  "documentLoaded": "Documento cargado",
+  "documentLoading": "Cargando documento...",
   "documentSaved": "Documento guardado",
   "documentSavedError": "Error al guardar el documento",
   "documentFormats": "Formatos de documentos",

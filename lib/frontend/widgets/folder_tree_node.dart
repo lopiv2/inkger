@@ -83,6 +83,12 @@ class FolderTreeNode extends StatelessWidget {
           };
         }).toList(),
       );
+      // Use the newly created node for document creation
+      await WriterServices.createDocument(
+        newNode.data?['key'] ?? '',
+        result,
+        '[{"insert":"\\n"}]', // Delta vacío válido para Quill
+      );
     }
   }
 
@@ -125,11 +131,6 @@ class FolderTreeNode extends StatelessWidget {
             title: 'Nuevo Documento',
             idPrefix: 'doc',
             icon: 'doc',
-          );
-          await WriterServices.createDocument(
-            node.data['key'] ?? '',
-            node.data['name'] ?? '',
-            "",
           );
         } else if (selected == 'rename') {
           final TextEditingController controller = TextEditingController(

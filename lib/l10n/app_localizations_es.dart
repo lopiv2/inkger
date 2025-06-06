@@ -214,6 +214,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get document => 'Documento';
 
   @override
+  String get documentLoaded => 'Documento cargado';
+
+  @override
+  String get documentLoading => 'Cargando documento...';
+
+  @override
   String get documentFormats => 'Formatos de documentos';
 
   @override

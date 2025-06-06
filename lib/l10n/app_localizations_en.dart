@@ -208,6 +208,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get document => 'Document';
 
   @override
+  String get documentLoaded => 'Document loaded';
+
+  @override
+  String get documentLoading => 'Loading a document...';
+
+  @override
   String get documentFormats => 'Document formats';
 
   @override

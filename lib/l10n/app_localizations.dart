@@ -434,6 +434,18 @@ abstract class AppLocalizations {
   /// **'Document'**
   String get document;
 
+  /// No description provided for @documentLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Document loaded'**
+  String get documentLoaded;
+
+  /// No description provided for @documentLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading a document...'**
+  String get documentLoading;
+
   /// No description provided for @documentFormats.
   ///
   /// In en, this message translates to:
