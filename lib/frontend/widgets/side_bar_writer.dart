@@ -76,18 +76,70 @@ class _SidebarWriterState extends State<SidebarWriter> {
                   final newNode = {
                     'key': generatedId, // Usar el ID generado
                     'name': controller.text.trim(),
-                    'children': <Map<String, dynamic>>[], // Inicializar como lista vacía
+                    'children':
+                        <
+                          Map<String, dynamic>
+                        >[], // Inicializar como lista vacía
                     'icon': 'book',
                   };
 
-                  // Si es un "Book", añadir automáticamente la carpeta "characters"
+                  // Si es un "Book", añadir automáticamente las carpetas predeterminadas
                   if (newNode['icon'] == 'book') {
-                    (newNode['children'] as List<Map<String, dynamic>>).add({
-                      'key': 'characters_${DateTime.now().millisecondsSinceEpoch}', // ID único para la carpeta
-                      'name': 'Characters',
-                      'children': <Map<String, dynamic>>[],
-                      'icon': 'groups',
-                    });
+                    final defaultFolders = [
+                      {
+                        'key':
+                            'characters_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Characters',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'groups',
+                      },
+                      {
+                        'key':
+                            'locations_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Locations',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'place',
+                      },
+                      {
+                        'key':
+                            'events_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Events',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'event',
+                      },
+                      {
+                        'key': 'items_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Items',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'inventory',
+                      },
+                      {
+                        'key':
+                            'story_bible_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Story Bible',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'history_edu',
+                      },
+                      {
+                        'key': 'draft_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Draft',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'description',
+                      },
+                      {
+                        'key':
+                            'research_${DateTime.now().millisecondsSinceEpoch}',
+                        'name': 'Research',
+                        'children': <Map<String, dynamic>>[],
+                        'icon': 'science',
+                      },
+                    ];
+
+                    for (final folder in defaultFolders) {
+                      (newNode['children'] as List<Map<String, dynamic>>).add(
+                        folder,
+                      );
+                    }
                   }
 
                   // Añadir el nuevo nodo al árbol en memoria
@@ -121,45 +173,44 @@ class _SidebarWriterState extends State<SidebarWriter> {
       child: Column(
         children: [
           // Área desplazable: encabezado y secciones principales
+          const SizedBox(height: 16), 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.create_new_folder,
+                    color: Colors.grey[400],
+                    size: 18,
+                  ),
+                  tooltip: 'Añadir libro/carpeta',
+                  onPressed: () => _showAddBookDialog(),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'MY BOOKS',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
-                  // Título del proyecto
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.create_new_folder,
-                            color: Colors.grey[400],
-                            size: 18,
-                          ),
-                          tooltip: 'Añadir libro/carpeta',
-                          onPressed: () => _showAddBookDialog(),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'MY BOOKS',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                                
                   // TreeView de libros/carpeta
                   Padding(
                     padding: const EdgeInsets.only(left: 32, top: 4, right: 8),
                     child: SizedBox(
-                      height:
-                          300, // O usa Expanded si quieres que ocupe todo el espacio disponible
+                      height: MediaQuery.of(context).size.height * 0.8,
                       child: _buildBooksTreeView(myBooks),
                     ),
                   ),
@@ -279,7 +330,9 @@ class _SidebarWriterState extends State<SidebarWriter> {
       onItemTap: (item) {
         //Si es un documento
         if (item.data['key'].contains("doc")) {
-          context.push("/home-writer/document-editor/${item.data['key']}/${item.data['name']}");
+          context.push(
+            "/home-writer/document-editor/${item.data['key']}/${item.data['name']}",
+          );
         }
       },
       builder: (context, node) => FolderTreeNode(

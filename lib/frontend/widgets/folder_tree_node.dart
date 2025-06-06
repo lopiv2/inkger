@@ -3,7 +3,9 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_iconpicker/Models/IconPack.dart';
 import 'package:flutter_iconpicker/flutter_iconpicker.dart'
     as FlutterIconPicker;
+import 'package:go_router/go_router.dart';
 import 'package:inkger/frontend/services/book_folders_service.dart';
+import 'package:inkger/frontend/services/writer_services.dart';
 
 class FolderTreeNode extends StatelessWidget {
   final TreeNode node;
@@ -124,6 +126,11 @@ class FolderTreeNode extends StatelessWidget {
             idPrefix: 'doc',
             icon: 'doc',
           );
+          await WriterServices.createDocument(
+            node.data['key'] ?? '',
+            node.data['name'] ?? '',
+            "",
+          );
         } else if (selected == 'rename') {
           final TextEditingController controller = TextEditingController(
             text: node.data['name'] ?? '',
@@ -166,6 +173,7 @@ class FolderTreeNode extends StatelessWidget {
             }
             node.parent!.remove(node);
             await onNodeDeleted();
+            context.go('/home-writer');
           }
         } else if (selected == 'icon') {
           final IconData? icon = await FlutterIconPicker.showIconPicker(
@@ -174,53 +182,6 @@ class FolderTreeNode extends StatelessWidget {
             showSearchBar: true,
             title: const Text('Selecciona un icono'),
           );
-          /*final result = await showDialog<String>(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Selecciona un icono'),
-                content: SizedBox(
-                  width: 300,
-                  child: Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: icons.map((iconData) {
-                      return GestureDetector(
-                        onTap: () => Navigator.of(
-                          context,
-                        ).pop(iconData['value'] as String),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              iconData['icon'] as IconData,
-                              size: 32,
-                              color: Colors.blueGrey,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              iconData['label'] as String,
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
-                  ),
-                ],
-              );
-            },
-          );*/
-          /*if (result != null && result.isNotEmpty) {
-            node.data['icon'] = result;
-            await onNodeChanged();
-          }*/
           if (icon != null) {
             node.data['icon'] = icon.codePoint
                 .toString(); // Guardamos el código del ícono
@@ -280,6 +241,18 @@ class FolderTreeNode extends StatelessWidget {
         return Icons.lightbulb;
       case 'groups':
         return Icons.group;
+      case 'place':
+        return Icons.place;
+      case 'event':
+        return Icons.event;
+      case 'inventory':
+        return Icons.inventory;
+      case 'description':
+        return Icons.description;
+      case 'histoy_edu':
+        return Icons.history_edu;
+      case 'science':
+        return Icons.science;
       default:
         return Icons.folder;
     }

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/services/writer_services.dart';
 import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/writer/custom_quill_toolbar.dart';
 import 'package:inkger/l10n/app_localizations.dart';
@@ -36,7 +37,9 @@ class _DocumentEditorScreenState extends State<DocumentEditorScreen> {
 
   Future<void> _loadDocument() async {
     try {
-      final documentData = await CommonServices.fetchDocument(widget.documentId);
+      final documentData = await CommonServices.fetchDocument(
+        widget.documentId,
+      );
       final delta = Document.fromJson(jsonDecode(documentData));
       setState(() {
         _controller.document = delta;
@@ -58,23 +61,6 @@ class _DocumentEditorScreenState extends State<DocumentEditorScreen> {
     super.dispose();
   }
 
-  void _saveDocument() async {
-    final json = jsonEncode(_controller.document.toDelta().toJson());
-    // Aquí llamarías a tu backend o servicio para guardar el documento en MySQL
-    await CommonServices.saveDocument(
-      widget.documentId,
-      widget.documentTitle,
-      json,
-    );
-    // Mostrar confirmación
-    CustomSnackBar.show(
-      context,
-      AppLocalizations.of(context)!.documentSaved,
-      Colors.green,
-      duration: Duration(seconds: 4),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +76,19 @@ class _DocumentEditorScreenState extends State<DocumentEditorScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: _saveDocument,
+            onPressed: () async {
+              await WriterServices.saveDocument(
+                _controller,
+                widget.documentId,
+                widget.documentTitle,
+              );
+              CustomSnackBar.show(
+                context,
+                AppLocalizations.of(context)!.documentSaved,
+                Colors.green,
+                duration: Duration(seconds: 4),
+              );
+            },
             color: const Color.fromARGB(255, 216, 216, 216),
           ),
         ],

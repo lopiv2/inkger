@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:inkger/backend/services/api_service.dart';
+import 'package:inkger/frontend/services/common_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WriterServices {
   static Future<List<String>> fetchGeneratedNames({
@@ -74,6 +76,43 @@ class WriterServices {
       );
     } catch (e) {
       throw Exception('Error al guardar los datos: $e');
+    }
+  }
+
+  static Future<void> saveDocument(
+    controller,
+    documentId,
+    documentTitle,
+  ) async {
+    final json = jsonEncode(controller.document.toDelta().toJson());
+    // Aquí llamarías a tu backend o servicio para guardar el documento en MySQL
+    await CommonServices.saveDocument(documentId, documentTitle, json);
+    // Mostrar confirmación
+  }
+
+  static Future<void> createDocument(
+    String documentId,
+    String title,
+    String content,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('id');
+      final response = await ApiService.dio.post(
+        '/api/documents/create',
+        data: {'documentId': documentId, 'title': title, 'content': content, 'userId': userId},
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('Error al crear el documento: ${response.data}');
+      }
+    } catch (e) {
+      print('Error al crear el documento: $e');
+      throw Exception('No se pudo crear el documento');
     }
   }
 }
