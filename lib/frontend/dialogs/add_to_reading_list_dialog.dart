@@ -1,28 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/reading_list_services.dart';
-import '../utils/reading_list_provider.dart';
+import '../utils/reading_list_provider.dart'; // Make sure this path is correct
 
 class AddToReadingListDialog extends StatefulWidget {
-  final int id;
-  final String type;
-  final String? series;
-  final String? title;
-  final String? coverUrl; 
-
-  const AddToReadingListDialog({Key? key, required this.id, required this.type, this.series, this.title, this.coverUrl}) : super(key: key);
+  // Remove individual comic properties, as this dialog now only selects the list.
+  const AddToReadingListDialog({Key? key}) : super(key: key);
 
   @override
   State<AddToReadingListDialog> createState() => _AddToReadingListDialogState();
 }
 
 class _AddToReadingListDialogState extends State<AddToReadingListDialog> {
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -32,7 +20,8 @@ class _AddToReadingListDialogState extends State<AddToReadingListDialog> {
   }
 
   Future<void> _loadLists() async {
-    final lists = await context.read<ReadingListProvider>().fetchReadingLists();
+    // Fetch lists, no change here
+    await context.read<ReadingListProvider>().fetchReadingLists();
   }
 
   @override
@@ -54,31 +43,9 @@ class _AddToReadingListDialogState extends State<AddToReadingListDialog> {
                 final list = readingLists[index];
                 return ListTile(
                   title: Text(list.title),
-                  onTap: () async {
-                    try {
-                      await ReadingListServices.addItemToList(
-                        int.parse(list.id!),
-                        widget.id,
-                        widget.type,
-                        widget.title ?? '',
-                        widget.series ?? '',
-                        widget.coverUrl ?? '',
-                      );
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Elemento añadido a la lista "${list.title}"',
-                          ),
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error al añadir el elemento: $e'),
-                        ),
-                      );
-                    }
+                  onTap: () {
+                    // When a list is tapped, pop the dialog with the selected list's ID
+                    Navigator.of(context).pop(list.id);
                   },
                 );
               },
@@ -88,7 +55,7 @@ class _AddToReadingListDialogState extends State<AddToReadingListDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(), // Pop with null if cancelled
           child: const Text('Cancelar'),
         ),
       ],

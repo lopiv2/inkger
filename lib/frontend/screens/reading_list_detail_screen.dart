@@ -104,6 +104,34 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            tooltip: 'Eliminar lista',
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Eliminar lista'),
+                  content: const Text('¿Estás seguro de que deseas eliminar esta lista?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(AppLocalizations.of(context)!.cancel),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                await _deleteList();
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -283,5 +311,25 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _deleteList() async {
+    try {
+      await ReadingListServices.deleteReadingList(widget.id!);
+      CustomSnackBar.show(
+        context,
+        'Lista eliminada correctamente',
+        Colors.green,
+        duration: Duration(seconds: 4),
+      );
+      context.pop(); // Vuelve atrás tras eliminar
+    } catch (e) {
+      CustomSnackBar.show(
+        context,
+        'Error al eliminar la lista',
+        Colors.red,
+        duration: Duration(seconds: 4),
+      );
+    }
   }
 }

@@ -19,6 +19,7 @@ import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:inkger/frontend/widgets/comics_filters_layout.dart';
+import '../services/reading_list_services.dart';
 
 enum ViewMode { simple, threeD, librarian }
 
@@ -43,8 +44,6 @@ class _ComicsGridState extends State<ComicsGrid> {
 
   final List<Comic> _selectedComics =
       []; // Lista para almacenar los cómics seleccionados
-  final List<Map<String, dynamic>> _selectedComicsJson =
-      []; // Lista para almacenar los datos seleccionados en JSON
 
   @override
   void dispose() {
@@ -176,18 +175,6 @@ class _ComicsGridState extends State<ComicsGrid> {
 
     filters.fillPublishers(publishers);
   }
-
-  /*Widget _buildSelectedComicsJson() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Text(
-        _selectedComicsJson.isEmpty
-            ? 'No hay elementos seleccionados'
-            : 'Seleccionados: ${_selectedComicsJson.length}\n${_selectedComicsJson.map((e) => e.toString()).join('\n')}',
-        style: const TextStyle(fontSize: 16),
-      ),
-    );
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -482,16 +469,8 @@ class _ComicsGridState extends State<ComicsGrid> {
                               setState(() {
                                 if (isSelected == true) {
                                   _selectedComics.add(comic);
-                                  _selectedComicsJson.add({
-                                    'id': comic.id,
-                                    'title': comic.title,
-                                    'writer': comic.writer,
-                                  });
                                 } else {
                                   _selectedComics.remove(comic);
-                                  _selectedComicsJson.removeWhere(
-                                    (item) => item['id'] == comic.id,
-                                  );
                                 }
                               });
                             },
@@ -627,16 +606,10 @@ class _ComicsGridState extends State<ComicsGrid> {
       children: [
         HoverCardComic(
           comic: comic,
-          onAddToList: () => showDialog(
-            context: context,
-            builder: (BuildContext context) => AddToReadingListDialog(
-              id: comic.id,
-              type: 'comic',
-              series: comic.series!,
-              title: comic.title,
-              coverUrl: comic.coverPath,
-            ),
-          ),
+          onAddToList: () async {
+            _selectedComics.add(comic);
+            await _addToReadingList();
+          },
           onDownload: () async {
             final filePath = comic.filePath;
             String extension = '';
@@ -785,7 +758,6 @@ class _ComicsGridState extends State<ComicsGrid> {
 
         setState(() {
           for (var comic in _selectedComics) {
-            _selectedComicsJson.removeWhere((item) => item['id'] == comic.id);
             provider.removeComic(comic.id); // Eliminar del provider
           }
           _selectedComics.clear();
@@ -814,11 +786,7 @@ class _ComicsGridState extends State<ComicsGrid> {
       comic.readingProgress!['read'] = true;
       final prefs = await SharedPreferences.getInstance();
       final id = prefs.getInt('id');
-      await ComicServices.saveReadState(
-        comic.id,
-        true,
-        context,
-      );
+      await ComicServices.saveReadState(comic.id, true, context);
       await provider.loadcomics(id ?? 0);
       provider.updatecomic(comic); // Actualizar en el provider
     }
@@ -836,11 +804,7 @@ class _ComicsGridState extends State<ComicsGrid> {
       comic.readingProgress!['read'] = false;
       final prefs = await SharedPreferences.getInstance();
       final id = prefs.getInt('id');
-      await ComicServices.saveReadState(
-        comic.id,
-        false,
-        context,
-      );
+      await ComicServices.saveReadState(comic.id, false, context);
       await provider.loadcomics(id ?? 0);
       provider.updatecomic(comic); // Actualizar en el provider
     }
@@ -853,30 +817,52 @@ class _ComicsGridState extends State<ComicsGrid> {
   }
 
   Future<void> _addToReadingList() async {
-    for (var comic in _selectedComics) {
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) => AddToReadingListDialog(
-          id: comic.id,
-          type: 'comic',
-          series: comic.series!,
-          title: comic.title,
-          coverUrl: comic.coverPath,
-        ),
+    // Show the dialog once to get the selected reading list
+    final selectedListId = await showDialog<String>(
+      // Changed return type to String? (for list ID)
+      context: context,
+      builder: (BuildContext context) =>
+          AddToReadingListDialog(), // No comic-specific data needed here
+    );
+
+    // If a list was selected, proceed to add comics
+    if (selectedListId != null) {
+      for (var comic in _selectedComics) {
+        try {
+          await ReadingListServices.addItemToList(
+            int.parse(selectedListId), // Use the selected list ID
+            comic.id,
+            'comic',
+            comic.title,
+            comic.series!,
+            comic.coverPath!,
+          );
+        } catch (e) {
+          // Handle error for individual comic addition
+          print('Error adding ${comic.title} to list: $e');
+          // You might want to show a less intrusive message or log this.
+        }
+      }
+      CustomSnackBar.show(
+        context,
+        "Cómics añadidos a la lista de lectura",
+        Colors.blue,
+        duration: Duration(seconds: 4),
+      );
+    } else {
+      // User cancelled the dialog
+      CustomSnackBar.show(
+        context,
+        "Ningún cómic fue añadido a la lista de lectura",
+        Colors.orange,
+        duration: Duration(seconds: 3),
       );
     }
-    CustomSnackBar.show(
-      context,
-      "Cómics añadidos a la lista de lectura",
-      Colors.blue,
-      duration: Duration(seconds: 4),
-    );
   }
 
   void _onViewModeChanged(bool gridMode) {
     if (gridMode) {
       _selectedComics.clear();
-      _selectedComicsJson.clear();
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:inkger/frontend/dialogs/add_to_reading_list_dialog.dart';
 import 'package:inkger/frontend/models/book.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/services/reading_list_services.dart';
 import 'package:inkger/frontend/utils/book_filter_provider.dart';
 import 'package:inkger/frontend/utils/book_list_item.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
@@ -35,8 +36,6 @@ class _BooksGridState extends State<BooksGrid> {
   //bool _colorCalculated = false;
   final List<Book> _selectedBooks =
       []; // Lista para almacenar los libros seleccionados
-  final List<Map<String, dynamic>> _selectedBooksJson =
-      []; // Lista para almacenar los datos seleccionados en JSON
 
   @override
   void dispose() {
@@ -165,12 +164,49 @@ class _BooksGridState extends State<BooksGrid> {
                 ],
               ),
             ),
-            if (_selectedBooks.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () async {
-                  await _deleteSelectedBooks();
-                },
+            if (_selectedBooks.isNotEmpty && !filters.isGridView)
+              Row(
+                children: [
+                  Tooltip(
+                    message: "Eliminar libros seleccionados",
+                    child: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        await _deleteSelectedBooks();
+                      },
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Marcar libros como leídos",
+                    child: IconButton(
+                      icon: const Icon(Icons.check_circle, color: Colors.green),
+                      onPressed: () async {
+                        await _markAsRead();
+                      },
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Marcar libros como no leídos",
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.remove_circle,
+                        color: Colors.orange,
+                      ),
+                      onPressed: () async {
+                        await _markAsUnread();
+                      },
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Añadir libros a la lista de lectura",
+                    child: IconButton(
+                      icon: const Icon(Icons.playlist_add, color: Colors.blue),
+                      onPressed: () async {
+                        await _addToReadingList();
+                      },
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
@@ -295,16 +331,8 @@ class _BooksGridState extends State<BooksGrid> {
                               setState(() {
                                 if (isSelected == true) {
                                   _selectedBooks.add(book);
-                                  _selectedBooksJson.add({
-                                    'id': book.id,
-                                    'title': book.title,
-                                    'author': book.author,
-                                  });
                                 } else {
                                   _selectedBooks.remove(book);
-                                  _selectedBooksJson.removeWhere(
-                                    (item) => item['id'] == book.id,
-                                  );
                                 }
                               });
                             },
@@ -552,16 +580,10 @@ class _BooksGridState extends State<BooksGrid> {
         HoverCardBook(
           book: book,
           onDelete: () => showDeleteConfirmationDialog(context, book),
-          onAddToList: () => showDialog(
-            context: context,
-            builder: (BuildContext context) => AddToReadingListDialog(
-              id: book.id,
-              type: 'book',
-              series: book.series!,
-              title: book.title,
-              coverUrl: book.coverPath,
-            ),
-          ),
+          onAddToList: () async {
+            _selectedBooks.add(book);
+            await _addToReadingList();
+          },
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0),
@@ -743,7 +765,6 @@ class _BooksGridState extends State<BooksGrid> {
 
         setState(() {
           for (var book in _selectedBooks) {
-            _selectedBooksJson.removeWhere((item) => item['id'] == book.id);
             provider.removeBook(book.id); // Eliminar del provider
           }
           _selectedBooks.clear();
@@ -765,4 +786,85 @@ class _BooksGridState extends State<BooksGrid> {
       }
     }
   }
+
+  Future<void> _markAsRead() async {
+    final provider = Provider.of<BooksProvider>(context, listen: false);
+    for (var book in _selectedBooks) {
+      book.readingProgress!['read'] = true;
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('id');
+      await BookServices.saveReadState(book.id, true, context);
+      await provider.loadBooks(id ?? 0);
+      provider.updateBook(book); // Actualizar en el provider
+    }
+    CustomSnackBar.show(
+      context,
+      "Cómics marcados como leídos",
+      Colors.green,
+      duration: Duration(seconds: 4),
+    );
+  }
+
+  Future<void> _markAsUnread() async {
+    final provider = Provider.of<BooksProvider>(context, listen: false);
+    for (var comic in _selectedBooks) {
+      comic.readingProgress!['read'] = false;
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('id');
+      await BookServices.saveReadState(comic.id, false, context);
+      await provider.loadBooks(id ?? 0);
+      provider.updateBook(comic); // Actualizar en el provider
+    }
+    CustomSnackBar.show(
+      context,
+      "Cómics marcados como no leídos",
+      Colors.orange,
+      duration: Duration(seconds: 4),
+    );
+  }
+  
+  Future<void> _addToReadingList() async {
+    // Show the dialog once to get the selected reading list
+    final selectedListId = await showDialog<String>(
+      // Changed return type to String? (for list ID)
+      context: context,
+      builder: (BuildContext context) =>
+          AddToReadingListDialog(), // No comic-specific data needed here
+    );
+
+    // If a list was selected, proceed to add comics
+    if (selectedListId != null) {
+      for (var book in _selectedBooks) {
+        try {
+          await ReadingListServices.addItemToList(
+            int.parse(selectedListId), // Use the selected list ID
+            book.id,
+            'book',
+            book.title,
+            book.series!,
+            book.coverPath!,
+          );
+        } catch (e) {
+          // Handle error for individual comic addition
+          print('Error adding ${book.title} to list: $e');
+          // You might want to show a less intrusive message or log this.
+        }
+      }
+      CustomSnackBar.show(
+        context,
+        "Libro(s) añadidos a la lista de lectura",
+        Colors.blue,
+        duration: Duration(seconds: 4),
+      );
+    } else {
+      // User cancelled the dialog
+      CustomSnackBar.show(
+        context,
+        "Ningún libro(s) fue añadido a la lista de lectura",
+        Colors.orange,
+        duration: Duration(seconds: 3),
+      );
+    }
+  }
+  
 }

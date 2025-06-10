@@ -7,10 +7,12 @@ import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/book_services.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
+import 'package:inkger/frontend/services/reading_list_services.dart';
 import 'package:inkger/frontend/utils/book_provider.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/functions.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +28,9 @@ class ItemDetailScreen extends StatefulWidget {
 }
 
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
+  final List<dynamic> _selectedBooks =
+      []; // Lista para almacenar los libros seleccionados
+
   @override
   Widget build(BuildContext context) {
     // Casteamos según el tipo
@@ -164,27 +169,13 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
             icon: const Icon(Icons.playlist_add),
             tooltip: 'Agregar a lista de lectura',
             onPressed: () async {
-              widget.type == "book"
-                  ? showDialog(
-                      context: context,
-                      builder: (BuildContext context) => AddToReadingListDialog(
-                        id: book!.id,
-                        type: 'book',
-                        series: book.series!,
-                        title: book.title,
-                        coverUrl: book.coverPath,
-                      ),
-                    )
-                  : showDialog(
-                      context: context,
-                      builder: (BuildContext context) => AddToReadingListDialog(
-                        id: comic!.id,
-                        type: 'comic',
-                        series: comic.series!,
-                        title: comic.title,
-                        coverUrl: comic.coverPath,
-                      ),
-                    );
+              if (widget.type == "book") {
+                _selectedBooks.add(book!);
+                await _addToReadingList();
+              } else {
+                _selectedBooks.add(comic!);
+                await _addToReadingList();
+              }
             },
           ),
         ],
@@ -357,5 +348,62 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     if (date == null) return '';
     final formatter = DateFormat('d MMM yyyy', 'es');
     return formatter.format(date);
+  }
+
+  Future<void> _addToReadingList() async {
+    // Show the dialog once to get the selected reading list
+    final selectedListId = await showDialog<String>(
+      // Changed return type to String? (for list ID)
+      context: context,
+      builder: (BuildContext context) =>
+          AddToReadingListDialog(), // No comic-specific data needed here
+    );
+
+    // If a list was selected, proceed to add comics
+    if (selectedListId != null) {
+      for (var book in _selectedBooks) {
+        try {
+          if (book is Comic) {
+            // If it's a comic, use ComicServices
+            await ReadingListServices.addItemToList(
+              int.parse(selectedListId), // Use the selected list ID
+              book.id,
+              'comic',
+              book.title,
+              book.series!,
+              book.coverPath!,
+            );
+          } else {
+            // If it's a book, use BookServices
+            await ReadingListServices.addItemToList(
+              int.parse(selectedListId), // Use the selected list ID
+              book.id,
+              'book',
+              book.title,
+              book.series!,
+              book.coverPath!,
+            );
+          }
+        } catch (e) {
+          // Handle error for individual comic addition
+          print('Error adding ${book.title} to list: $e');
+          // You might want to show a less intrusive message or log this.
+        }
+      }
+      CustomSnackBar.show(
+        context,
+        "Cómics añadidos a la lista de lectura",
+        Colors.green,
+        duration: Duration(seconds: 4),
+      );
+    } else {
+      // User cancelled the dialog
+      CustomSnackBar.show(
+        context,
+        "Ningún cómic fue añadido a la lista de lectura",
+        Colors.red,
+        duration: Duration(seconds: 3),
+      );
+    }
   }
 }
