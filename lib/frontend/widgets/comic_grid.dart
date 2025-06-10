@@ -11,9 +11,11 @@ import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
 import 'package:inkger/frontend/widgets/cover_art.dart';
+import 'package:inkger/frontend/widgets/custom_snackbar.dart';
 import 'package:inkger/frontend/widgets/hover_card_comic.dart';
 import 'package:inkger/frontend/widgets/reading_progress_bar.dart';
 import 'package:inkger/frontend/widgets/sort_selector.dart';
+import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:inkger/frontend/widgets/comics_filters_layout.dart';
@@ -37,7 +39,12 @@ class _ComicsGridState extends State<ComicsGrid> {
     Colors.grey,
   ); // Color por defecto
   //late Future<Color> _dominantColorFuture;
-  //bool _colorCalculated = false;
+  //bool _colorCalculated = false
+
+  final List<Comic> _selectedComics =
+      []; // Lista para almacenar los cómics seleccionados
+  final List<Map<String, dynamic>> _selectedComicsJson =
+      []; // Lista para almacenar los datos seleccionados en JSON
 
   @override
   void dispose() {
@@ -170,6 +177,18 @@ class _ComicsGridState extends State<ComicsGrid> {
     filters.fillPublishers(publishers);
   }
 
+  /*Widget _buildSelectedComicsJson() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(
+        _selectedComicsJson.isEmpty
+            ? 'No hay elementos seleccionados'
+            : 'Seleccionados: ${_selectedComicsJson.length}\n${_selectedComicsJson.map((e) => e.toString()).join('\n')}',
+        style: const TextStyle(fontSize: 16),
+      ),
+    );
+  }*/
+
   @override
   Widget build(BuildContext context) {
     final filters = Provider.of<ComicFilterProvider>(context);
@@ -246,6 +265,50 @@ class _ComicsGridState extends State<ComicsGrid> {
                 ],
               ),
             ),
+            if (_selectedComics.isNotEmpty && !filters.isGridView)
+              Row(
+                children: [
+                  Tooltip(
+                    message: "Eliminar cómics seleccionados",
+                    child: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        await _deleteSelectedComics();
+                      },
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Marcar cómics como leídos",
+                    child: IconButton(
+                      icon: const Icon(Icons.check_circle, color: Colors.green),
+                      onPressed: () async {
+                        await _markAsRead();
+                      },
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Marcar cómics como no leídos",
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.remove_circle,
+                        color: Colors.orange,
+                      ),
+                      onPressed: () async {
+                        await _markAsUnread();
+                      },
+                    ),
+                  ),
+                  Tooltip(
+                    message: "Añadir cómics a la lista de lectura",
+                    child: IconButton(
+                      icon: const Icon(Icons.playlist_add, color: Colors.blue),
+                      onPressed: () async {
+                        await _addToReadingList();
+                      },
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -390,6 +453,7 @@ class _ComicsGridState extends State<ComicsGrid> {
                     }
 
                     if (filters.isGridView) {
+                      _onViewModeChanged(true);
                       return SingleChildScrollView(
                         child: Wrap(
                           spacing: 20,
@@ -409,8 +473,30 @@ class _ComicsGridState extends State<ComicsGrid> {
                       return ListView.builder(
                         padding: const EdgeInsets.all(8),
                         itemCount: filteredBooks.length,
-                        itemBuilder: (context, index) =>
-                            ComicListItem(comic: filteredBooks[index]),
+                        itemBuilder: (context, index) {
+                          final comic = filteredBooks[index];
+                          return ComicListItem(
+                            comic: comic,
+                            isSelected: _selectedComics.contains(comic),
+                            onSelected: (isSelected) {
+                              setState(() {
+                                if (isSelected == true) {
+                                  _selectedComics.add(comic);
+                                  _selectedComicsJson.add({
+                                    'id': comic.id,
+                                    'title': comic.title,
+                                    'writer': comic.writer,
+                                  });
+                                } else {
+                                  _selectedComics.remove(comic);
+                                  _selectedComicsJson.removeWhere(
+                                    (item) => item['id'] == comic.id,
+                                  );
+                                }
+                              });
+                            },
+                          );
+                        },
                       );
                     }
                   },
@@ -418,6 +504,7 @@ class _ComicsGridState extends State<ComicsGrid> {
               },
             ),
           ),
+          //_buildSelectedComicsJson(),
         ],
       ),
     );
@@ -545,8 +632,9 @@ class _ComicsGridState extends State<ComicsGrid> {
             builder: (BuildContext context) => AddToReadingListDialog(
               id: comic.id,
               type: 'comic',
-              series: comic.series,
+              series: comic.series!,
               title: comic.title,
+              coverUrl: comic.coverPath,
             ),
           ),
           onDownload: () async {
@@ -586,8 +674,10 @@ class _ComicsGridState extends State<ComicsGrid> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.0),
-                  child: buildCoverImage(coverPath ?? '',
-                  height: MediaQuery.of(context).size.height * 0.3,),
+                  child: buildCoverImage(
+                    coverPath ?? '',
+                    height: MediaQuery.of(context).size.height * 0.3,
+                  ),
                 ),
                 Positioned(
                   top: 15,
@@ -660,5 +750,133 @@ class _ComicsGridState extends State<ComicsGrid> {
         ),
       ],
     );
+  }
+
+  Future<void> _deleteSelectedComics() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: const Text(
+            '¿Estás seguro de que deseas eliminar los cómics seleccionados?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(AppLocalizations.of(context)!.delete),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        final provider = Provider.of<ComicsProvider>(context, listen: false);
+        final idsToDelete = _selectedComics
+            .map((comic) => int.parse(comic.id.toString()))
+            .toList();
+        await ComicServices.deleteComics(idsToDelete);
+
+        setState(() {
+          for (var comic in _selectedComics) {
+            _selectedComicsJson.removeWhere((item) => item['id'] == comic.id);
+            provider.removeComic(comic.id); // Eliminar del provider
+          }
+          _selectedComics.clear();
+        });
+        await _updateComicCount(); // Actualizar el conteo de cómics
+        CustomSnackBar.show(
+          context,
+          "Elementos eliminados correctamente",
+          Colors.green,
+          duration: Duration(seconds: 4),
+        );
+      } catch (e) {
+        CustomSnackBar.show(
+          context,
+          'Error al eliminar elementos: $e',
+          Colors.red,
+          duration: Duration(seconds: 4),
+        );
+      }
+    }
+  }
+
+  Future<void> _markAsRead() async {
+    final provider = Provider.of<ComicsProvider>(context, listen: false);
+    for (var comic in _selectedComics) {
+      comic.readingProgress!['read'] = true;
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('id');
+      await ComicServices.saveReadState(
+        comic.id,
+        true,
+        context,
+      );
+      await provider.loadcomics(id ?? 0);
+      provider.updatecomic(comic); // Actualizar en el provider
+    }
+    CustomSnackBar.show(
+      context,
+      "Cómics marcados como leídos",
+      Colors.green,
+      duration: Duration(seconds: 4),
+    );
+  }
+
+  Future<void> _markAsUnread() async {
+    final provider = Provider.of<ComicsProvider>(context, listen: false);
+    for (var comic in _selectedComics) {
+      comic.readingProgress!['read'] = false;
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('id');
+      await ComicServices.saveReadState(
+        comic.id,
+        false,
+        context,
+      );
+      await provider.loadcomics(id ?? 0);
+      provider.updatecomic(comic); // Actualizar en el provider
+    }
+    CustomSnackBar.show(
+      context,
+      "Cómics marcados como no leídos",
+      Colors.orange,
+      duration: Duration(seconds: 4),
+    );
+  }
+
+  Future<void> _addToReadingList() async {
+    for (var comic in _selectedComics) {
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) => AddToReadingListDialog(
+          id: comic.id,
+          type: 'comic',
+          series: comic.series!,
+          title: comic.title,
+          coverUrl: comic.coverPath,
+        ),
+      );
+    }
+    CustomSnackBar.show(
+      context,
+      "Cómics añadidos a la lista de lectura",
+      Colors.blue,
+      duration: Duration(seconds: 4),
+    );
+  }
+
+  void _onViewModeChanged(bool gridMode) {
+    if (gridMode) {
+      _selectedComics.clear();
+      _selectedComicsJson.clear();
+    }
   }
 }

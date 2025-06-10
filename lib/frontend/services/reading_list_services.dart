@@ -7,7 +7,6 @@ import 'package:inkger/frontend/models/reading_list_item.dart';
 
 class ReadingListServices {
   static Future<Response> createReadingList(Map<String, dynamic> data) async {
-
     try {
       final response = await ApiService.dio.post(
         '/api/reading-list-empty',
@@ -202,7 +201,7 @@ class ReadingListServices {
     }
   }
 
-  static Future<void> addItemToList(int listId, int itemId, String type, String title, String series) async {
+  static Future<void> addItemToList(int listId, int itemId, String type, String title, String series, String coverUrl) async {
     try {
       final response = await ApiService.dio.post(
         '/api/reading-lists/$listId/items',
@@ -220,6 +219,18 @@ class ReadingListServices {
     } catch (e) {
       print('Error al añadir el elemento a la lista: $e');
       rethrow;
+    }
+  }
+
+  static Future<void> deleteItem(int itemId, String type) async {
+    try {
+      final response = await ApiService.dio.delete('/api/reading-list/item/$itemId', data: {'type': type});
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al eliminar el elemento: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Error al eliminar el elemento: $e');
     }
   }
 

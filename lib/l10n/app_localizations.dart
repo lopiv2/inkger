@@ -416,6 +416,12 @@ abstract class AppLocalizations {
   /// **'Dashboard'**
   String get dashboard;
 
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
   /// No description provided for @descendingOrder.
   ///
   /// In en, this message translates to:
@@ -475,6 +481,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit feeds'**
   String get editFeeds;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
 
   /// No description provided for @errorLoadingDocument.
   ///
@@ -590,10 +602,16 @@ abstract class AppLocalizations {
   /// **'Updated metadata'**
   String get metadataUpdated;
 
+  /// No description provided for @missingComicVineApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing Comic Vine API key. Please add a key in the settings.'**
+  String get missingComicVineApiKey;
+
   /// No description provided for @noSerie.
   ///
   /// In en, this message translates to:
-  /// **'No serie'**
+  /// **'No series'**
   String get noSerie;
 
   /// No description provided for @password.

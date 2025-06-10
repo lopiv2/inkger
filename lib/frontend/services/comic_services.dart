@@ -75,7 +75,27 @@ class ComicServices {
     }
   }
 
-  static Future<void> downloadComic(dynamic comicId, String title, String extension) async {
+  static Future<void> deleteComics(List<int> comicIds) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/comics/delete-multiple',
+        data: {'comicIds': comicIds},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al eliminar los cómics: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Error al eliminar los cómics: $e');
+    }
+  }
+
+  static Future<void> downloadComic(
+    dynamic comicId,
+    String title,
+    String extension,
+  ) async {
     try {
       final response = await ApiService.dio.get(
         '/api/comics/download/$comicId',
@@ -134,32 +154,33 @@ class ComicServices {
   ) async {
     try {
       final response = await ApiService.dio.get(
-        '/api/comics/search-metadata/$userId/$comic', // Aquí pasas tanto el userId como el comic
+        '/api/comics/search-metadata/$userId/$comic',
         options: Options(responseType: ResponseType.json),
       );
 
-      if (response.statusCode == 200) {
-        // Si la respuesta es un array, puedes devolverla como lista
-        List<dynamic> data = response.data;
+      List<dynamic> data = response.data;
+      List<Map<String, dynamic>> comics = data.map((item) {
+        return {
+          'id': item['id'],
+          'name': item['name'],
+          'publisher': item['publisher'],
+          'year': item['start_year'],
+          'count_of_issues': item['count_of_issues'] ?? 0,
+          'image': item['image'] ?? '',
+        };
+      }).toList();
 
-        // Opcional: Si necesitas procesar los datos para extraer ciertos campos
-        List<Map<String, dynamic>> comics = data.map((item) {
-          return {
-            'id': item['id'],
-            'name': item['name'],
-            'publisher': item['publisher'],
-            'year': item['start_year'],
-            'count_of_issues': item['count_of_issues'] ?? 0,
-            'image': item['image'] ?? '', // Aquí manejas la imagen de portada
-          };
-        }).toList();
-
-        return comics;
-      } else {
-        throw Exception('Error al cargar el comic: ${response.statusCode}');
+      return comics;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        throw Exception('${e.response?.data}');     
       }
+
+      print('❗ Error de Dio: ${e.message}');
+      throw Exception('Error al obtener el comic (Dio): ${e.message}');
     } catch (e) {
-      throw Exception('Error al obtener el comic: $e');
+      print('❗ Error inesperado: $e');
+      throw Exception('Error inesperado al obtener el comic: $e');
     }
   }
 
@@ -255,7 +276,7 @@ class ComicServices {
       }
     }
   }
-  
+
   static Future<void> saveReadingProgress(
     int comicId,
     int progress,
@@ -395,7 +416,7 @@ class ComicServices {
       },
     );
   }
-  
+
   static Future<void> updateComic(Comic comic) async {
     try {
       final response = await ApiService.dio.put(
@@ -428,6 +449,22 @@ class ComicServices {
       }
     } catch (e) {
       throw Exception('Error al obtener el cómic: $e');
+    }
+  }
+
+  static Future<void> addComicsToReadingList(List<int> comicIds, String listId) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/reading-lists/$listId/add-comics',
+        data: {'comicIds': comicIds},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al añadir cómics a la lista de lectura: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Error al añadir cómics a la lista de lectura: $e');
     }
   }
 }

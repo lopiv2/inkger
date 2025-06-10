@@ -94,7 +94,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         CircleAvatar(
           radius: 60,
-          backgroundImage: _getSafeAvatarImage(widget.user.avatarUrl),
+          //backgroundImage: _getSafeAvatarImage(widget.user.avatarUrl),
+          backgroundImage: _getSafeAvatarImage(''),
         ),
         const SizedBox(height: 16),
         Text(

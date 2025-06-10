@@ -7,6 +7,7 @@ class CreateUserDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextEditingController usernameController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
 
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.createUser),
@@ -26,6 +27,12 @@ class CreateUserDialog extends StatelessWidget {
             ),
             obscureText: true,
           ),
+          TextField(
+            controller: emailController,
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.email,
+            ),
+          ),
         ],
       ),
       actions: [
@@ -37,10 +44,11 @@ class CreateUserDialog extends StatelessWidget {
           onPressed: () async {
             final username = usernameController.text.trim();
             final password = passwordController.text.trim();
+            final email = emailController.text.trim();
 
             if (username.isNotEmpty && password.isNotEmpty) {
               try {
-                await CommonServices.createUser(username, password);
+                await CommonServices.createUser(username, password, email);
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

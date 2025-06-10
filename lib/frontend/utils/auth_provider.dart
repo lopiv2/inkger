@@ -71,7 +71,6 @@ class AuthProvider with ChangeNotifier {
     await prefs.setString('name', data['name']);
     await prefs.setString('username', data['username']);
     await prefs.setString('password', data['password']);
-    await prefs.setString('avatarUrl', data['avatarUrl']);
     await prefs.setString('email', data['email']);
     await prefs.setString('role', data['role']);
     // Manejo seguro de fechas

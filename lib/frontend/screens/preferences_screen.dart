@@ -186,20 +186,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Tamaño de elementos en la parrilla",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Slider(
-                      value: sliderItemSizeValue,
-                      min: 5,
-                      max: 10,
-                      divisions: 5,
-                      label: sliderItemSizeValue.round().toString(),
-                      onChanged: (value) =>
-                          setState(() => sliderItemSizeValue = value),
-                    ),
-                    const SizedBox(height: 16),
                     Text(
                       "Frecuencia de escaneo de archivos nuevos (en minutos)",
                       style: TextStyle(fontWeight: FontWeight.bold),

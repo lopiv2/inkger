@@ -14,6 +14,7 @@ class ReadingListItem {
   final int orderNumber; // Nuevo campo para el orden
   final String title; // Nuevo campo para el título
   final String itemId; // Nuevo campo para el título
+  final String coverUrl; // Nuevo campo para la URL de la portada
 
   ReadingListItem({
     required this.id,
@@ -26,6 +27,7 @@ class ReadingListItem {
     required this.orderNumber, // Inicializar el nuevo campo
     required this.title, // Inicializar el nuevo campo
     required this.itemId, // Inicializar el nuevo campo
+    this.coverUrl = '', // Asignar valor predeterminado vacío
   });
 
   factory ReadingListItem.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class ReadingListItem {
       orderNumber: json['orderNumber'] as int? ?? 0, // Asignar valor predeterminado 0
       title: json['title'] as String? ?? '', // Asignar valor predeterminado vacío
       itemId: json['itemId'] as String? ?? '', // Asignar valor predeterminado vacío
+      coverUrl: json['coverUrl'] as String? ?? '', // Asignar valor predeterminado vacío
     );
   }
 
@@ -58,6 +61,7 @@ class ReadingListItem {
       orderNumber: int.tryParse(xmlAttributes['OrderNumber'] ?? '0') ?? 0, // Parsear el orden
       title: xmlAttributes['Title'] ?? '', // Asignar valor predeterminado vacío
       itemId: xmlAttributes['ItemId'] ?? '', // Asignar valor predeterminado vacío
+      coverUrl: xmlAttributes['CoverUrl'] ?? '', // Asignar valor predeterminado vacío
     );
   }
 }

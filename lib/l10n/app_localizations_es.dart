@@ -205,6 +205,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashboard => 'Panel de control';
 
   @override
+  String get delete => 'Eliminar';
+
+  @override
   String get descendingOrder => 'Orden descendente';
 
   @override
@@ -233,6 +236,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get editFeeds => 'Editar fuentes';
+
+  @override
+  String get email => 'Correo electrónico';
 
   @override
   String get errorLoadingDocument => 'Error al cargar el documento';
@@ -291,6 +297,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get metadataUpdated => 'Metadatos actualizados';
+
+  @override
+  String get missingComicVineApiKey =>
+      'Falta la clave de la API de Comic Vine. Por favor, añade una clave en las preferencias.';
 
   @override
   String get noSerie => 'Sin serie';

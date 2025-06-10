@@ -10,7 +10,6 @@ class User {
   final String?
   password; // Nota: En producción, nunca deberías almacenar la contraseña en el cliente
   final String? name;
-  final String? avatarUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? lastLogin;
@@ -24,7 +23,6 @@ class User {
     required this.username,
     required this.password,
     required this.name,
-    this.avatarUrl,
     required this.createdAt,
     required this.updatedAt,
     required this.lastLogin,
@@ -51,7 +49,6 @@ class User {
     String? username,
     String? password,
     String? name,
-    String? avatarUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? lastLogin,
@@ -63,7 +60,6 @@ class User {
       username: username ?? this.username,
       password: password ?? this.password,
       name: name ?? this.name,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       lastLogin: lastLogin ?? this.lastLogin,

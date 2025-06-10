@@ -49,6 +49,22 @@ class BookServices {
     }
   }
 
+  static Future<void> deleteBooks(List<int> bookIds) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/api/books/delete-multiple',
+        data: {'bookIds': bookIds},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al eliminar los libros: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Error al eliminar los libros: $e');
+    }
+  }
+
   static Future<Response> getAllBooks(int id) async {
     try {
       final response = await ApiService.dio.get(

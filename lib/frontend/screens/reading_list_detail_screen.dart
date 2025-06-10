@@ -142,7 +142,15 @@ class _ReadingListDetailScreenState extends State<ReadingListDetailScreen> {
                       itemCount: items.length,
                       itemBuilder: (context, index) {
                         final item = items[index];
-                        return HoverableGridItemReadingList(item: item);
+                        return HoverableGridItemReadingList(
+                          item: item,
+                          onDelete: (deletedItem) {
+                            setState(() {
+                              items.remove(deletedItem);
+                              _fetchedItems = Future.value(items);
+                            });
+                          },
+                        );
                       },
                     ),
                   );

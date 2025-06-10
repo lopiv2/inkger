@@ -49,7 +49,6 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
 
       // Campos opcionales (incluyendo fechas)
       final name = prefs.getString('name');
-      final avatarUrl = prefs.getString('avatarUrl');
       final password = prefs.getString('password');
       final rolesString = prefs.getString('role'); // Recupera como String
       final roles = rolesString != null ? rolesString.split(',') : ['USER'];
@@ -84,7 +83,6 @@ class _UserProfileLoaderState extends State<UserProfileLoader> {
         password: password ?? '',
         email: email,
         name: name,
-        avatarUrl: avatarUrl,
         roles: roles,
         createdAt: createdAt,
         updatedAt: updatedAt,

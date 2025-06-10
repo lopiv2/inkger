@@ -170,8 +170,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       builder: (BuildContext context) => AddToReadingListDialog(
                         id: book!.id,
                         type: 'book',
-                        series: book.series,
+                        series: book.series!,
                         title: book.title,
+                        coverUrl: book.coverPath,
                       ),
                     )
                   : showDialog(
@@ -179,8 +180,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       builder: (BuildContext context) => AddToReadingListDialog(
                         id: comic!.id,
                         type: 'comic',
-                        series: comic.series,
+                        series: comic.series!,
                         title: comic.title,
+                        coverUrl: comic.coverPath,
                       ),
                     );
             },

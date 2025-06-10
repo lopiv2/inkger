@@ -33,6 +33,10 @@ class _BooksGridState extends State<BooksGrid> {
   ); // Color por defecto
   //late Future<Color> _dominantColorFuture;
   //bool _colorCalculated = false;
+  final List<Book> _selectedBooks =
+      []; // Lista para almacenar los libros seleccionados
+  final List<Map<String, dynamic>> _selectedBooksJson =
+      []; // Lista para almacenar los datos seleccionados en JSON
 
   @override
   void dispose() {
@@ -161,6 +165,13 @@ class _BooksGridState extends State<BooksGrid> {
                 ],
               ),
             ),
+            if (_selectedBooks.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () async {
+                  await _deleteSelectedBooks();
+                },
+              ),
           ],
         ),
       ),
@@ -275,8 +286,30 @@ class _BooksGridState extends State<BooksGrid> {
                       return ListView.builder(
                         padding: const EdgeInsets.all(8),
                         itemCount: filteredBooks.length,
-                        itemBuilder: (context, index) =>
-                            BookListItem(book: filteredBooks[index]),
+                        itemBuilder: (context, index) {
+                          final book = filteredBooks[index];
+                          return BookListItem(
+                            book: book,
+                            isSelected: _selectedBooks.contains(book),
+                            onSelected: (isSelected) {
+                              setState(() {
+                                if (isSelected == true) {
+                                  _selectedBooks.add(book);
+                                  _selectedBooksJson.add({
+                                    'id': book.id,
+                                    'title': book.title,
+                                    'author': book.author,
+                                  });
+                                } else {
+                                  _selectedBooks.remove(book);
+                                  _selectedBooksJson.removeWhere(
+                                    (item) => item['id'] == book.id,
+                                  );
+                                }
+                              });
+                            },
+                          );
+                        },
                       );
                     }
                   },
@@ -524,8 +557,9 @@ class _BooksGridState extends State<BooksGrid> {
             builder: (BuildContext context) => AddToReadingListDialog(
               id: book.id,
               type: 'book',
-              series: book.series,
+              series: book.series!,
               title: book.title,
+              coverUrl: book.coverPath,
             ),
           ),
           child: Card(
@@ -674,5 +708,61 @@ class _BooksGridState extends State<BooksGrid> {
         );
       },
     );
+  }
+
+  Future<void> _deleteSelectedBooks() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: const Text(
+            '¿Estás seguro de que deseas eliminar los cómics seleccionados?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(AppLocalizations.of(context)!.delete),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        final provider = Provider.of<BooksProvider>(context, listen: false);
+        final idsToDelete = _selectedBooks
+            .map((book) => int.parse(book.id.toString()))
+            .toList();
+        await BookServices.deleteBooks(idsToDelete);
+
+        setState(() {
+          for (var book in _selectedBooks) {
+            _selectedBooksJson.removeWhere((item) => item['id'] == book.id);
+            provider.removeBook(book.id); // Eliminar del provider
+          }
+          _selectedBooks.clear();
+        });
+        await _updateBookCount(); // Actualizar el conteo de libros
+        CustomSnackBar.show(
+          context,
+          "Elementos eliminados correctamente",
+          Colors.green,
+          duration: Duration(seconds: 4),
+        );
+      } catch (e) {
+        CustomSnackBar.show(
+          context,
+          'Error al eliminar elementos: $e',
+          Colors.red,
+          duration: Duration(seconds: 4),
+        );
+      }
+    }
   }
 }

@@ -398,11 +398,11 @@ class CommonServices {
     }
   }
 
-  static Future<void> createUser(String username, String password) async {
+  static Future<void> createUser(String username, String password, String email) async {
     try {
       final response = await ApiService.dio.post(
         '/api/users/create',
-        data: {'username': username, 'password': password},
+        data: {'username': username, 'password': password, 'email': email},
         options: Options(
           headers: {'Content-Type': 'application/json'},
           validateStatus: (status) => status != null && status < 500,

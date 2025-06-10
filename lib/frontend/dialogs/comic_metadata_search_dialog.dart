@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:inkger/frontend/dialogs/custom_dialog.dart';
 import 'package:inkger/frontend/dialogs/volume_issues_dialog.dart';
 import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
@@ -86,7 +87,7 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                         ? SizedBox(
                             width: 20,
                             height: 20,
-                            child: CustomLoader(size: 60.0, color: Colors.blue)
+                            child: CustomLoader(size: 60.0, color: Colors.blue),
                           )
                         : Text('${AppLocalizations.of(context)!.search}'),
                   ),
@@ -203,7 +204,10 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
                                           return Icon(Icons.error);
                                         }
                                         return Center(
-                                          child: CustomLoader(size: 60.0, color: Colors.blue),
+                                          child: CustomLoader(
+                                            size: 60.0,
+                                            color: Colors.blue,
+                                          ),
                                         );
                                       },
                                     ),
@@ -279,22 +283,33 @@ class _ComicMetadataSearchDialogState extends State<ComicMetadataSearchDialog> {
     if (userId == null) {
       throw Exception('No se encontró el ID del usuario');
     }
-
-    final searchResults = await ComicServices.getComicMetadata(
-      userId,
-      comic.title,
-    );
-
-    return searchResults.map((result) {
-      return {
-        'id': result['id']?.toString() ?? '0',
-        'series': result['name'] ?? 'Desconocido',
-        'year': result['year'] ?? 'N/A',
-        'issues': result['count_of_issues']?.toString() ?? '0',
-        'publisher': result['publisher']?['name'] ?? 'Desconocido',
-        'image': result['image'] ?? '',
-      };
-    }).toList();
+    try {
+      final searchResults = await ComicServices.getComicMetadata(
+        userId,
+        comic.title,
+      );
+      return searchResults.map((result) {
+        return {
+          'id': result['id']?.toString() ?? '0',
+          'series': result['name'] ?? 'Desconocido',
+          'year': result['year'] ?? 'N/A',
+          'issues': result['count_of_issues']?.toString() ?? '0',
+          'publisher': result['publisher']?['name'] ?? 'Desconocido',
+          'image': result['image'] ?? '',
+        };
+      }).toList();
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => CustomDialog(
+          title: 'Error',
+          message: AppLocalizations.of(context)!.missingComicVineApiKey,
+          icon: Icons.error,
+          iconColor: Colors.red,
+        ),
+      );
+      throw Exception('Error al buscar metadatos del cómic: $e');
+    }
   }
 }
 
