@@ -84,6 +84,12 @@ class _SidebarState extends State<Sidebar> {
               context,
               feedsCount: context.watch<FeedsProvider>().totalFeeds,
             ),
+            _buildHoverMenuItem(
+              context,
+              Icons.groups,
+              AppLocalizations.of(context)!.users,
+              '/users',
+            ),
             _buildHoverMenuItem(context, Icons.help_center, 'Tests', 'Tests'),
           ],
         ),

@@ -7,7 +7,6 @@ import 'package:inkger/frontend/utils/constants.dart';
 import 'package:inkger/frontend/widgets/custom_svg_loader.dart';
 import 'package:inkger/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:inkger/frontend/dialogs/create_user_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -261,27 +260,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 ),
                                               ),
                                             ),
-                                      const SizedBox(height: 20),
-                                      ElevatedButton(
-                                        onPressed: () => showDialog(
-                                          context: context,
-                                          builder: (context) => CreateUserDialog(),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 40,
-                                            vertical: 15,
-                                          ),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                        child: Text(
-                                          loc.createUser,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),

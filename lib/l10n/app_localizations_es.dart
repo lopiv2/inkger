@@ -166,6 +166,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un lector vive mil vidas antes de morir. — George R.R. Martin';
 
   @override
+  String get actions => 'Acciones';
+
+  @override
   String get audiobooks => 'Audiolibros';
 
   @override
@@ -278,6 +281,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get language => 'Idioma';
 
   @override
+  String get lastLogin => 'Último Login';
+
+  @override
   String get library => 'Biblioteca';
 
   @override
@@ -293,6 +299,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get listRenamedSuccess => 'Lista renombrada con exito';
 
   @override
+  String get loggedIn => 'Conectado';
+
+  @override
   String get loginAccount => 'Conectate a tu cuenta';
 
   @override
@@ -301,6 +310,9 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get missingComicVineApiKey =>
       'Falta la clave de la API de Comic Vine. Por favor, añade una clave en las preferencias.';
+
+  @override
+  String get name => 'Nombre';
 
   @override
   String get noSerie => 'Sin serie';
@@ -331,6 +343,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get readingListsEmpty => 'No hay listas de lectura';
+
+  @override
+  String get role => 'Rol';
 
   @override
   String get savedProgress => 'Progreso guardado';
@@ -375,10 +390,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get user => 'Usuario';
 
   @override
+  String get users => 'Usuarios';
+
+  @override
   String get userCreated => 'Usuario creado con exito';
 
   @override
   String get userCreatedError => 'Error al crear usuario';
+
+  @override
+  String get userUpdated => 'Usuario actualizado con exito';
+
+  @override
+  String get userUpdatedError => 'Error al actualizar usuario';
 
   @override
   String get watchFeeds => 'Ver fuentes';

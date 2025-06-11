@@ -15,6 +15,7 @@ import 'package:inkger/frontend/screens/preferences_screen.dart';
 import 'package:inkger/frontend/screens/reading_lists_screen.dart';
 import 'package:inkger/frontend/screens/series_detail_screen.dart';
 import 'package:inkger/frontend/screens/series_screen.dart';
+import 'package:inkger/frontend/screens/users_screen.dart';
 import 'package:inkger/frontend/screens/writer/document_editor_screen.dart';
 import 'package:inkger/frontend/screens/writer/writer_welcome_screen.dart';
 import 'package:inkger/frontend/screens/reading_list_detail_screen.dart';
@@ -330,6 +331,39 @@ class AppRouter {
             },
           ),
           GoRoute(
+            path: '/users',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: UsersScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      final fadeAnimation = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      );
+
+                      final scaleAnimation = Tween<double>(begin: 0.9, end: 1.0)
+                          .animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          );
+
+                      return FadeTransition(
+                        opacity: fadeAnimation,
+                        child: ScaleTransition(
+                          scale: scaleAnimation,
+                          child: child,
+                        ),
+                      );
+                    },
+                transitionDuration: const Duration(milliseconds: 500),
+              );
+            },
+          ),
+          GoRoute(
             path: '/home-writer', // Use root path for the default home
             pageBuilder: (context, state) {
               return CustomTransitionPage(
@@ -373,14 +407,18 @@ class AppRouter {
             },
           ),
           GoRoute(
-            path: '/home-writer/document-editor/:nodeId/:name', // Use root path for the default home
+            path:
+                '/home-writer/document-editor/:nodeId/:name', // Use root path for the default home
             pageBuilder: (context, state) {
               final nodeId = state.pathParameters['nodeId']!;
               final extra = state.extra;
               final documentTitle = state.pathParameters['name']!;
               return CustomTransitionPage(
                 key: state.pageKey,
-                child: DocumentEditorScreen(documentId: nodeId, documentTitle: documentTitle,),
+                child: DocumentEditorScreen(
+                  documentId: nodeId,
+                  documentTitle: documentTitle,
+                ),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                       return ScaleTransition(

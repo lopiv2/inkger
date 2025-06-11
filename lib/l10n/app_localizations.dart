@@ -338,6 +338,12 @@ abstract class AppLocalizations {
   /// **'A reader lives a thousand lives before he dies. — George R.R. Martin'**
   String get quote_40;
 
+  /// No description provided for @actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
   /// No description provided for @audiobooks.
   ///
   /// In en, this message translates to:
@@ -560,6 +566,12 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get language;
 
+  /// No description provided for @lastLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Login'**
+  String get lastLogin;
+
   /// No description provided for @library.
   ///
   /// In en, this message translates to:
@@ -590,6 +602,12 @@ abstract class AppLocalizations {
   /// **'List successfully renamed'**
   String get listRenamedSuccess;
 
+  /// No description provided for @loggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged In'**
+  String get loggedIn;
+
   /// No description provided for @loginAccount.
   ///
   /// In en, this message translates to:
@@ -607,6 +625,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Missing Comic Vine API key. Please add a key in the settings.'**
   String get missingComicVineApiKey;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
 
   /// No description provided for @noSerie.
   ///
@@ -667,6 +691,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No reading lists'**
   String get readingListsEmpty;
+
+  /// No description provided for @role.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get role;
 
   /// No description provided for @savedProgress.
   ///
@@ -752,6 +782,12 @@ abstract class AppLocalizations {
   /// **'User'**
   String get user;
 
+  /// No description provided for @users.
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get users;
+
   /// No description provided for @userCreated.
   ///
   /// In en, this message translates to:
@@ -763,6 +799,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error creating user'**
   String get userCreatedError;
+
+  /// No description provided for @userUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'User successfully updated'**
+  String get userUpdated;
+
+  /// No description provided for @userUpdatedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating user'**
+  String get userUpdatedError;
 
   /// No description provided for @watchFeeds.
   ///
