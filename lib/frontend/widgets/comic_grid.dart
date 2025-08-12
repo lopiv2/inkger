@@ -1,3 +1,4 @@
+import 'package:inkger/frontend/widgets/comics_editable_table.dart';
 import 'package:flutter/material.dart';
 import 'package:inkger/frontend/dialogs/comic_metadata_search_dialog.dart';
 import 'package:inkger/frontend/dialogs/convert_comic_options_dialog.dart';
@@ -6,7 +7,6 @@ import 'package:inkger/frontend/models/comic.dart';
 import 'package:inkger/frontend/services/comic_services.dart';
 import 'package:inkger/frontend/services/common_services.dart';
 import 'package:inkger/frontend/utils/comic_filter_provider.dart';
-import 'package:inkger/frontend/utils/comic_list_item.dart';
 import 'package:inkger/frontend/utils/comic_provider.dart';
 import 'package:inkger/frontend/utils/preferences_provider.dart';
 import 'package:inkger/frontend/widgets/comic_view_switcher.dart';
@@ -31,6 +31,67 @@ class ComicsGrid extends StatefulWidget {
 }
 
 class _ComicsGridState extends State<ComicsGrid> {
+  // Estado para edición inline
+  Map<int, String?> _editingField = {}; // comic.id -> campo ('title', 'writer', 'series')
+  Map<int, String> _editingValue = {}; // comic.id -> valor temporal
+  // Diálogo para editar un campo de metadato
+
+  // Diálogo para edición global de metadatos
+  Future<void> _showBatchEditDialog(BuildContext context) async {
+    final campos = ['Título', 'Autor', 'Serie'];
+    final controllers = {
+      for (var campo in campos) campo: TextEditingController(),
+    };
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Editar metadatos globalmente'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: campos.map((campo) {
+              return TextField(
+                controller: controllers[campo],
+                decoration: InputDecoration(labelText: campo),
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+    if (result == true) {
+      final provider = Provider.of<ComicsProvider>(context, listen: false);
+      for (var comic in _selectedComics) {
+        final nuevoTitulo = controllers['Título']!.text.trim();
+        final nuevoAutor = controllers['Autor']!.text.trim();
+        final nuevaSerie = controllers['Serie']!.text.trim();
+        // Solo actualiza si el campo no está vacío
+        provider.updatecomic(
+          comic.copyWith(
+            title: nuevoTitulo.isNotEmpty ? nuevoTitulo : comic.title,
+            writer: nuevoAutor.isNotEmpty ? nuevoAutor : comic.writer,
+            series: nuevaSerie.isNotEmpty ? nuevaSerie : comic.series,
+          ),
+        );
+      }
+      CustomSnackBar.show(
+        context,
+        'Metadatos actualizados para los cómics seleccionados',
+        Colors.green,
+        duration: Duration(seconds: 3),
+      );
+    }
+  }
   int? _count;
   double _crossAxisCount = 5;
   ViewMode _selectedViewMode = ViewMode.simple;
@@ -457,25 +518,77 @@ class _ComicsGridState extends State<ComicsGrid> {
                         ),
                       );
                     } else {
-                      return ListView.builder(
-                        padding: const EdgeInsets.all(8),
-                        itemCount: filteredBooks.length,
-                        itemBuilder: (context, index) {
-                          final comic = filteredBooks[index];
-                          return ComicListItem(
-                            comic: comic,
-                            isSelected: _selectedComics.contains(comic),
-                            onSelected: (isSelected) {
+                      // Usar ComicsEditableTable extraído
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: screenWidth,
+                          child: ComicsEditableTable(
+                            comics: filteredBooks,
+                            selectedComics: _selectedComics,
+                            onSelectComic: (comic, selected) {
                               setState(() {
-                                if (isSelected == true) {
+                                if (selected) {
                                   _selectedComics.add(comic);
                                 } else {
                                   _selectedComics.remove(comic);
                                 }
                               });
                             },
-                          );
-                        },
+                            onBatchEdit: () async {
+                              await _showBatchEditDialog(context);
+                            },
+                            editingField: _editingField,
+                            editingValue: _editingValue,
+                            onEditChange: (id, val) {
+                              setState(() {
+                                _editingValue[id] = val;
+                              });
+                            },
+                            onEditStart: (id, field) {
+                              setState(() {
+                                _editingField[id] = field;
+                                final comic = filteredBooks.firstWhere((c) => c.id == id);
+                                if (field == 'title') {
+                                  _editingValue[id] = comic.title;
+                                } else if (field == 'writer') {
+                                  _editingValue[id] = (comic.writer != null && comic.writer!.isNotEmpty) ? comic.writer! : '';
+                                } else if (field == 'series') {
+                                  _editingValue[id] = (comic.series != null && comic.series!.isNotEmpty) ? comic.series! : '';
+                                }
+                              });
+                            },
+                            onEditComplete: (id) {
+                              final comic = filteredBooks.firstWhere((c) => c.id == id);
+                              final field = _editingField[id];
+                              final val = _editingValue[id] ?? '';
+                              if (field == 'title' && val != comic.title && val.trim().isNotEmpty) {
+                                Provider.of<ComicsProvider>(context, listen: false)
+                                    .updatecomic(comic.copyWith(title: val.trim()));
+                              } else if (field == 'writer') {
+                                if (val != (comic.writer ?? '') && val.trim().isNotEmpty) {
+                                  Provider.of<ComicsProvider>(context, listen: false)
+                                      .updatecomic(comic.copyWith(writer: val.trim()));
+                                } else if (val.trim().isEmpty) {
+                                  Provider.of<ComicsProvider>(context, listen: false)
+                                      .updatecomic(comic.copyWith(writer: null));
+                                }
+                              } else if (field == 'series') {
+                                if (val != (comic.series ?? '') && val.trim().isNotEmpty) {
+                                  Provider.of<ComicsProvider>(context, listen: false)
+                                      .updatecomic(comic.copyWith(series: val.trim()));
+                                } else if (val.trim().isEmpty) {
+                                  Provider.of<ComicsProvider>(context, listen: false)
+                                      .updatecomic(comic.copyWith(series: null));
+                                }
+                              }
+                              setState(() {
+                                _editingField.remove(id);
+                                _editingValue.remove(id);
+                              });
+                            },
+                          ),
+                        ),
                       );
                     }
                   },
